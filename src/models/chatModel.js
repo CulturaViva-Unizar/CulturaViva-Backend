@@ -10,7 +10,14 @@ const chatSchema = new Schema({
   user2:{
       type: Schema.Types.ObjectId,
       ref: 'User',
-      required: true
+      required: true,
+      validate: {
+        validator: function (value) {
+          // Asegurarse de que user2 sea diferente de user1
+          return value.toString() !== this.user1.toString();
+        },
+        message: 'user1 y user2 deben ser distintos'
+      }
   },
   mensajes: [{
     type: Schema.Types.ObjectId,
