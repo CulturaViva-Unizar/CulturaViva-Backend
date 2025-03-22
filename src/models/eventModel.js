@@ -1,0 +1,106 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const coordinatesSchema = new Schema({
+  latitude: {
+    type: Number,
+    required: true
+  },
+  longitude: {
+    type: Number,
+    required: true
+  }
+});
+
+const itemSchema = new Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  category: {
+    type: String,
+    required: true
+  },
+  instagram: {
+    type: String,
+    required: false
+  },
+  twitter: {
+    type: String,
+    required: false
+  },
+  description: {
+    type: String,
+    required: false
+  },
+  image: {
+    type: String,
+    required: false
+  },
+  price: {
+    type: Number,
+    required: false
+  },
+  coordinates: {
+    type: coordinatesSchema,
+    required: true
+  },
+}, {discriminatorKey: 'itemType'});
+
+const Item = mongoose.model('Item', itemSchema);
+
+const daySchema = new Schema({
+  day: {
+    type: String,
+    required: true
+  },
+  openingHour: {
+    type: String,
+    required: false
+  },
+  closingHour: {
+    type: String,
+    required: false
+  }
+});
+
+const eventSchema = new Schema({
+  startDate: {
+    type: Date,
+    required: false
+  },
+  endDate: {
+    type: Date,
+    required: false
+  },
+  permanent: {
+    type: Boolean,
+    required: false
+  },
+  place: {
+    type: Schema.Types.ObjectId,
+    ref: 'Place',
+    required: true
+  },
+  asistentes: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }]
+});
+
+const Event = Item.discriminator('Event', eventSchema);
+
+const placeSchema = new Schema({
+  direction: {
+    type: String,
+    required: true
+  },
+  openingHours: {
+    type: daySchema,
+    required: true
+  },
+});
+
+const Place = Item.discriminator('Place', placeSchema);
+
+module.exports = { Item, Event, Place };
