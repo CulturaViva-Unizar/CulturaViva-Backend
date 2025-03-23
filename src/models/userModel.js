@@ -11,6 +11,10 @@ const userSchema = new Schema({
     required: true,
     unique: true
   },
+  password: {
+    type: String,
+    required: false // si es de google no hace falta password creo
+  },
   createdAt: { // para hacerlo RESTful 
     type: Date,
     default: Date.now

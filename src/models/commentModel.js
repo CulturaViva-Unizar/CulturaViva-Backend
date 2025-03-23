@@ -26,7 +26,7 @@ const valorationSchema = new Schema({
   },
 });
 
-const Valoration = Comment.Comment('Event', valorationSchema);
+const Valoration = Comment.discriminator('Valoration', valorationSchema);
 
 const responseSchema = new Schema({
   responseTo:{
@@ -36,6 +36,6 @@ const responseSchema = new Schema({
   }
 });
 
-const Response = Response.discriminator('Response', responseSchema);
+const Response = Comment.discriminator('Response', responseSchema);
 
 module.exports = { Comment, Valoration, Response };
