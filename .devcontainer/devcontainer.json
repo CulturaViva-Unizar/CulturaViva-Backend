@@ -1,0 +1,20 @@
+{
+    "name": "TypeScript Node.js",
+    "image": "mcr.microsoft.com/devcontainers/typescript-node:latest",
+    
+    "mounts": [
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/node/.ssh,type=bind,consistency=cached"
+    ],
+    
+    "remoteUser": "node",
+    
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "GitHub.vscode-pull-request-github"
+            ]
+        }
+    }
+}
