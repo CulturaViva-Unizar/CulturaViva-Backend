@@ -13,7 +13,6 @@ const chatSchema = new Schema({
       required: true,
       validate: {
         validator: function (value) {
-          // Asegurarse de que user2 sea diferente de user1
           return value.toString() !== this.user1.toString();
         },
         message: 'user1 y user2 deben ser distintos'
