@@ -14,8 +14,7 @@ const options = {
 passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
     try {
 
-        console.log("JWT payload:", jwt_payload);
-      // Verificacion token
+        // Verificacion token
         if (!jwt_payload || !jwt_payload.id) {
             return done(null, false, { message: 'Invalid token structure' });
         }
