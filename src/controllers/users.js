@@ -1,10 +1,10 @@
-import UserModel from "../models/userModel";
-import bcrypt from 'bcrypt';
+const UserModel = require("../models/userModel");
+const bcrypt = require('bcrypt');
 
 /**
  * Registra un nuevo usuario en el sistema
  */
-export const register = async (req, res) => {
+exports.register = async (req, res) => {
   try {
     
     const { email, password, name, phone } = req.body;
@@ -31,8 +31,8 @@ export const register = async (req, res) => {
     const user = await UserModel.create({
       email: email.toLowerCase(),
       password: hashedPassword,
-      name,
-      phone,
+      name: name,
+      phone: phone,
       admin: false,
       active: true
     });
@@ -59,8 +59,9 @@ export const register = async (req, res) => {
 /**
  * Obtiene el perfil del usuario
  */
-export const getProfile = async (req, res) => {
+exports.getProfile = async (req, res) => {
   try {
+    
     // El id del usuario viene del passport
     const userId = req.userId;
     
