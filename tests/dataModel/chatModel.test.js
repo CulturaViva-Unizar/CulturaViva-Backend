@@ -57,7 +57,7 @@ afterAll(async () => {
   await Message.deleteMany({ // y todos los mensajes
     user: { $in: [user1._id, user2._id] }
   });
-  await connectDB();
+  await disconnectDB();
 });
 
 describe('Chat Model Test', () => {
