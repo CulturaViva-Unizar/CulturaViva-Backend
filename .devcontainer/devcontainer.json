@@ -16,5 +16,7 @@
                 "GitHub.vscode-pull-request-github"
             ]
         }
-    }
+    },
+        
+    "runArgs": ["--network=mongo_network"]
 }
