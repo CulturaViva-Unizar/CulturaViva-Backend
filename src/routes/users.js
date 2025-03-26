@@ -1,12 +1,13 @@
-import passport from "passport";
-import "./passport.js";
+const express = require('express');
 
-import { register } from "../controllers/users.js";
-import { login } from "../controllers/auth.js";
-import { getProfile } from "../controllers/users.js";
+const passport = require('passport');
+require('../config/passport');
 
-var express = require('express');
-var router = express.Router();
+const { register } = require('../controllers/users');
+const { login } = require('../controllers/auth');
+const { getProfile } = require('../controllers/users');
+
+const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
