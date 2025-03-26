@@ -1,8 +1,8 @@
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
 const UserModel = require('../models/userModel');
+require('dotenv').config();
 
-// Strict JWT options for better security
 const options = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: process.env.JWT_SECRET || 'secret',
@@ -14,6 +14,7 @@ const options = {
 passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
     try {
 
+        console.log("JWT payload:", jwt_payload);
       // Verificacion token
         if (!jwt_payload || !jwt_payload.id) {
             return done(null, false, { message: 'Invalid token structure' });

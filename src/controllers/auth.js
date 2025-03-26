@@ -1,20 +1,22 @@
-const UserModel = require("../models/userModel");
+const UserModel = require("../models/userModel.js");
 const jwt = require('jsonwebtoken');
-import bcrypt from 'bcrypt';
+const bcrypt = require('bcrypt');
 require('dotenv').config();
 
 
-export const login = async (req, res) => {
+exports.login = async (req, res) => {
     try {
       
+      const { email, password } = req.body;
+
       // Buscar usuario
-      const userExists = await UserModel.findOne({ email: req.body.email });
+      const userExists = await UserModel.findOne({ email: email });
       if (!userExists) {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
 
       // Verificar contraseña
-      const isPasswordValid = await bcrypt.compare(req.body.password, userExists.password);
+      const isPasswordValid = await bcrypt.compare(password, userExists.password);
       if (!isPasswordValid) {
         return res.status(403).json({ message: "Contraseña incorrecta" });
       }
