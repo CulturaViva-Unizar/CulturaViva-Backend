@@ -1,5 +1,4 @@
 const UserModel = require("../models/userModel");
-const bcrypt = require('bcrypt');
 
 class UserController {
 
@@ -105,6 +104,7 @@ class UserController {
       });
     }
   }
+  
   /**
    * Actualiza un elemento específico del usuario
    */
