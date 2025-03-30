@@ -1,6 +1,7 @@
 const UserModel = require('../../src/models/userModel.js');
 const authController = require('../../src/controllers/authController.js');
 const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken');  
 
 jest.mock('../../src/models/userModel.js');
 
@@ -139,4 +140,123 @@ describe('Test creacion de usuario', () => {
       message: "Todos los campos son requeridos: email, password, name, phone"
     });
   })
+});
+
+describe('Test login de usuario', () => {
+
+  beforeAll(async () => {
+    bcrypt.hash = jest.fn().mockResolvedValue('hashedPassword');
+  });
+
+  it('Debería iniciar sesión correctamente', async () => {
+    const req = {
+      body: {
+        email: 'test@test.com',
+        password: 'password123'
+      }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    const mockUser = {
+      _id: 'mocked-user-id',
+      email: 'test@test.com',
+      name: 'Test User',
+      password: 'hashedPassword',
+      admin: false,
+    };
+
+    UserModel.findOne.mockResolvedValue(mockUser);
+    bcrypt.compare = jest.fn().mockResolvedValue(true);
+    const mockToken = 'mocked-jwt-token';
+    jest.spyOn(jwt, 'sign').mockReturnValue(mockToken);
+
+    await authController.login(req, res);
+
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(bcrypt.compare).toHaveBeenCalledWith(req.body.password, mockUser.password);
+    expect(jwt.sign).toHaveBeenCalledWith(
+      {
+        id: mockUser._id,
+        email: mockUser.email,
+        admin: mockUser.admin
+      },
+      process.env.JWT_SECRET || 'secret',
+      { expiresIn: process.env.JWT_EXPIRES_IN || '1d' }
+    );
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Login exitoso',
+      accessToken: mockToken,
+      user: {
+        id: mockUser._id,
+        email: mockUser.email,
+        name: mockUser.name,
+        admin: mockUser.admin
+      }
+    });
+
+  });
+
+  it('Debería fallar si el usuario no existe', async () => {
+    const req = {
+      body: {
+        email: 'test@test.com',
+        password: 'password123'
+      }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    UserModel.findOne.mockResolvedValue(null);
+
+    await authController.login(req, res);
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Usuario no encontrado'
+    });
+  });
+
+  it('Debería fallar si la contraseña es incorrecta', async () => {
+    const req = {
+      body: {
+        email: 'test@test.com',
+        password: 'password123'
+      }
+    };
+
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn()
+    };
+
+    const mockUser = {
+      _id: '123456789',
+      email: 'test@test.com',
+      name: 'Test User',
+      password: 'hashedPassword',
+      admin: false
+    };
+
+    UserModel.findOne.mockResolvedValue(mockUser);
+    bcrypt.compare = jest.fn().mockResolvedValue(false);
+
+    await authController.login(req, res);
+
+    expect(UserModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(bcrypt.compare).toHaveBeenCalledWith(req.body.password, mockUser.password);
+    expect(res.status).toHaveBeenCalledWith(401);
+    expect(res.json).toHaveBeenCalledWith({
+      message: 'Contraseña incorrecta'
+    });
+  });
+
 });

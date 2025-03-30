@@ -76,7 +76,7 @@ class AuthController {
       // Verificar contraseña
       const isPasswordValid = await bcrypt.compare(password, userExists.password);
       if (!isPasswordValid) {
-        return res.status(403).json({ message: "Contraseña incorrecta" });
+        return res.status(401).json({ message: "Contraseña incorrecta" });
       }
 
       // Generar token
@@ -119,7 +119,7 @@ class AuthController {
 
       const match = await bcrypt.compare(oldPassword, user.password);
       if (!match) {
-        return res.status(403).json({ message: "Contraseña incorrecta" });
+        return res.status(401).json({ message: "Contraseña incorrecta" });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
