@@ -1,16 +1,15 @@
 const express = require('express');
-
 const passport = require('passport');
 require('../config/passport');
 
-const { register } = require('../controllers/users');
-const { login } = require('../controllers/auth');
-const { getProfile } = require('../controllers/users');
+const userController = require('../controllers/userController');
 
 const router = express.Router();
 
-router.post('/register', register);
-router.post('/login', login);
-router.get('/profile', passport.authenticate('jwt', { session: false }), getProfile);
+router.get('/me', passport.authenticate('jwt', { session: false }), userController.getProfile);
+
+router.put('/me', passport.authenticate('jwt', { session: false }), userController.updateProfile);
+
+router.get('/me/saved', passport.authenticate('jwt', { session: false }), userController.getSavedItems);
 
 module.exports = router;
