@@ -18,7 +18,7 @@ passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
         if (!jwt_payload || !jwt_payload.id) {
             return done(null, false, { message: 'Invalid token structure' });
         }
-
+        
         // Verificacion expiracion
         const currentTimestamp = Math.floor(Date.now() / 1000);
         if (jwt_payload.exp && jwt_payload.exp < currentTimestamp) {
