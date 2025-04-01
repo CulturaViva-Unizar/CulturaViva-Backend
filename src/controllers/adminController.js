@@ -53,13 +53,6 @@ class AdminController {
     async blockUser(req, res) {
         const userId = req.params.userId;
 
-        if (userId === req.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "No puedes bloquear tu propio usuario"
-            });
-        }
-        
         try {
             const user = await UserModel.findById(userId);
             if (!user) {
@@ -73,7 +66,7 @@ class AdminController {
             return res.status(200).json({
                 success: true,
                 message: "Usuario bloqueado exitosamente",
-                data: user
+                data: user._id
             });
         } catch (error) {
             console.error("Error al bloquear/desbloquear usuario:", error);
@@ -90,13 +83,6 @@ class AdminController {
     async unblockUser(req, res) {
         const userId = req.params.userId;
 
-        if (userId === req.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "No puedes desbloquear tu propio usuario"
-            });
-        }
-
         try {
             const user = await UserModel.findById(userId);
             if (!user) {
@@ -110,7 +96,7 @@ class AdminController {
             return res.status(200).json({
                 success: true,
                 message: "Usuario bloqueado exitosamente",
-                data: user
+                data: user._id
             });
         } catch (error) {
             console.error("Error al bloquear/desbloquear usuario:", error);
@@ -122,17 +108,40 @@ class AdminController {
     }
 
     /**
+     * Elimina el rol de admin a un usuario
+     */
+    async removeAdmin(req, res) {
+        const userId = req.params.userId;
+
+        try {
+            const user = await UserModel.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Usuario no encontrado"
+                });
+            }
+            user.admin = false;
+            await user.save();
+            return res.status(200).json({
+                success: true,
+                message: "Rol de admin eliminado exitosamente",
+                data: user._id
+            });
+        } catch (error) {
+            console.error("Error al eliminar rol de admin:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Error interno del servidor al eliminar rol de admin",
+            });
+        }
+    }
+
+    /**
      * Elimina un usuario
      */
     async deleteUser(req, res) {
         const userId = req.params.userId;
-
-        if (userId === req.userId) {
-            return res.status(403).json({
-                success: false,
-                message: "No puedes eliminar tu propio usuario"
-            });
-        }
 
         try {
             const user = await UserModel.findByIdAndDelete(userId);
@@ -145,7 +154,7 @@ class AdminController {
             return res.status(200).json({
                 success: true,
                 message: "Usuario eliminado exitosamente",
-                data: user
+                data: user._id
             });
         } catch (error) {
             console.error("Error al eliminar usuario:", error);
@@ -161,6 +170,14 @@ class AdminController {
      */
     async checkAdmin(req, res, next) {
         const myUserId = req.userId;
+
+        if (userId === req.userId) {
+            return res.status(401).json({
+                success: false,
+                message: "No puedes modificar tu propio usuario"
+            });
+        }
+
         try {
             const user = await UserModel.findById(myUserId);
             if (!user.admin) {
