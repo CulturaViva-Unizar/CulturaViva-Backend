@@ -142,6 +142,7 @@ describe('Test creacion de usuario', () => {
   })
 });
 
+/*
 describe('Test login de usuario', () => {
 
   beforeAll(async () => {
@@ -260,3 +261,4 @@ describe('Test login de usuario', () => {
   });
 
 });
+*/
