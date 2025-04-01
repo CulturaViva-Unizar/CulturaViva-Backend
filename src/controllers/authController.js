@@ -73,7 +73,10 @@ class AuthController {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
 
-      // Verificar contraseña
+      if (!userExists.active) {
+        return res.status(401).json({ message: "Usuario bloqueado" });
+      }
+
       const isPasswordValid = await bcrypt.compare(password, userExists.password);
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Contraseña incorrecta" });
