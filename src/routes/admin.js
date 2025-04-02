@@ -94,6 +94,7 @@ router.get('/users/:userId/comments',
     adminController.checkAdmin, 
     adminController.getUserComments);
 
+// TODO: Todos estos patches RESTfulizarlos en un PUT
 
 /**
  * @swagger
