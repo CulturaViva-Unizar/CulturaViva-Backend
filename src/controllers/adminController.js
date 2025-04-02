@@ -1,4 +1,5 @@
 const UserModel = require("../models/userModel");
+const CommentModel = require("../models/commentModel");
 
 class AdminController {
 
@@ -223,6 +224,46 @@ class AdminController {
                 message: "Error interno del servidor al hacer admin",
             });
         }
+    }
+
+    /**
+     * Obtiene todos los comentarios de un usuario
+     */
+    async getUserComments(req, res) {
+        const userId = req.params.userId;
+
+        try {
+            const user = await UserModel.findById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: "Usuario no encontrado"
+                });
+            }
+
+            const comments = await CommentModel.find({ userId: userId });
+
+            if (!comments || comments.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: "No se encontraron comentarios para este usuario"
+                });
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: "Comentarios obtenidos exitosamente",
+                data: comments
+            });
+
+        } catch{
+            console.error("Error al obtener comentarios del usuario:", error);
+            return res.status(500).json({
+                success: false,
+                message: "Error interno del servidor al obtener comentarios del usuario",
+            });
+        }
+        
     }
 }
 
