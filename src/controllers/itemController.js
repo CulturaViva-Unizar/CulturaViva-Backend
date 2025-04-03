@@ -1,14 +1,15 @@
-const eventController = require('../controllers/eventController');
+const eventController = require('./itemController');
 const express = require('express');
 
-class EventController {
+class ItemController {
 
     /**
-     * Obtiene todos los eventos
+     * Obtiene todos los ítems (eventos o lugares)
      */
-    async getEvents(req, res) {
+    async getItems(req, res) {
+        const type = req.query.type || 'event';
         try {
-            const events = await eventController.getAllEvents();
+            const events = {} // TODO: Fetch events from the database
             return res.status(200).json(events);
         } catch (error) {
             return res.status(500).json({ message: 'Error fetching events', error });
@@ -16,12 +17,13 @@ class EventController {
     }
 
     /**
-     * Obtiene un evento por su ID
+     * Obtiene un ítem (evento o lugar) por su ID
      */
-    async getEventById(req, res) {
+    async getItemById(req, res) {
+        const type = req.query.type || 'event';
         try {
             const eventId = req.params.eventId;
-            const event = await eventController.getEventById(eventId);
+            const event = {} // TODO: Fetch event by ID from the database
             if (!event) {
                 return res.status(404).json({ message: 'Event not found' });
             }
@@ -32,4 +34,4 @@ class EventController {
     }
 }
 
-module.exports = new EventController(); 
+module.exports = new ItemController(); 

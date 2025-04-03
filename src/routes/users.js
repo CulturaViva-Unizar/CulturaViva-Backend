@@ -491,7 +491,7 @@ router.delete('/:id/attending-events/:eventId',
  *   get:
  *     summary: Obtiene los comentarios de un usuario por su ID
  *     tags:
- *       - Admin
+ *       - Users
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -515,3 +515,34 @@ router.get('/users/:id/comments',
     userController.getUserComments);    
 
 module.exports = router;
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID único del usuario
+ *         name:
+ *           type: string
+ *           description: Nombre del usuario
+ *         email:
+ *           type: string
+ *           description: Correo electrónico del usuario
+ *         phone:
+ *           type: string
+ *           description: Teléfono del usuario
+ *         createdAt:
+ *          type: string
+ *          format: date-time
+ *          description: Fecha de creación del usuario
+ *         active: 
+ *          type: boolean
+ *          description: Indica si el usuario está activo
+ *         admin:
+ *           type: boolean
+ *           description: Indica si el usuario es administrador
+ */
+
