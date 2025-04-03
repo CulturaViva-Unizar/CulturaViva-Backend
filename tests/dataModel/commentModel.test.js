@@ -9,6 +9,7 @@ describe('Comment Model Tests', () => {
     await connectDB();
 
     userId = new mongoose.Types.ObjectId();
+    eventId = new mongoose.Types.ObjectId();
   });
 
   afterAll(async () => {
@@ -19,7 +20,8 @@ describe('Comment Model Tests', () => {
   it('debería permitir crear un comentario con datos válidos', async () => {
     const comment = new Comment({
       text: 'This is a test comment',
-      user: userId
+      user: userId, 
+      event: eventId
     });
 
     const savedComment = await comment.save();
@@ -32,7 +34,8 @@ describe('Comment Model Tests', () => {
 
   it('no debería permitir crear un comentario sin texto', async () => {
     const comment = new Comment({
-      user: userId
+      user: userId,
+      event: eventId
     });
 
     await expect(comment.save()).rejects.toThrow(mongoose.Error.ValidationError);
@@ -40,7 +43,16 @@ describe('Comment Model Tests', () => {
 
   it('no debería permitir crear un comentario sin usuario', async () => {
     const comment = new Comment({
-      text: 'This is another test comment'
+      text: 'This is another test comment',
+      event: eventId
+    });
+
+    await expect(comment.save()).rejects.toThrow(mongoose.Error.ValidationError);
+  });
+  it('no debería permitir crear un comentario sin evento', async () => {
+    const comment = new Comment({
+      text: 'This is another test comment',
+      user: userId
     });
 
     await expect(comment.save()).rejects.toThrow(mongoose.Error.ValidationError);
@@ -53,6 +65,7 @@ describe('Valoration Model Tests', () => {
   beforeAll(async () => {
     await connectDB();
     userId = new mongoose.Types.ObjectId();
+    eventId = new mongoose.Types.ObjectId();
   });
 
   afterAll(async () => {
@@ -64,7 +77,8 @@ describe('Valoration Model Tests', () => {
     const valoration = new Valoration({
       text: 'This is a test valoration',
       user: userId,
-      value: 5
+      value: 5,
+      event: eventId
     });
 
     const savedValoration = await valoration.save();
@@ -78,7 +92,8 @@ describe('Valoration Model Tests', () => {
   it('no debería permitir crear una valoración sin valor', async () => {
     const valoration = new Valoration({
       text: 'This is another test valoration',
-      user: userId
+      user: userId,
+      event: eventId
     });
 
     await expect(valoration.save()).rejects.toThrow(mongoose.Error.ValidationError);
@@ -92,11 +107,13 @@ describe('Response Model Tests', () => {
     await connectDB();
 
     userId = new mongoose.Types.ObjectId();
+    eventId = new mongoose.Types.ObjectId();
 
     // Crear un comentario para asociar con la respuesta
     const comment = new Comment({
       text: 'This is a test parent comment',
-      user: userId
+      user: userId,
+      event: eventId
     });
 
     const savedComment = await comment.save();
@@ -113,7 +130,8 @@ describe('Response Model Tests', () => {
     const response = new Response({
       text: 'This is a test response',
       user: userId,
-      responseTo: commentId
+      responseTo: commentId,
+      event: eventId
     });
 
     const savedResponse = await response.save();
@@ -127,7 +145,8 @@ describe('Response Model Tests', () => {
   it('no debería permitir crear una respuesta sin referencia a un comentario', async () => {
     const response = new Response({
       text: 'This is another test response',
-      user: userId
+      user: userId,
+      event: eventId
     });
 
     await expect(response.save()).rejects.toThrow(mongoose.Error.ValidationError);
