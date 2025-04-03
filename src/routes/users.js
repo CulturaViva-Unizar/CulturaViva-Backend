@@ -3,6 +3,7 @@ const passport = require('passport');
 require('../config/passport');
 
 const userController = require('../controllers/userController');
+const { checkAdminOrUser } = require('../controllers/userController');
 
 const router = express.Router();
 
@@ -15,14 +16,54 @@ const router = express.Router();
  *   description: API para la gestión de usuarios
  */
 
+
 /**
  * @swagger
- * /users/me:
+ * /users:
+ *  get:
+ *    summary: Obtiene todos los usuarios
+ *    tags: [Users]
+ *    security:
+ *     - bearerAuth: []
+ *    responses:
+ *     200:
+ *      description: Lista de usuarios obtenida exitosamente
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ *        properties:
+ *         success:
+ *          type: boolean
+ *         data:
+ *          type: array
+ *         items:
+ *          $ref: '#/components/schemas/User'
+ *     401:
+ *      description: No autorizado
+ *     500:
+ *      description: Error interno del servidor
+ */
+router.get('/', 
+    passport.authenticate('jwt', { session: false }), 
+    userController.checkAdmin, 
+    userController.getUsers);
+
+/**
+ * @swagger
+ * /users/{id}:
  *   get:
  *     summary: Obtiene el perfil del usuario autenticado
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *     responses:
  *       200:
  *         description: Perfil del usuario obtenido exitosamente
@@ -40,20 +81,27 @@ const router = express.Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/me', 
+router.get('/:id', 
     passport.authenticate('jwt', { session: false }), 
-    userController.getProfile);
+    userController.checkAdminOrUser,
+    userController.getUserById);
 
 
 /**
  * @swagger
- * /users/me/saved-events:
+ * /users/:id/saved-events:
  *   get:
  *     summary: Obtiene los eventos guardados por el usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
+*       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *       - in: query
  *         name: name
  *         schema:
@@ -108,7 +156,7 @@ router.get('/me',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/me/saved-events', 
+router.get('/:id/saved-events', 
     passport.authenticate('jwt', { session: false }), 
     userController.getSavedItems);
 
@@ -122,6 +170,12 @@ router.get('/me/saved-events',
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *       - in: query
  *         name: name
  *         schema:
@@ -176,19 +230,26 @@ router.get('/me/saved-events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('me/attending-events', 
+router.get(':id/attending-events', 
     passport.authenticate('jwt', { session: false }), 
     userController.getAttendingItems);
 
 
 /**
  * @swagger
- * /users/me:
+ * /users/:id:
  *   put:
  *     summary: Actualiza el perfil del usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *     requestBody:
  *       required: true
  *       content:
@@ -224,19 +285,27 @@ router.get('me/attending-events',
  *         description: Error interno del servidor
  */
 
-router.put('/me', 
+router.put('/:id', 
     passport.authenticate('jwt', { session: false }), 
+    checkAdminOrUser,
     userController.updateProfile);
 
 
 /**
  * @swagger
- * /users/me/saved-events:
+ * /users/:id/saved-events:
  *   post:
  *     summary: Guarda un evento en el perfil del usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *     requestBody:
  *       required: true
  *       content:
@@ -267,19 +336,26 @@ router.put('/me',
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/me/saved-events', 
+router.post('/:id/saved-events', 
     passport.authenticate('jwt', { session: false }), 
     userController.saveItem);
 
 
 /**
  * @swagger
- * /users/me/attending-events:
+ * /users/:id/attending-events:
  *   post:
  *     summary: Marca un evento como asistido por el usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+*     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *     requestBody:
  *       required: true
  *       content:
@@ -311,14 +387,14 @@ router.post('/me/saved-events',
  *         description: Error interno del servidor
  */
 
-router.post('/me/attending-events', 
+router.post('/:id/attending-events', 
     passport.authenticate('jwt', { session: false }), 
     userController.attendItem);
 
 
 /**
  * @swagger
- * /users/me/saved-events/{eventId}:
+ * /users/:id/saved-events/{eventId}:
  *   delete:
  *     summary: Elimina un evento guardado del perfil del usuario
  *     tags: [Users]
@@ -326,46 +402,11 @@ router.post('/me/attending-events',
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: eventId
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: ID del evento a eliminar
- *     responses:
- *       200:
- *         description: Evento eliminado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
- *       401:
- *         description: No autorizado
- *       500:
- *         description: Error interno del servidor
- */
-router.delete('/me/saved-events/:eventId', 
-    passport.authenticate('jwt', { session: false }), 
-    userController.removeSavedItem);
-
-
-/**
- * @swagger
- * /users/me/attending-events/{eventId}:
- *   delete:
- *     summary: Elimina un evento asistido del perfil del usuario
- *     tags: [Users]
- *     security:
- *       - bearerAuth: []
- *     parameters:
+ *         description: ID del usuario
  *       - in: path
  *         name: eventId
  *         required: true
@@ -393,8 +434,84 @@ router.delete('/me/saved-events/:eventId',
  *       500:
  *         description: Error interno del servidor
  */
-router.delete('/me/attending-events/:eventId', 
+router.delete('/:id/saved-events/:eventId', 
+    passport.authenticate('jwt', { session: false }), 
+    userController.removeSavedItem);
+
+
+/**
+ * @swagger
+ * /users/:id/attending-events/{eventId}:
+ *   delete:
+ *     summary: Elimina un evento asistido del perfil del usuario
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del evento a eliminar
+ *     responses:
+ *       200:
+ *         description: Evento eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/:id/attending-events/:eventId', 
     passport.authenticate('jwt', { session: false }), 
     userController.removeAttendingItem);
+
+/**
+ * @swagger
+ * /users/:id/comments:
+ *   get:
+ *     summary: Obtiene los comentarios de un usuario por su ID
+ *     tags:
+ *       - Admin
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del usuario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Comentarios obtenidos exitosamente
+ *       404:
+ *         description: Usuario o comentarios no encontrados
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/users/:id/comments',
+    passport.authenticate('jwt', { session: false }), 
+    userController.checkAdminOrUser, 
+    userController.getUserComments);    
 
 module.exports = router;

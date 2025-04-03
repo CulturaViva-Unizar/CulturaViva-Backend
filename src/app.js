@@ -6,7 +6,6 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
-var adminRouter = require('./routes/admin');
 var eventRouter = require('./routes/events');
 
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -29,7 +28,6 @@ const swaggerSpec = swaggerJsdoc(options);
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
-app.use('/admin', adminRouter);
 app.use('/events', eventRouter)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
