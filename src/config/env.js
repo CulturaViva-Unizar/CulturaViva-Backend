@@ -6,6 +6,7 @@ const config = {
     DB_CONNECTION: env.DB_CONNECTION,
     JWT_SECRET: env.JWT_SECRET || 'secret',
     JWT_EXPIRES: env.JWT_EXPIRES || '1d',
+    PORT: env.PORT
 };
 
 module.exports = config;
