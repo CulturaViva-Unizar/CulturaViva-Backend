@@ -1,7 +1,7 @@
 const UserModel = require("../models/userModel.js");
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
+const env = require('../config/env.js');
 
 class AuthController {
 
@@ -89,9 +89,9 @@ class AuthController {
           email: userExists.email,
           admin: userExists.admin
         },
-        process.env.JWT_SECRET || 'secret',
+        env.JWT_SECRET,
         { 
-          expiresIn: process.env.JWT_EXPIRES_IN || '1d'
+          expiresIn: env.JWT_EXPIRES
         }
       );
 
