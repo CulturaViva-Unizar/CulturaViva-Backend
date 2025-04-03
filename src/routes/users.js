@@ -515,6 +515,7 @@ router.get('/users/:id/comments',
     userController.getUserComments);    
 
 module.exports = router;
+// TODO: Definirlo bien con TODOS los campos 
 /**
  * @swagger
  * components:

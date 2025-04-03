@@ -112,7 +112,7 @@ router.get('/places/:placeId',
   itemController.getItemById);
 
 module.exports = router;
-
+// TODO: Definirlo bien con TODOS los campos 
 /**
  * @swagger
  * components:

@@ -1,5 +1,7 @@
 const eventController = require('./itemController');
 const express = require('express');
+const { Event, Place } = require('../models/eventModel');
+
 
 class ItemController {
 
@@ -9,10 +11,19 @@ class ItemController {
     async getItems(req, res) {
         const type = req.query.type || 'event';
         try {
-            const events = {} // TODO: Fetch events from the database
-            return res.status(200).json(events);
+            let items;
+            if (type === 'event') {
+                items = await Event.find();
+            } else if (type === 'place') {
+                items = await Place.find();
+            } else {
+                return res.status(400).json({ message: 'Tipo inválido. Usa "event" o "place".' });
+            }
+    
+            return res.status(200).json({ success: true, data: items });
         } catch (error) {
-            return res.status(500).json({ message: 'Error fetching events', error });
+            console.error('Error al obtener ítems:', error);
+            return res.status(500).json({ success: false, message: 'Error al obtener ítems', error });
         }
     }
 
