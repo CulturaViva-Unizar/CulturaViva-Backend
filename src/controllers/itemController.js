@@ -1,5 +1,4 @@
 const eventController = require('./itemController');
-const express = require('express');
 const { Event, Place } = require('../models/eventModel');
 
 

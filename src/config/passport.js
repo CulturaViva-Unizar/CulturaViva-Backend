@@ -8,7 +8,7 @@ const options = {
     secretOrKey: process.env.JWT_SECRET || 'secret',
     algorithms: ['HS256'], 
     ignoreExpiration: false, 
-    passReqToCallback: true, // Permite pass callbacks
+    passReqToCallback: true,
 };
 
 passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
@@ -17,12 +17,6 @@ passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
         // Verificacion token
         if (!jwt_payload || !jwt_payload.id) {
             return done(null, false, { message: 'Invalid token structure' });
-        }
-        
-        // Verificacion expiracion
-        const currentTimestamp = Math.floor(Date.now() / 1000);
-        if (jwt_payload.exp && jwt_payload.exp < currentTimestamp) {
-            return done(null, false, { message: 'Token has expired' });
         }
 
         // Verificacion usuario
