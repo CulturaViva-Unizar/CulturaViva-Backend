@@ -15,6 +15,11 @@ const commentSchema = new Schema({
     ref: 'User',
     required: true
   }, 
+  event: {
+    type: Schema.Types.ObjectId,
+    ref: 'Event',
+    required: true
+  },
 }, {discriminatorKey: 'commentType'});
 
 const Comment = mongoose.model('Comment', commentSchema);
