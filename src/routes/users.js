@@ -163,7 +163,7 @@ router.get('/:id/saved-events',
 
 /**
  * @swagger
- * /users/me/attending-events:
+ * /users/:id/attending-events:
  *   get:
  *     summary: Obtiene los eventos a los que el usuario asiste
  *     tags: [Users]
@@ -230,7 +230,7 @@ router.get('/:id/saved-events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get(':id/attending-events', 
+router.get('/:id/attending-events', 
     passport.authenticate('jwt', { session: false }), 
     userController.getAttendingItems);
 
@@ -512,7 +512,9 @@ router.delete('/:id/attending-events/:eventId',
 router.get('/users/:id/comments',
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser, 
-    userController.getUserComments);    
+    userController.getUserComments);  
+    
+
 
 module.exports = router;
 // TODO: Definirlo bien con TODOS los campos 

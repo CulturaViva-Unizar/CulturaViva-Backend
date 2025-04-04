@@ -1,4 +1,6 @@
 const UserModel = require("../models/userModel");
+const { Event } = require("../models/eventModel");
+const mongoose = require("mongoose"); // TODO refactorizar esto
 
 class UserController {
 
@@ -7,7 +9,7 @@ class UserController {
    */
   async checkAdmin(req, res, next) {
       try {
-          const user = await UserModel.findById(req.userId);
+          const user = await UserModel.findById(toObjectId(req.userId));
           if (!user.admin) throw { status: 403, message: "Acceso no autorizado al recurso." };
           next();
       } catch (error) {
@@ -25,7 +27,7 @@ class UserController {
   async checkAdminOrUser(req, res, next) {
       try {
         if(req.userId.toString() === req.params.id) return next();
-        const user = await UserModel.findById(req.userId);
+        const user = await UserModel.findById(toObjectId(req.userId));
         if(!user) throw { status: 500, message: "Internal server error." };
         if(user.admin) return next();
         throw { status: 403, message: "Acceso no autorizado al recurso." };
@@ -63,7 +65,7 @@ class UserController {
     const userId = req.params.id;
     console.log("User ID:", userId);
     try {
-        const user = await UserModel.findById(userId).select("-password");
+        const user = await UserModel.findById(toObjectId(userId)).select("-password");
         if (!user) {
             return res.status(404).json({
             success: false,
@@ -92,7 +94,7 @@ class UserController {
       const userId = req.params.id;
 
       const updatedUser = await UserModel.findByIdAndUpdate(
-        userId,
+        toObjectId(userId),
         { name, email, phone },
         { new: true, runValidators: true }
       );
@@ -135,25 +137,30 @@ class UserController {
       if (name) filters.name = name
       if (date) filters.date = date
       if (category) filters.category = category
+      console.log(filters);
       
-      const total = await UserModel.findById(userId).select('savedItems').countDocuments();
-      const user = await UserModel.findById(userId)
-      .populate({
-        path: 'savedItems',
-        match: filters,
-        options: {
-          limit: limit,
-          skip: skip
-        }
-      });
+      const user = await UserModel.findById(toObjectId(userId))
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Usuario no encontrado"
+        });
+      }
+
+    const savedItems = await Event.find({
+      _id: { $in: user.savedItems },
+      ...filters,
+    }).limit(limit) 
+      .skip((page - 1) * limit);
 
       return res.status(200).json({
         success: true,
-        data: user.savedItems,
+        data: savedItems,
         pagination: {
           currentPage: page,
-          totalPages: Math.ceil(total / limit),
-          totalItems: total
+          totalPages: Math.ceil(savedItems.length / limit),
+          totalItems: savedItems.length
         }
       });
 
@@ -173,7 +180,7 @@ class UserController {
       const userId = req.params.userId;
 
       try {
-          const user = await UserModel.findById(userId);
+          const user = await UserModel.findById(toObjectId(userId));
           if (!user) {
               return res.status(404).json({
                   success: false,
@@ -212,9 +219,9 @@ class UserController {
     const { eventId } = req.body;
 
     try {
-      const user = await UserModel.findById(userId);
+      const user = await UserModel.findById((userId));
 
-      user.savedItems.push(eventId);
+      user.savedItems.push(toObjectId(eventId));
       await user.save();
 
       return res.status(200).json({
@@ -248,25 +255,28 @@ class UserController {
     if (category) filters.category = category
 
     try {
-      const total = await UserModel.findById(userId).select('asistsTo').countDocuments();
-      const user = await UserModel.findById(userId)
-      .populate({
-        path: 'asistsTo',
-        match: filters,
-        options: {
-          limit: limit,
-          skip: skip
-        }
-        
-      });
+      const user = await UserModel.findById(toObjectId(userId))
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Usuario no encontrado"
+        });
+      }
+      console.log(user.asistsTo);
+      const attendingItems = await Event.find({
+        _id: { $in: user.asistsTo },
+        ...filters,
+      }).limit(limit) 
+        .skip((page - 1) * limit);
 
       return res.status(200).json({
         success: true,
-        data: user.asistsTo,
+        data: attendingItems,
         pagination: {
           currentPage: page,
-          totalPages: Math.ceil(total / limit),
-          totalItems: total
+          totalPages: Math.ceil(attendingItems.length / limit),
+          totalItems: attendingItems.length
         }
       });
 
@@ -287,9 +297,9 @@ class UserController {
     const { eventId } = req.body;
 
     try {
-      const user = await UserModel.findById(userId);
+      const user = await UserModel.findById(toObjectId(userId));
 
-      user.asistsTo.push(eventId);
+      user.asistsTo.push(toObjectId(eventId));
       await user.save();
 
       return res.status(200).json({
@@ -315,7 +325,7 @@ class UserController {
     const { eventId } = req.params;
 
     try {
-      const user = await UserModel.findById(userId);
+      const user = await UserModel.findById(toObjectId(userId));
 
       user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
       await user.save();
@@ -342,7 +352,7 @@ class UserController {
     const { eventId } = req.params;
 
     try {
-      const user = await UserModel.findById(userId);
+      const user = await UserModel.findById(toObjectId(userId));
       user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
       await user.save();
       return res.status(200).json({
@@ -359,6 +369,17 @@ class UserController {
       });
     }
   }
+
+}
+
+// TODO moverlo a common o así o que lo ofrezca db
+/**
+ * Convierte un valor a ObjectId de mongoose
+ */
+function toObjectId(id) {
+  if(id instanceof mongoose.Types.ObjectId) return id;
+  if(typeof id === "string" && mongoose.Types.ObjectId.isValid(id)) return new mongoose.Types.ObjectId(id);
+  throw new Error("Invalid ObjectId");
 }
 
 module.exports = new UserController();
