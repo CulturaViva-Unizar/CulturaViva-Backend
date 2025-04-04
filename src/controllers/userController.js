@@ -1,6 +1,6 @@
 const UserModel = require("../models/userModel");
 const { Event } = require("../models/eventModel");
-const mongoose = require("mongoose"); // TODO refactorizar esto
+const { toObjectId } = require("../utils/utils");
 
 class UserController {
 
@@ -370,16 +370,6 @@ class UserController {
     }
   }
 
-}
-
-// TODO moverlo a common o así o que lo ofrezca db
-/**
- * Convierte un valor a ObjectId de mongoose
- */
-function toObjectId(id) {
-  if(id instanceof mongoose.Types.ObjectId) return id;
-  if(typeof id === "string" && mongoose.Types.ObjectId.isValid(id)) return new mongoose.Types.ObjectId(id);
-  throw new Error("Invalid ObjectId");
 }
 
 module.exports = new UserController();

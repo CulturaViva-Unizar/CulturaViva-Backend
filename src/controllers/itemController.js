@@ -1,5 +1,6 @@
 const eventController = require('./itemController');
-const { Event, Place } = require('../models/eventModel');
+const { Item, Event, Place } = require('../models/eventModel');
+const { toObjectId } = require('../utils/utils');
 
 
 class ItemController {
@@ -8,12 +9,12 @@ class ItemController {
      * Obtiene todos los ítems (eventos o lugares)
      */
     async getItems(req, res) {
-        const type = req.query.type || 'event';
+        const type = req.query.type || 'Event';
         try {
             let items;
-            if (type === 'event') {
+            if (type === 'Event') {
                 items = await Event.find();
-            } else if (type === 'place') {
+            } else if (type === 'Place') {
                 items = await Place.find();
             } else {
                 return res.status(400).json({ message: 'Tipo inválido. Usa "event" o "place".' });
@@ -30,10 +31,11 @@ class ItemController {
      * Obtiene un ítem (evento o lugar) por su ID
      */
     async getItemById(req, res) {
-        const type = req.query.type || 'event';
+        const type = req.query.type || 'Event';
         try {
-            const eventId = req.params.eventId;
-            const event = {} // TODO: Fetch event by ID from the database
+            const eventId = toObjectId(req.params.id);
+            console.log('ID del evento:', eventId);
+            const event = await Item.findOne({ _id: eventId, itemType: type });
             if (!event) {
                 return res.status(404).json({ message: 'Event not found' });
             }

@@ -26,7 +26,7 @@ const itemController = require('../controllers/itemController');
  */
 router.get('/events', 
   (req, res, next) => {
-    req.query.type = 'event';
+    req.query.type = 'Event';
     next();
   }, 
   itemController.getItems);
@@ -34,13 +34,13 @@ router.get('/events',
 
 /**
  * @swagger
- * /items/events/{eventId}:
+ * /items/events/{id}:
  *   get:
  *     summary: Obtiene un evento por su ID
  *     tags:
  *       - Events
  *     parameters:
- *       - name: eventId
+ *       - name: id
  *         in: path
  *         required: true
  *         description: ID del evento
@@ -54,9 +54,9 @@ router.get('/events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/events/:eventId', 
+router.get('/events/:id', 
   (req, res, next) => {
-    req.query.type = 'event';
+    req.query.type = 'Event';
     next();
   }, 
   itemController.getItemById);
@@ -76,7 +76,7 @@ router.get('/events/:eventId',
  */
 router.get('/places', 
   (req, res, next) => {
-    req.query.type = 'place';
+    req.query.type = 'Place';
     next();
   }, 
   itemController.getItems);
@@ -84,13 +84,13 @@ router.get('/places',
 
 /**
  * @swagger
- * /items/places/{placeId}:
+ * /items/places/{id}:
  *   get:
  *     summary: Obtiene un lugar por su ID
  *     tags:
  *       - Places
  *     parameters:
- *       - name: eventId
+ *       - name: id
  *         in: path
  *         required: true
  *         description: ID del lugar
@@ -104,9 +104,9 @@ router.get('/places',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/places/:placeId', 
+router.get('/places/:id', 
   (req, res, next) => {
-    req.query.type = 'place';
+    req.query.type = 'Place';
     next();
   }, 
   itemController.getItemById);
