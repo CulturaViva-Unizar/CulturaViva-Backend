@@ -19,7 +19,7 @@ var app = express();
 
 db.connectDB();
 
-app.use(validateJson);
+//app.use(validateJson);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
