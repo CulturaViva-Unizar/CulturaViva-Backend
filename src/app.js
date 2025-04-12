@@ -11,6 +11,7 @@ var itemRouter = require('./routes/items');
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const options = require('./config/swagger');
+const validateJson = require('./middlewares/validateJson');
 
 const db = require('./config/db');
 
@@ -18,6 +19,7 @@ var app = express();
 
 db.connectDB();
 
+app.use(validateJson);
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

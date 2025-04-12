@@ -3,6 +3,9 @@ require('../config/passport');
 const authController = require('../controllers/authController');
 const router = express.Router();
 const passport = require('passport');
+const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/authSchemas');
+const validate = require('../middlewares/validateSchema');
+
 
 
 /**
@@ -48,6 +51,7 @@ const passport = require('passport');
  *         description: Error interno del servidor
  */
 router.post('/register', 
+    validate(registerSchema),
     authController.register);
 
 /**
@@ -80,6 +84,7 @@ router.post('/register',
  *         description: Error interno del servidor
  */
 router.post('/login', 
+    validate(loginSchema),
     authController.login);
 
 /**
@@ -112,6 +117,7 @@ router.post('/login',
  *         description: Error interno del servidor
  */
 router.post('/change-password', 
+    validate(changePasswordSchema),
     passport.authenticate('jwt', { session: false }), 
     authController.changePassword);
 
