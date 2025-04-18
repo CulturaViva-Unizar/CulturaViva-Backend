@@ -89,9 +89,10 @@ const eventSchema = new Schema({
     required: false
   },
   place: {
-    type: Schema.Types.ObjectId,
-    ref: 'Place',
-    required: true
+    type: String,
+    /*type: Schema.Types.ObjectId,
+    ref: 'Place',*/
+    required: false
   },
   asistentes: [{
     type: Schema.Types.ObjectId,
