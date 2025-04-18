@@ -1,6 +1,6 @@
 const express = require('express');
 const passport = require('passport');
-require('../config/passport');
+require('../config/jwtStrategy');
 
 const userController = require('../controllers/userController');
 const { checkAdminOrUser } = require('../controllers/userController');

@@ -1,5 +1,7 @@
 const express = require('express');
-require('../config/passport');
+require('../config/jwtStrategy');
+require('../config/googleStrategy');
+
 const authController = require('../controllers/authController');
 const router = express.Router();
 const passport = require('passport');
@@ -120,5 +122,17 @@ router.post('/change-password',
     validate(changePasswordSchema),
     passport.authenticate('jwt', { session: false }), 
     authController.changePassword);
+
+
+router.get('/google', 
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get('/google/callback',
+    passport.authenticate('google', { failureRedirect: '/auth/login' }),
+    (req, res) => {
+        const token = authController.generateToken(req.user);
+    }
+);
 
 module.exports = router;

@@ -83,17 +83,7 @@ class AuthController {
       }
 
       // Generar token
-      const accessToken = jwt.sign(
-        {
-          id: userExists._id,
-          email: userExists.email,
-          admin: userExists.admin
-        },
-        env.JWT_SECRET,
-        { 
-          expiresIn: env.JWT_EXPIRES
-        }
-      );
+      const accessToken = await this.generateToken(userExists);
 
       return res.status(200).json({ 
         message: "Login exitoso",
@@ -139,5 +129,21 @@ class AuthController {
       });
     }
   }
+
+  async generateToken(user) {
+    const token = jwt.sign(
+      {
+        id: user._id,
+        email: user.email,
+        admin: user.admin
+      },
+      env.JWT_SECRET,
+      { 
+        expiresIn: env.JWT_EXPIRES
+      }
+    );
+    return token;
+  } 
 }
+
 module.exports = new AuthController();
