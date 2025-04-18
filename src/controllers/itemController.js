@@ -46,18 +46,22 @@ class ItemController {
     }
 
     async guardarEventos(eventos) {
-      // La api falla (es posible: la llevan -vagos- funcionarios) y no devuelve nada
-      if (datosProcesados.lenth <= 0) return; 
-      for(const evento of eventos){
-        evento._id = generateOID(evento.id);
-        await evento.updateOne(
+      try {
+        // La API falla (es posible: la llevan -vagos- funcionarios) y no devuelve nada
+        if (eventos.length <= 0) return; 
+        for (const evento of eventos) {
+          evento._id = generateOID(String(evento.id));
+          await Event.updateOne(
             { _id: evento._id },
             { $set: evento },
             { upsert: true }
-        )
+          );
+        }
+      } catch (error) {
+        console.error('Error al guardar eventos:', error);
+        throw new Error('No se pudieron guardar los eventos');
       }
     }
-
 }
 
 module.exports = new ItemController(); 
