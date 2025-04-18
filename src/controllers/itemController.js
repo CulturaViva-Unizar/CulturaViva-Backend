@@ -1,6 +1,6 @@
 const eventController = require('./itemController');
 const { Item, Event, Place } = require('../models/eventModel');
-const { toObjectId } = require('../utils/utils');
+const { toObjectId, generateOID } = require('../utils/utils');
 
 
 class ItemController {
@@ -44,6 +44,20 @@ class ItemController {
             return res.status(500).json({ message: 'Error fetching event', error });
         }
     }
+
+    async guardarEventos(eventos) {
+      // La api falla (es posible: la llevan -vagos- funcionarios) y no devuelve nada
+      if (datosProcesados.lenth <= 0) return; 
+      for(const evento of eventos){
+        evento._id = generateOID(evento.id);
+        await evento.updateOne(
+            { _id: evento._id },
+            { $set: evento },
+            { upsert: true }
+        )
+      }
+    }
+
 }
 
 module.exports = new ItemController(); 

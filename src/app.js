@@ -13,6 +13,8 @@ const swaggerUi = require("swagger-ui-express");
 const options = require('./config/swagger');
 const validateJson = require('./middlewares/validateJson');
 
+const { getEventosCulturales } = require('./processors/agendaZaragoza');
+
 const db = require('./config/db');
 
 var app = express();
@@ -33,5 +35,18 @@ app.use('/auth', authRouter);
 app.use('/items', itemRouter)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+async function debugEventosCulturales() {
+  try {
+    const eventos = await getEventosCulturales();
+    console.log(`Total eventos obtenidos: ${eventos.length}`);
+    console.log(eventos); // Muestra los eventos en la consola
+  } catch (error) {
+    console.error('Error al obtener eventos culturales:', error.message);
+  }
+}
+
+// Llama a la función de depuración después de configurar todo
+debugEventosCulturales();
 
 module.exports = app;

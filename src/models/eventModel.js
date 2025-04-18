@@ -12,6 +12,17 @@ const coordinatesSchema = new Schema({
   }
 });
 
+const priceSchema = new Schema({
+  grupo: {
+    type: String,
+    required: false
+  },
+  precio: {
+    type: Number,
+    required: false
+  },
+});
+
 const itemSchema = new Schema({
   title: {
     type: String,
@@ -38,7 +49,7 @@ const itemSchema = new Schema({
     required: false
   },
   price: {
-    type: Number,
+    type: [priceSchema],
     required: false
   },
   coordinates: {
