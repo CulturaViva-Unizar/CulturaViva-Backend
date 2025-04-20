@@ -14,7 +14,9 @@ const validateSchema = (schema) => (req, res, next) => {
   }
 
   const validate = ajv.compile(schema);
-  const valid = validate(req.body);
+
+  const dataToValidate = req.method === 'GET' ? req.params : req.body;
+  const valid = validate(dataToValidate);
   if (!valid) {
     console.log('Validation errors:', validate.errors);
     return res.status(400).json({ errors: validate.errors });
