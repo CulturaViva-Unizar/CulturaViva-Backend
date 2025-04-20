@@ -11,10 +11,6 @@ const userSchema = new Schema({
     required: true,
     unique: true
   },
-  password: {
-    type: String,
-    required: false // si es de google no hace falta password creo
-  },
   createdAt: { // para hacerlo RESTful 
     type: Date,
     default: Date.now
@@ -43,8 +39,21 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Item'
   }]
+}, { discriminatorKey: 'userType'  // esto es para el discriminador
 });
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+const UserPasswordSchema = new Schema({
+  password: { type: String, required: true }
+});
+
+const UserPassword = User.discriminator("password", UserPasswordSchema);
+
+const UserGoogleSchema = new Schema({
+  googleId: { type: String, required: true }
+});
+
+const UserGoogle = User.discriminator("google", UserGoogleSchema);
+
+module.exports = { User, UserPassword, UserGoogle };

@@ -54,7 +54,8 @@ const validate = require('../middlewares/validateSchema');
  */
 router.post('/register', 
     validate(registerSchema),
-    authController.register);
+    authController.register
+);
 
 /**
  * @swagger
@@ -87,7 +88,9 @@ router.post('/register',
  */
 router.post('/login', 
     validate(loginSchema),
-    authController.login);
+    authController.login,
+    authController.generateToken
+);
 
 /**
  * @swagger
@@ -121,7 +124,8 @@ router.post('/login',
 router.post('/change-password', 
     validate(changePasswordSchema),
     passport.authenticate('jwt', { session: false }), 
-    authController.changePassword);
+    authController.changePassword
+);
 
 
 router.get('/google', 
@@ -129,10 +133,8 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: '/auth/login' }),
-    (req, res) => {
-        const token = authController.generateToken(req.user);
-    }
+    passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
+    authController.generateToken
 );
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const UserModel = require("../models/userModel");
+const { User } = require("../models/userModel");
 const { Event } = require("../models/eventModel");
 const { toObjectId } = require("../utils/utils");
 
@@ -9,7 +9,7 @@ class UserController {
    */
   async checkAdmin(req, res, next) {
       try {
-          const user = await UserModel.findById(toObjectId(req.userId));
+          const user = await User.findById(toObjectId(req.userId));
           if (!user.admin) throw { status: 403, message: "Acceso no autorizado al recurso." };
           next();
       } catch (error) {
@@ -27,7 +27,7 @@ class UserController {
   async checkAdminOrUser(req, res, next) {
       try {
         if(req.userId.toString() === req.params.id) return next();
-        const user = await UserModel.findById(toObjectId(req.userId));
+        const user = await User.findById(toObjectId(req.userId));
         if(!user) throw { status: 500, message: "Internal server error." };
         if(user.admin) return next();
         throw { status: 403, message: "Acceso no autorizado al recurso." };
@@ -44,7 +44,7 @@ class UserController {
    */
   async getUsers(req, res) {
       try {
-          const users = await UserModel.find({}).select("-password");
+          const users = await User.find({}).select("-password");
           return res.status(200).json({
               success: true,
               data: users
@@ -65,7 +65,7 @@ class UserController {
     const userId = req.params.id;
     console.log("User ID:", userId);
     try {
-        const user = await UserModel.findById(toObjectId(userId)).select("-password");
+        const user = await User.findById(toObjectId(userId)).select("-password");
         if (!user) {
             return res.status(404).json({
             success: false,
@@ -93,7 +93,7 @@ class UserController {
       const { name, email, phone } = req.body;
       const userId = req.params.id;
 
-      const updatedUser = await UserModel.findByIdAndUpdate(
+      const updatedUser = await User.findByIdAndUpdate(
         toObjectId(userId),
         { name, email, phone },
         { new: true, runValidators: true }
@@ -139,7 +139,7 @@ class UserController {
       if (category) filters.category = category
       console.log(filters);
       
-      const user = await UserModel.findById(toObjectId(userId))
+      const user = await User.findById(toObjectId(userId))
 
       if (!user) {
         return res.status(404).json({
@@ -180,7 +180,7 @@ class UserController {
       const userId = req.params.userId;
 
       try {
-          const user = await UserModel.findById(toObjectId(userId));
+          const user = await User.findById(toObjectId(userId));
           if (!user) {
               return res.status(404).json({
                   success: false,
@@ -219,7 +219,7 @@ class UserController {
     const { eventId } = req.body;
 
     try {
-      const user = await UserModel.findById((userId));
+      const user = await User.findById((userId));
 
       user.savedItems.push(toObjectId(eventId));
       await user.save();
@@ -255,7 +255,7 @@ class UserController {
     if (category) filters.category = category
 
     try {
-      const user = await UserModel.findById(toObjectId(userId))
+      const user = await User.findById(toObjectId(userId))
 
       if (!user) {
         return res.status(404).json({
@@ -297,7 +297,7 @@ class UserController {
     const { eventId } = req.body;
 
     try {
-      const user = await UserModel.findById(toObjectId(userId));
+      const user = await User.findById(toObjectId(userId));
 
       user.asistsTo.push(toObjectId(eventId));
       await user.save();
@@ -325,7 +325,7 @@ class UserController {
     const { eventId } = req.params;
 
     try {
-      const user = await UserModel.findById(toObjectId(userId));
+      const user = await User.findById(toObjectId(userId));
 
       user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
       await user.save();
@@ -352,7 +352,7 @@ class UserController {
     const { eventId } = req.params;
 
     try {
-      const user = await UserModel.findById(toObjectId(userId));
+      const user = await User.findById(toObjectId(userId));
       user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
       await user.save();
       return res.status(200).json({

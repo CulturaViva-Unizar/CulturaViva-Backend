@@ -1,6 +1,7 @@
 const passport = require('passport');
 const { Strategy: JwtStrategy, ExtractJwt } = require('passport-jwt');
-const UserModel = require('../models/userModel.js');
+const { User } = require('../models/userModel.js');
+
 const env = require('./env.js');
 
 const options = {
@@ -19,8 +20,10 @@ passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
             return done(null, false, { message: 'Invalid token structure' });
         }
 
+        console.log("JWT Payload:", jwt_payload);
+
         // Verificacion usuario
-        const user = await UserModel.findById(jwt_payload.id)
+        const user = await User.findById(jwt_payload.id);
         if (!user) {
             return done(null, false, { message: 'User not found' });
         }

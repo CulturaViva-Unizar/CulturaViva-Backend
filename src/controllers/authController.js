@@ -1,4 +1,4 @@
-const UserModel = require("../models/userModel.js");
+const { UserPassword } = require('../models/userModel.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const env = require('../config/env.js');
@@ -21,7 +21,7 @@ class AuthController {
       }
 
       // Verificar si el usuario ya existe
-      const existingUser = await UserModel.findOne({ email: email.toLowerCase() });
+      const existingUser = await UserPassword.findOne({ email: email.toLowerCase() });
       if (existingUser) {
         return res.status(409).json({
           success: false,
@@ -31,7 +31,7 @@ class AuthController {
 
       // Crear el nuevo usuario
       const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await UserModel.create({
+      const user = await UserPassword.create({
         email: email.toLowerCase(),
         password: hashedPassword,
         name,
@@ -62,13 +62,13 @@ class AuthController {
   /**
    * Realiza el login de un usuario
    */
-  async login(req, res) {
+  async login(req, res, next) {
     try {
       
       const { email, password } = req.body;
 
       // Buscar usuario
-      const userExists = await UserModel.findOne({ email: email });
+      const userExists = await UserPassword.findOne({ email: email });
       if (!userExists) {
         return res.status(404).json({ message: "Usuario no encontrado" });
       }
@@ -82,20 +82,10 @@ class AuthController {
         return res.status(401).json({ message: "Contraseña incorrecta" });
       }
 
-      // Generar token
-      const accessToken = await this.generateToken(userExists);
-
-      return res.status(200).json({ 
-        message: "Login exitoso",
-        accessToken,
-        user: {
-          id: userExists._id,
-          email: userExists.email,
-          name: userExists.name,
-          admin: userExists.admin
-        }
-      });
-    } catch (error) {
+      req.user = userExists;
+      next();
+    }
+    catch (error) {
       console.error('Error en login:', error);
       return res.status(500).json({ 
         message: "Error interno del servidor al realizar login",
@@ -108,7 +98,7 @@ class AuthController {
       const { newPassword, oldPassword } = req.body;
 
       const userId = req.userId;
-      const user = await UserModel.findById(userId);
+      const user = await UserPassword.findById(userId);
 
       const match = await bcrypt.compare(oldPassword, user.password);
       if (!match) {
@@ -130,7 +120,8 @@ class AuthController {
     }
   }
 
-  async generateToken(user) {
+  async generateToken(req, res) {
+    const user = req.user;
     const token = jwt.sign(
       {
         id: user._id,
@@ -142,8 +133,17 @@ class AuthController {
         expiresIn: env.JWT_EXPIRES
       }
     );
-    return token;
-  } 
+    res.status(200).json({
+      message: "Login exitoso",
+      accessToken: token,
+      user: {
+        id: req.user._id,
+        Email: req.user.email,
+        name: req.user.name,
+        admin: req.user.admin
+      }
+    });
+  }
 }
 
 module.exports = new AuthController();
