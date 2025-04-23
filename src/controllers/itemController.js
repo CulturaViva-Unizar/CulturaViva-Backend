@@ -62,6 +62,24 @@ class ItemController {
         throw new Error('No se pudieron guardar los eventos');
       }
     }
+
+    async guardarLugares(lugares) {
+        try {
+            // La API falla (es posible: la llevan -vagos- funcionarios) y no devuelve nada
+            if (lugares.length <= 0) return; 
+            for (const lugar of lugares) {
+            lugar._id = generateOID(String(lugar.id));
+            await Place.updateOne(
+                { _id: lugar._id },
+                { $set: lugar },
+                { upsert: true }
+            );
+            }
+        } catch (error) {
+            console.error('Error al guardar lugares:', error);
+            throw new Error('No se pudieron guardar los lugares');
+        }
+    }
 }
 
 module.exports = new ItemController(); 

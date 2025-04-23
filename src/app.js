@@ -14,6 +14,7 @@ const options = require('./config/swagger');
 const validateJson = require('./middlewares/validateJson');
 
 const ItemController = require('./controllers/itemController');
+const { getEventosCulturales } = require('./processors/agendaZaragoza');
 const { getPlaces } = require('./processors/lugares');
 
 const db = require('./config/db');
@@ -40,11 +41,12 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 async function debugEventosCulturales() {
   try {
     let places = await getPlaces(); // Obtiene los lugares culturales+
-    console.log(places)
-    //const eventos = await getEventosCulturales();
-  //  await ItemController.guardarEventos(eventos); // Guarda los eventos en la base de datos
-    //console.log(`Total eventos obtenidos: ${eventos.length}`);
-    //console.log(eventos); // Muestra los eventos en la consola
+    await ItemController.guardarLugares(places); // Guarda los lugares en la base de datos
+    console.log(`Total lugares obtenidos: ${places.length}`);
+    const eventos = await getEventosCulturales();
+    await ItemController.guardarEventos(eventos); // Guarda los eventos en la base de datos
+    console.log(`Total eventos obtenidos: ${eventos.length}`);
+    console.log(eventos); // Muestra los eventos en la consola
   } catch (error) {
     console.error('Error al obtener eventos culturales:', error.message);
   }

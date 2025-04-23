@@ -21,7 +21,6 @@ async function fetchJsonFromUrl(url) {
 
     const results = hits.map(hit => hit._source || hit);
 
-    console.log(`Respuesta de ${url}:`, results);
     return results;
   } catch (error) {
     console.error(`Error al realizar la petición a ${url}:`, error.message);
