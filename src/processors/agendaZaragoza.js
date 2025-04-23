@@ -67,5 +67,3 @@ async function getEventosCulturales() {
 }
 
 module.exports = { getEventosCulturales };
-
-module.exports = { getEventosCulturales };

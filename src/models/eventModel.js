@@ -108,8 +108,17 @@ const placeSchema = new Schema({
     required: true
   },
   openingHours: {
-    type: daySchema,
-    required: true
+    type: String,
+    //type: daySchema,
+    required: false
+  },
+  phone: {
+    type: String,
+    required: false
+  },
+  email: {
+    type: String,
+    required: false
   },
 });
 
