@@ -126,7 +126,8 @@ class AuthController {
       {
         id: user._id,
         email: user.email,
-        admin: user.admin
+        admin: user.admin,
+        type: req.user.userType
       },
       env.JWT_SECRET,
       { 
@@ -138,9 +139,10 @@ class AuthController {
       accessToken: token,
       user: {
         id: req.user._id,
-        Email: req.user.email,
+        email: req.user.email,
         name: req.user.name,
-        admin: req.user.admin
+        admin: req.user.admin,
+        type: req.user.userType
       }
     });
   }
