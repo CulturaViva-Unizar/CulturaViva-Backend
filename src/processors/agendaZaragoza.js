@@ -1,8 +1,31 @@
 const { fetchFromAPI } = require('../api/zaragozaApi'); 
+const { Place } = require('../models/eventModel');
 
 // Swagger: https://www.zaragoza.es/docs-api_sede/#/Agenda%20Zaragoza/get_servicio_actividades_evento_list
 // la url al .env mejor
 const AGENDA_URL = process.env.AGENDA_URL
+
+
+async function getCoordinates(evento) {
+  if (!evento.location) return null;
+
+  try {
+    const place = await Place.findOne({ title: evento.location });
+
+    // si existe el lugar en la base de datos && tiene coordenadas, lsas devolvemos
+    if (place && place.coordinates) {
+      return {
+        latitude: place.coordinates.latitude,
+        longitude: place.coordinates.longitude,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error(`Error buscando coordenadas para ${evento.location}:`, error.message);
+    return null;
+  }
+}
 
 //
 /**
@@ -33,24 +56,28 @@ async function getEventosCulturales() {
         break;
       }
 
-      const processedEvents = response.result.map(evento => {
-        return {
-          ...evento,
-          price: Array.isArray(evento.price)
-            ? evento.price.map(p => ({
-                grupo: p.fareGroup || null,
-                precio: p.hasCurrencyValue || null,
-              }))
-            : null, 
-          coordinates: evento.geometry ? {
-            latitude: evento.geometry.coordinates[1],
-            longitude: evento.geometry.coordinates[0],
-          } : null,
-          startDate: evento.startDate ? new Date(evento.startDate) : null,
-          endDate: evento.endDate ? new Date(evento.endDate) : null,
-          place: evento.location ? evento.location : null
-        };
-      });
+      const processedEvents = await Promise.all(
+        response.result.map(async (evento) => {
+          return {
+            ...evento,
+            price: Array.isArray(evento.price)
+              ? evento.price.map((p) => ({
+                  grupo: p.fareGroup || null,
+                  precio: p.hasCurrencyValue || null,
+                }))
+              : null,
+            coordinates: evento.geometry
+              ? {
+                  latitude: evento.geometry.coordinates[1],
+                  longitude: evento.geometry.coordinates[0],
+                }
+              : await getCoordinates(evento),
+            startDate: evento.startDate ? new Date(evento.startDate) : null,
+            endDate: evento.endDate ? new Date(evento.endDate) : null,
+            place: evento.location ? evento.location : null,
+          };
+        })
+      );
 
       eventos.push(...processedEvents);
       console.log(`Fetched ${processedEvents.length} eventos from start=${start}`);

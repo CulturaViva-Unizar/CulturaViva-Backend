@@ -105,7 +105,7 @@ const Event = Item.discriminator('Event', eventSchema);
 const placeSchema = new Schema({
   direction: {
     type: String,
-    required: true
+    required: false
   },
   openingHours: {
     type: String,
