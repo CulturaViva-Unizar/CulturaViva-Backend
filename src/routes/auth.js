@@ -137,4 +137,13 @@ router.get('/google/callback',
     authController.generateToken
 );
 
+router.get('/facebook', 
+    passport.authenticate('facebook')
+);
+
+router.get('/facebook/callback',
+    passport.authenticate('facebook', { session: false, failureRedirect: '/auth/login' }),
+    authController.generateToken
+);
+
 module.exports = router;
