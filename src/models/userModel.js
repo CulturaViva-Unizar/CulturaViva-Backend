@@ -39,7 +39,7 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Item'
   }]
-}, { discriminatorKey: 'userType'  // esto es para el discriminador
+}, { discriminatorKey: 'userType' 
 });
 
 const User = mongoose.model('User', userSchema);
@@ -56,4 +56,10 @@ const UserGoogleSchema = new Schema({
 
 const UserGoogle = User.discriminator("google", UserGoogleSchema);
 
-module.exports = { User, UserPassword, UserGoogle };
+const UserFacebookSchema = new Schema({
+  facebookId: { type: String, required: true }
+});
+
+const UserFacebook = User.discriminator("facebook", UserFacebookSchema);
+
+module.exports = { User, UserPassword, UserGoogle, UserFacebook };
