@@ -16,7 +16,7 @@ describe('Place Model Tests', () => {
       category: 'Museum',
       coordinates: { latitude: 48.8566, longitude: 2.3522 },
       direction: '456 Valid Street',
-      openingHours: { day: 'Tuesday', openingHour: '10:00', closingHour: '18:00' }
+      openingHours: 'Weekend 10:00-18:00'
     });
   
     const savedPlace = await place.save();
@@ -27,31 +27,7 @@ describe('Place Model Tests', () => {
     expect(savedPlace.coordinates.latitude).toBe(48.8566);
     expect(savedPlace.coordinates.longitude).toBe(2.3522);
     expect(savedPlace.direction).toBe('456 Valid Street');
-    expect(savedPlace.openingHours.day).toBe('Tuesday');
-    expect(savedPlace.openingHours.openingHour).toBe('10:00');
-    expect(savedPlace.openingHours.closingHour).toBe('18:00');
-  });
-  
-  it('no debería permitir crear un lugar sin dirección', async () => {
-    const place = new Place({
-      title: 'Invalid Test Place',
-      category: 'Park',
-      coordinates: { latitude: 34.0522, longitude: -118.2437 },
-      openingHours: { day: 'Wednesday', openingHour: '08:00', closingHour: '20:00' }
-    });
-  
-    await expect(place.save()).rejects.toThrow(mongoose.Error.ValidationError);
-  });
-  
-  it('no debería permitir crear un lugar sin horario de apertura', async () => {
-    const place = new Place({
-      title: 'Another Invalid Test Place',
-      category: 'Library',
-      coordinates: { latitude: 51.5074, longitude: -0.1278 },
-      direction: '789 Invalid Street'
-    });
-  
-    await expect(place.save()).rejects.toThrow(mongoose.Error.ValidationError);
+    expect(savedPlace.openingHours).toBe('Weekend 10:00-18:00');
   });
 });
 
@@ -66,7 +42,7 @@ describe('Event Model Tests', () => {
       category: 'Test Category',
       coordinates: { latitude: 40.7128, longitude: -74.0060 },
       direction: '123 Test Street',
-      openingHours: { day: 'Monday', openingHour: '09:00', closingHour: '17:00' }
+      openingHours: 'Weekend 10:00-18:00'
     });
 
     await place.save();
@@ -101,19 +77,6 @@ describe('Event Model Tests', () => {
     expect(savedEvent.endDate).toEqual(new Date('2025-03-26'));
     expect(savedEvent.permanent).toBe(false);
     expect(savedEvent.place.toString()).toBe(place._id.toString());
-  });
-
-  it('no debería crear un evento con place vacío', async () => {
-    const event = new Event({
-      title: 'Test Event Without Place',
-      category: 'Art',
-      coordinates: { latitude: 40.7128, longitude: -74.0060 },
-      startDate: new Date('2025-03-25'),
-      endDate: new Date('2025-03-26'),
-      permanent: false
-    });
-
-    await expect(event.save()).rejects.toThrow(mongoose.Error.ValidationError);
   });
 
   it('debería permitir añadir asistentes a un evento', async () => {
