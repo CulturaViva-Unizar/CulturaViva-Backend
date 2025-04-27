@@ -1,4 +1,4 @@
-const UserModel = require('../../src/models/userModel.js');
+const { User, UserPassword, UserGoogle } = require('../../src/models/userModel');
 const authController = require('../../src/controllers/authController.js');
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');  
@@ -17,7 +17,7 @@ describe('Test creacion de usuario', () => {
   });
 
   beforeEach(() => {
-    UserModel.create.mockClear();
+    User.create.mockClear();
   })
 
   it('Debería registrar un usuario correctamente', async () => {
@@ -48,9 +48,9 @@ describe('Test creacion de usuario', () => {
       ...mockUserCreated
     }
 
-    UserModel.create.mockResolvedValue(mockUserCreated);
+    UserPassword.create.mockResolvedValue(mockUserCreated);
     await authController.register(req, res);
-    expect(UserModel.create).toHaveBeenCalledWith(mockUser);
+    expect(UserPassword.create).toHaveBeenCalledWith(mockUser);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -87,8 +87,8 @@ describe('Test creacion de usuario', () => {
       ...reqUser1.body
     };
   
-    UserModel.findOne.mockResolvedValueOnce(null);  
-    UserModel.create.mockResolvedValue(mockUserCreated);
+    UserPassword.findOne.mockResolvedValueOnce(null);  
+    UserPassword.create.mockResolvedValue(mockUserCreated);
   
     let res = {
       status: jest.fn().mockReturnThis(),
@@ -106,7 +106,7 @@ describe('Test creacion de usuario', () => {
       }
     });
   
-    UserModel.findOne.mockResolvedValueOnce(mockUserCreated);
+    UserPassword.findOne.mockResolvedValueOnce(mockUserCreated);
   
     res = {
       status: jest.fn().mockReturnThis(),
@@ -170,14 +170,14 @@ describe('Test login de usuario', () => {
       admin: false,
     };
 
-    UserModel.findOne.mockResolvedValue(mockUser);
+    UserPassword.findOne.mockResolvedValue(mockUser);
     bcrypt.compare = jest.fn().mockResolvedValue(true);
     const mockToken = 'mocked-jwt-token';
     jest.spyOn(jwt, 'sign').mockReturnValue(mockToken);
 
     await authController.login(req, res);
 
-    expect(UserModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(UserPassword.findOne).toHaveBeenCalledWith({ email: req.body.email });
     expect(bcrypt.compare).toHaveBeenCalledWith(req.body.password, mockUser.password);
     expect(jwt.sign).toHaveBeenCalledWith(
       {
@@ -216,10 +216,10 @@ describe('Test login de usuario', () => {
       json: jest.fn()
     };
 
-    UserModel.findOne.mockResolvedValue(null);
+    UserPassword.findOne.mockResolvedValue(null);
 
     await authController.login(req, res);
-    expect(UserModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(UserPassword.findOne).toHaveBeenCalledWith({ email: req.body.email });
     expect(res.status).toHaveBeenCalledWith(404);
     expect(res.json).toHaveBeenCalledWith({
       message: 'Usuario no encontrado'
@@ -247,12 +247,12 @@ describe('Test login de usuario', () => {
       admin: false
     };
 
-    UserModel.findOne.mockResolvedValue(mockUser);
+    UserPassword.findOne.mockResolvedValue(mockUser);
     bcrypt.compare = jest.fn().mockResolvedValue(false);
 
     await authController.login(req, res);
 
-    expect(UserModel.findOne).toHaveBeenCalledWith({ email: req.body.email });
+    expect(UserPassword.findOne).toHaveBeenCalledWith({ email: req.body.email });
     expect(bcrypt.compare).toHaveBeenCalledWith(req.body.password, mockUser.password);
     expect(res.status).toHaveBeenCalledWith(401);
     expect(res.json).toHaveBeenCalledWith({

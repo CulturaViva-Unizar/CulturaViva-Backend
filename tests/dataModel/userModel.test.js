@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { connectDB, disconnectDB } = require('../../src/config/db');
-const User = require('../../src/models/userModel');
+const { User } = require('../../src/models/userModel');
 
 /******************************************************************
 * Test para probar el modelo de datos de usuario.                 *

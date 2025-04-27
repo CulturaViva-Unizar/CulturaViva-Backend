@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { connectDB, disconnectDB } = require('../../src/config/db');
 const Chat = require('../../src/models/chatModel');
-const User = require('../../src/models/userModel');
+const { User } = require('../../src/models/userModel');
 const Message = require('../../src/models/messageModel');
 
 

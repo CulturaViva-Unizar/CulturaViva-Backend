@@ -1,5 +1,7 @@
 const express = require('express');
-require('../config/passport');
+require('../config/jwtStrategy');
+require('../config/googleStrategy');
+
 const authController = require('../controllers/authController');
 const router = express.Router();
 const passport = require('passport');
@@ -52,7 +54,8 @@ const validate = require('../middlewares/validateSchema');
  */
 router.post('/register', 
     validate(registerSchema),
-    authController.register);
+    authController.register
+);
 
 /**
  * @swagger
@@ -85,7 +88,9 @@ router.post('/register',
  */
 router.post('/login', 
     validate(loginSchema),
-    authController.login);
+    authController.login,
+    authController.generateToken
+);
 
 /**
  * @swagger
@@ -119,6 +124,17 @@ router.post('/login',
 router.post('/change-password', 
     validate(changePasswordSchema),
     passport.authenticate('jwt', { session: false }), 
-    authController.changePassword);
+    authController.changePassword
+);
+
+
+router.get('/google', 
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+router.get('/google/callback',
+    passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
+    authController.generateToken
+);
 
 module.exports = router;
