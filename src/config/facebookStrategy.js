@@ -4,15 +4,14 @@ const { UserFacebook } = require('../models/userModel.js');
 const FacebookStrategy = require('passport-facebook').Strategy;
 
 const options = {
-    clientID: env.FACEBOOK_CLIENT_ID,
-    clientSecret: env.FACEBOOK_CLIENT_SECRET,
+    clientID: env.FACEBOOK_APP_ID,
+    clientSecret: env.FACEBOOK_APP_SECRET,
     callbackURL: "http://localhost:3000/auth/facebook/callback",
-    profileFields: ['id', 'displayName', 'phone', 'email']
+    profileFields: ['id', 'displayName', 'email']
 };
 
 
 passport.use(new FacebookStrategy(options, async (accessToken, refreshToken, profile, done) => {
-
     
     try {
         var user = await UserFacebook.findOne({ facebookId: profile.id });
