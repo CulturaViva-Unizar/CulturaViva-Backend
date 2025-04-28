@@ -5,7 +5,7 @@ const userSchema = new Schema({
   name: {
     type: String,
     required: true
-    //unique: true  Para permiti
+    //unique: true  Para permitir multiples tipos de cuenta con el mismo email
   },
   email: {
     type: String,
