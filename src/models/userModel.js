@@ -5,11 +5,11 @@ const userSchema = new Schema({
   name: {
     type: String,
     required: true
+    //unique: true  Para permiti
   },
   email: {
     type: String,
     required: true,
-    unique: true
   },
   createdAt: { // para hacerlo RESTful 
     type: Date,
@@ -51,13 +51,13 @@ const UserPasswordSchema = new Schema({
 const UserPassword = User.discriminator("password", UserPasswordSchema);
 
 const UserGoogleSchema = new Schema({
-  googleId: { type: String, required: true }
+  googleId: { type: String, required: true, unique: true }
 });
 
 const UserGoogle = User.discriminator("google", UserGoogleSchema);
 
 const UserFacebookSchema = new Schema({
-  facebookId: { type: String, required: true }
+  facebookId: { type: String, required: true, unique: true }
 });
 
 const UserFacebook = User.discriminator("facebook", UserFacebookSchema);
