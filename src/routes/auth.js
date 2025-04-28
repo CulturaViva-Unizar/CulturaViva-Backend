@@ -1,6 +1,7 @@
 const express = require('express');
 require('../config/jwtStrategy');
 require('../config/googleStrategy');
+require('../config/facebookStrategy');
 
 const authController = require('../controllers/authController');
 const router = express.Router();
