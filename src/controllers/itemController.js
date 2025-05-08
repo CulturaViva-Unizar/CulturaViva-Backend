@@ -25,6 +25,7 @@ class ItemController {
     
             return res.status(200).json({ 
                 success: true, 
+                message: "Items obtenidos correctamente",
                 data: items
             });
         } catch (error) {
@@ -54,6 +55,7 @@ class ItemController {
             }
             return res.status(200).json({
                 success: true,
+                message: "Item obtenido con exito",
                 data: event
             });
         } catch (error) {

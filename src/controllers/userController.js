@@ -60,6 +60,7 @@ class UserController {
           const users = await User.find({}).select("-password");
           return res.status(200).json({
               success: true,
+              message: "Usuarios obtenidos correctamente",
               data: users
           });
       } catch (error) {
@@ -87,6 +88,7 @@ class UserController {
         }
         return res.status(200).json({
           success: true,
+          message: "Usuario encontrado con exito",
           data: user
         });
     } catch (error) {
@@ -170,7 +172,7 @@ class UserController {
       return res.status(200).json({
         success: true,
         data: {
-          savedItems: savedItems,
+          items: savedItems,
           currentPage: page,
           totalPages: Math.ceil(savedItems.length / limit),
           totalItems: savedItems.length

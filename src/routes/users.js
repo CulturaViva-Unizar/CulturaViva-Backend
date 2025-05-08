@@ -45,6 +45,8 @@ const router = express.Router();
  *         properties:
  *           success:
  *             type: boolean
+ *           message:
+ *             type: string
  *           data:
  *             type: array
  *             items:
@@ -84,6 +86,8 @@ router.get('/',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                 message:
+ *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/User'
  *       401:
@@ -149,11 +153,9 @@ router.get('/:id',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                 message:
+ *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
- *                 pagination:
  *                   type: object
  *                   properties:
  *                     currentPage:
@@ -162,6 +164,10 @@ router.get('/:id',
  *                       type: integer
  *                     totalItems:
  *                       type: integer
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       500:
@@ -225,10 +231,6 @@ router.get('/:id/saved-events',
  *                 success:
  *                   type: boolean
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
- *                 pagination:
  *                   type: object
  *                   properties:
  *                     currentPage:
@@ -237,6 +239,10 @@ router.get('/:id/saved-events',
  *                       type: integer
  *                     totalItems:
  *                       type: integer
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       500:
@@ -342,9 +348,12 @@ router.put('/:id',
  *                 message:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                   type: object
+*                   properties:
+*                     items:
+*                       type: array
+*                       items:
+*                         $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       500:
@@ -529,6 +538,8 @@ router.delete('/:id/attending-events/:eventId',
  *               properties:
  *                 success:
  *                   type: boolean
+ *                 message:
+ *                   type: string
  *                 data:
  *                   type: array
  *                   items:
