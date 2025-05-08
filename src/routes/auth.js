@@ -1,6 +1,7 @@
 const express = require('express');
 require('../config/jwtStrategy');
 require('../config/googleStrategy');
+require('../config/facebookStrategy');
 
 const authController = require('../controllers/authController');
 const router = express.Router();
@@ -162,6 +163,15 @@ router.get('/google',
 
 router.get('/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
+    authController.generateToken
+);
+
+router.get('/facebook', 
+    passport.authenticate('facebook')
+);
+
+router.get('/facebook/callback',
+    passport.authenticate('facebook', { session: false, failureRedirect: '/auth/login' }),
     authController.generateToken
 );
 
