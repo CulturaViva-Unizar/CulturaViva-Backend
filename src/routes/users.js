@@ -547,7 +547,6 @@ router.get('/users/:id/comments',
 
 
 module.exports = router;
-// TODO: Definirlo bien con TODOS los campos 
 /**
  * @swagger
  * components:
@@ -568,15 +567,23 @@ module.exports = router;
  *           type: string
  *           description: Teléfono del usuario
  *         createdAt:
- *          type: string
- *          format: date-time
- *          description: Fecha de creación del usuario
+ *           type: string
+ *           format: date-time
+ *           description: Fecha de creación del usuario
  *         active: 
- *          type: boolean
- *          description: Indica si el usuario está activo
+ *           type: boolean
+ *           description: Indica si el usuario está activo
  *         admin:
  *           type: boolean
  *           description: Indica si el usuario es administrador
+ *       required: 
+ *         - id
+ *         - name
+ *         - email
+ *         - phone
+ *         - createdAt
+ *         - active
+ *         - admin
  */
 /**
  * @swagger
@@ -586,7 +593,7 @@ module.exports = router;
  *       type: object
  *       properties:
  *         id:
- *           type: string
+ *           type: ObjectID
  *           description: ID único del comentario
  *         text:
  *           type: string
@@ -596,13 +603,15 @@ module.exports = router;
  *           format: date-time
  *           description: Fecha en la que se creó el comentario
  *         user:
- *           type: string
+ *           type: ObjectID
  *           description: ID del usuario que realizó el comentario
  *         event:
- *           type: string
+ *           type: ObjectID
  *           description: ID del evento al que pertenece el comentario
  *       required:
+ *         - id
  *         - text
  *         - user
+ *         - date
  *         - event
  */

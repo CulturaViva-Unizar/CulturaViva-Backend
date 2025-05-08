@@ -54,26 +54,11 @@ const itemSchema = new Schema({
   },
   coordinates: {
     type: coordinatesSchema,
-    required: true
+    required: false
   },
 }, {discriminatorKey: 'itemType'});
 
 const Item = mongoose.model('Item', itemSchema);
-
-const daySchema = new Schema({
-  day: {
-    type: String,
-    required: true
-  },
-  openingHour: {
-    type: String,
-    required: false
-  },
-  closingHour: {
-    type: String,
-    required: false
-  }
-});
 
 const eventSchema = new Schema({
   startDate: {

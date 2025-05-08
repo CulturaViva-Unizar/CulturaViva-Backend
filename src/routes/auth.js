@@ -45,6 +45,34 @@ const validate = require('../middlewares/validateSchema');
  *     responses:
  *       201:
  *         description: Usuario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: Indica si el registro fue exitoso
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de éxito
+ *                   example: "Usuario creado exitosamente"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: ID único del usuario registrado
+ *                       example: "64b7f9c2e4b0f5d1a8c9e123"
+ *                     email:
+ *                       type: string
+ *                       description: Email del usuario registrado
+ *                       example: "usuario@example.com"
+ *                     name:
+ *                       type: string
+ *                       description: Nombre del usuario registrado
+ *                       example: "Juan Pérez"
  *       400:
  *         description: Campos requeridos faltantes
  *       409:

@@ -132,7 +132,6 @@ router.get('/places/:id',
   itemController.getItemById);
 
 module.exports = router;
-// TODO: Definirlo bien con TODOS los campos 
 /**
  * @swagger
  * components:
@@ -187,8 +186,10 @@ module.exports = router;
  *         place:
  *           type: string
  *           description: ID del lugar asociado al evento
+ *       required:
+ *         - title
+ *         - category
  */
-
 /**
  * @swagger
  * components:
@@ -233,15 +234,9 @@ module.exports = router;
  *           type: string
  *           description: Dirección del lugar
  *         openingHours:
- *           type: object
- *           properties:
- *             day:
- *               type: string
- *               description: Día de la semana
- *             openingHour:
- *               type: string
- *               description: Hora de apertura
- *             closingHour:
- *               type: string
- *               description: Hora de cierre
+ *           type: string
+ *           description: Horario de apertura del lugar, expresado en lenguaje natural
+ *       required:
+ *         - title
+ *         - category
  */

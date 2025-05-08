@@ -17,11 +17,12 @@ const userSchema = new Schema({
   }, 
   admin: {
     type: Boolean,
-    default: false
+    default: false,
   }, 
   active: {
     type: Boolean,
-    default: true
+    default: true,
+
   },
   phone: {
     type: String,
@@ -29,15 +30,18 @@ const userSchema = new Schema({
   }, 
   chats: [{
     type: Schema.Types.ObjectId,
-    ref: 'Chat'
+    ref: 'Chat',
+    default: []
   }], 
   asistsTo: [{
     type: Schema.Types.ObjectId,
-    ref: 'Event'
+    ref: 'Event',
+    default: []
   }], 
   savedItems: [{
     type: Schema.Types.ObjectId,
-    ref: 'Item'
+    ref: 'Item',
+    default: []
   }]
 }, { discriminatorKey: 'userType'  // esto es para el discriminador
 });
