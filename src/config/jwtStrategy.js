@@ -17,7 +17,7 @@ passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
 
         // Verificacion token
         if (!jwt_payload || !jwt_payload.id) {
-            return done(null, false, { message: 'Invalid token structure' });
+            return done(null, false, { success: false, message: 'Invalid token structure' });
         }
 
         console.log("JWT Payload:", jwt_payload);
@@ -25,12 +25,12 @@ passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
         // Verificacion usuario
         const user = await User.findById(jwt_payload.id);
         if (!user) {
-            return done(null, false, { message: 'User not found' });
+            return done(null, false, { success: false, message: 'User not found' });
         }
 
         // Verificacion baneo
         if (!user.active) {
-            return done(null, false, { message: 'User account is deactivated' });
+            return done(null, false, { success: false, message: 'User account is deactivated' });
         }
 
         // Informacion del user para los siguientes middlewares
@@ -38,7 +38,7 @@ passport.use(new JwtStrategy(options, async (req, jwt_payload, done) => {
 
         return done(null, true);
     } catch (error) {
-        return done(error, false, { message: 'Authentication error occurred' });
+        return done(error, false, { success: false, message: 'Authentication error occurred' });
     }
 }));
 

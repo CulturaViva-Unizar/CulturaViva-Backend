@@ -13,10 +13,10 @@ class AuthController {
       const { email, password, name, phone } = req.body;
       
       // Validación de campos requeridos
-      if (!email || !password || !name || !phone) {
+      if (!email || !password || !name ) {
         return res.status(400).json({
           success: false,
-          message: "Todos los campos son requeridos: email, password, name, phone"
+          message: "Todos los campos son requeridos: email, password, name"
         });
       }
 
@@ -70,16 +70,25 @@ class AuthController {
       // Buscar usuario
       const userExists = await UserPassword.findOne({ email: email });
       if (!userExists) {
-        return res.status(404).json({ message: "Usuario no encontrado" });
+        return res.status(404).json({ 
+          success: false,
+          message: "Usuario no encontrado" 
+        });
       }
 
       if (!userExists.active) {
-        return res.status(401).json({ message: "Usuario bloqueado" });
+        return res.status(401).json({ 
+          success: false,
+          message: "Usuario bloqueado" 
+        });
       }
 
       const isPasswordValid = await bcrypt.compare(password, userExists.password);
       if (!isPasswordValid) {
-        return res.status(401).json({ message: "Contraseña incorrecta" });
+        return res.status(401).json({ 
+          success: false,
+          message: "Contraseña incorrecta" 
+        });
       }
 
       req.user = userExists;
@@ -88,6 +97,7 @@ class AuthController {
     catch (error) {
       console.error('Error en login:', error);
       return res.status(500).json({ 
+        success: false,
         message: "Error interno del servidor al realizar login",
       });
     }
@@ -102,14 +112,20 @@ class AuthController {
 
       const match = await bcrypt.compare(oldPassword, user.password);
       if (!match) {
-        return res.status(401).json({ message: "Contraseña incorrecta" });
+        return res.status(401).json({ 
+          success: false,
+          message: "Contraseña incorrecta" 
+        });
       }
 
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       user.password = hashedPassword;
       await user.save();
 
-      return res.status(200).json({ message: "Contraseña restablecida exitosamente" });
+      return res.status(200).json({
+        success: true,
+        message: "Contraseña restablecida exitosamente" 
+      });
       
     } catch (error) {
       console.error("Error al restablecer la contraseña:", error);
@@ -135,14 +151,15 @@ class AuthController {
       }
     );
     res.status(200).json({
+      success: true,
       message: "Login exitoso",
-      accessToken: token,
-      user: {
+      data: {
         id: req.user._id,
         email: req.user.email,
         name: req.user.name,
         admin: req.user.admin,
-        type: req.user.userType
+        type: req.user.userType,
+        accessToken: token
       }
     });
   }

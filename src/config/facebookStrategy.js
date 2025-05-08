@@ -31,7 +31,7 @@ passport.use(new FacebookStrategy(options, async (accessToken, refreshToken, pro
         }
     } catch (error) {
         console.error("Error en la estrategia de Facebook:", error);
-        return done(error, null);
+        return done(error, null, { success: false, message: 'Error en la estrategia de Facebook' });
     }
 }));
 
