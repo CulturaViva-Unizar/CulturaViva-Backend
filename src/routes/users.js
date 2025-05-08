@@ -587,6 +587,10 @@ module.exports = router;
  *         admin:
  *           type: boolean
  *           description: Indica si el usuario es administrador
+ *         userType:
+ *           type: String
+ *           description: Indica el tipo de usuario (password, facebook, google)
+ *           
  *       required: 
  *         - id
  *         - name
