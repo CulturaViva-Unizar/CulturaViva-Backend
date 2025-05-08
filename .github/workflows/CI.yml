@@ -74,7 +74,7 @@ jobs:
       - name: Tag and push docker image
         env:
           REGISTRY: ${{ secrets.ID_AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          REPOSITORY: culturaviva/
+          REPOSITORY: culturaviva
           IMAGE_TAG: latest
         run: |
           docker tag backend:latest $REGISTRY/$REPOSITORY:$IMAGE_TAG
