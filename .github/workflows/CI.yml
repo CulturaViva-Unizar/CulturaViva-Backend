@@ -77,6 +77,7 @@ jobs:
           REPOSITORY: culturaviva
           IMAGE_TAG: latest
         run: |
+          docker rmi $REGISTRY/$REPOSITORY:$IMAGE_TAG || true
           docker tag backend:latest $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
