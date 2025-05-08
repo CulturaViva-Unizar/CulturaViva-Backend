@@ -32,7 +32,7 @@ jobs:
   deploy-render:
     needs: test
     runs-on: ubuntu-latest
-    #if: ${{ contains(github.ref, 'refs/tags/') }}
+    if: ${{ contains(github.ref, 'refs/tags/') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
