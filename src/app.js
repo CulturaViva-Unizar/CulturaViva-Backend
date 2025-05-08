@@ -12,6 +12,7 @@ const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const options = require('./config/swagger');
 const validateJson = require('./middlewares/validateJson');
+const cors = require('cors');
 
 const db = require('./config/db');
 require('./cron/tasks');
@@ -19,6 +20,8 @@ require('./cron/tasks');
 var app = express();
 
 db.connectDB();
+
+app.use(cors());
 
 //app.use(validateJson);
 app.use(logger('dev'));
