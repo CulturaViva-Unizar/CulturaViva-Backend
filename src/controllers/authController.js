@@ -135,6 +135,7 @@ class AuthController {
       }
     );
     res.status(200).json({
+      success: true,
       message: "Login exitoso",
       accessToken: token,
       user: {
