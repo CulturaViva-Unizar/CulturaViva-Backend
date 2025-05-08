@@ -42,13 +42,13 @@ const router = express.Router();
  *       application/json:
  *        schema:
  *         type: object
- *        properties:
- *         success:
- *          type: boolean
- *         data:
- *          type: array
- *         items:
- *          $ref: '#/components/schemas/User'
+ *         properties:
+ *           success:
+ *             type: boolean
+ *           data:
+ *             type: array
+ *             items:
+ *               $ref: '#/components/schemas/User'
  *     401:
  *      description: No autorizado
  *     500:
@@ -522,6 +522,17 @@ router.delete('/:id/attending-events/:eventId',
  *     responses:
  *       200:
  *         description: Comentarios obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'
  *       404:
  *         description: Usuario o comentarios no encontrados
  *       500:
@@ -567,4 +578,31 @@ module.exports = router;
  *           type: boolean
  *           description: Indica si el usuario es administrador
  */
-
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Comment:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID único del comentario
+ *         text:
+ *           type: string
+ *           description: Texto del comentario
+ *         date:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha en la que se creó el comentario
+ *         user:
+ *           type: string
+ *           description: ID del usuario que realizó el comentario
+ *         event:
+ *           type: string
+ *           description: ID del evento al que pertenece el comentario
+ *       required:
+ *         - text
+ *         - user
+ *         - event
+ */

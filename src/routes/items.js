@@ -21,6 +21,12 @@ const itemController = require('../controllers/itemController');
  *     responses:
  *       200:
  *         description: Lista de eventos obtenida exitosamente
+ *         content: 
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Event'
  *       500:
  *         description: Error interno del servidor
  */
@@ -49,6 +55,10 @@ router.get('/events',
  *     responses:
  *       200:
  *         description: Evento obtenido exitosamente
+ *         content:
+ *          application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/Event'
  *       404:
  *         description: Evento no encontrado
  *       500:
@@ -71,6 +81,12 @@ router.get('/events/:id',
  *     responses:
  *       200:
  *         description: Lista de lugares obtenida exitosamente
+ *         content:
+ *          application/json:
+ *           schema:
+ *             type: array
+ *             items:
+ *                $ref: '#/components/schemas/Place'
  *       500:
  *         description: Error interno del servidor
  */
@@ -99,6 +115,10 @@ router.get('/places',
  *     responses:
  *       200:
  *         description: Lugar obtenido exitosamente
+ *         content: 
+ *          application/json:
+ *           schema:
+ *              $ref: '#/components/schemas/Place'
  *       404:
  *         description: Lugar no encontrado
  *       500:
