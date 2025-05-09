@@ -157,8 +157,7 @@ router.post('/register',
  */
 router.post('/login', 
     validate(loginSchema),
-    authController.login,
-    authController.generateToken
+    authController.login
 );
 
 /**

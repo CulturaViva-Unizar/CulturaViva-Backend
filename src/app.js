@@ -1,3 +1,5 @@
+require('express-async-errors');
+
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
@@ -13,6 +15,7 @@ const swaggerUi = require("swagger-ui-express");
 const options = require('./config/swagger');
 const validateJson = require('./middlewares/validateJson');
 const cors = require('cors');
+const { createInternalServerErrorResponse } = require('./utils/utils.js');
 
 const db = require('./config/db');
 require('./cron/tasks');
@@ -37,5 +40,13 @@ app.use('/auth', authRouter);
 app.use('/items', itemRouter)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    if (res.headersSent) {
+        return next(err)
+    };
+    return createInternalServerErrorResponse(res, 'Error interno del servidor');
+});
 
 module.exports = app;

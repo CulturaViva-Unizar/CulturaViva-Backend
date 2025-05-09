@@ -9,162 +9,101 @@ class AuthController {
    * Registra un nuevo usuario en el sistema
    */
   async register(req, res) {
-    try {
-      const { email, password, name, phone } = req.body;
-      
-      // Validación de campos requeridos
-      if (!email || !password || !name ) {
-        return res.status(400).json({
-          success: false,
-          message: "Todos los campos son requeridos: email, password, name"
-        });
-      }
+    const { email, password, name, phone } = req.body;
 
-      // Verificar si el usuario ya existe
-      const existingUser = await UserPassword.findOne({ email: email.toLowerCase() });
-      if (existingUser) {
-        return res.status(409).json({
-          success: false,
-          message: "El email ya está registrado"
-        });
-      }
-
-      // Crear el nuevo usuario
-      const hashedPassword = await bcrypt.hash(password, 10);
-      const user = await UserPassword.create({
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        name,
-        phone,
-        admin: false,
-        active: true
-      });
-
-      return res.status(201).json({
-        success: true,
-        message: "Usuario creado exitosamente",
-        data: {
-          id: user._id,
-          email: user.email,
-          name: user.name
-        }
-      });
-
-    } catch (error) {
-      console.error("Error en registro:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al registrar usuario",
-      });
+    // Validación de campos requeridos
+    if (!email || !password || !name) {
+      return createBadRequestResponse(res, "Todos los campos son requeridos: email, password, name");
     }
+
+    // Verificar si el usuario ya existe
+    const existingUser = await UserPassword.findOne({ email: email.toLowerCase() });
+    if (existingUser) {
+      return createConflictResponse(res, "El email ya está registrado");
+    }
+
+    // Crear el nuevo usuario
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await UserPassword.create({
+      email: email.toLowerCase(),
+      password: hashedPassword,
+      name,
+      phone,
+      admin: false,
+      active: true
+    });
+
+    return createCreatedResponse(res, "Usuario creado exitosamente", {
+      user: createUserDto(userExists),
+      accessToken: generateToken(user)
+    });
   }
 
   /**
    * Realiza el login de un usuario
    */
-  async login(req, res, next) {
-    try {
-      
-      const { email, password } = req.body;
+  async login(req, res) {
+    const { email, password } = req.body;
 
-      // Buscar usuario
-      const userExists = await UserPassword.findOne({ email: email });
-      if (!userExists) {
-        return res.status(404).json({ 
-          success: false,
-          message: "Usuario no encontrado" 
-        });
-      }
-
-      if (!userExists.active) {
-        return res.status(401).json({ 
-          success: false,
-          message: "Usuario bloqueado" 
-        });
-      }
-
-      const isPasswordValid = await bcrypt.compare(password, userExists.password);
-      if (!isPasswordValid) {
-        return res.status(401).json({ 
-          success: false,
-          message: "Contraseña incorrecta" 
-        });
-      }
-
-      req.user = userExists;
-      next();
+    // Buscar usuario
+    const userExists = await UserPassword.findOne({ email: email });
+    if (!userExists) {
+      return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
-    catch (error) {
-      console.error('Error en login:', error);
-      return res.status(500).json({ 
-        success: false,
-        message: "Error interno del servidor al realizar login",
-      });
+
+    if (!userExists.active) {
+      return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
-  }
 
-  async changePassword(req, res) {
-    try {
-      const { newPassword, oldPassword } = req.body;
-
-      const userId = req.userId;
-      const user = await UserPassword.findById(userId);
-
-      const match = await bcrypt.compare(oldPassword, user.password);
-      if (!match) {
-        return res.status(401).json({ 
-          success: false,
-          message: "Contraseña incorrecta" 
-        });
-      }
-
-      const hashedPassword = await bcrypt.hash(newPassword, 10);
-      user.password = hashedPassword;
-      await user.save();
-
-      return res.status(200).json({
-        success: true,
-        message: "Contraseña restablecida exitosamente" 
-      });
-      
-    } catch (error) {
-      console.error("Error al restablecer la contraseña:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al restablecer la contraseña",
-      });
+    const isPasswordValid = await bcrypt.compare(password, userExists.password);
+    if (!isPasswordValid) {
+      return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
-  }
 
-  async generateToken(req, res) {
-    const user = req.user;
-    const token = jwt.sign(
-      {
-        id: user._id,
-        email: user.email,
-        admin: user.admin,
-        type: req.user.userType
-      },
-      env.JWT_SECRET,
-      { 
-        expiresIn: env.JWT_EXPIRES
-      }
-    );
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Login exitoso",
       data: {
-        user: {
-            id: req.user._id,
-            email: req.user.email,
-            name: req.user.name,
-            admin: req.user.admin,
-            type: req.user.userType,
-        }, 
-        accessToken: token
+        user: createUserDto(userExists),
+        accessToken: generateToken(userExists)
       }
     });
   }
+
+  async changePassword(req, res) {
+
+    const { newPassword, oldPassword } = req.body;
+
+    const userId = req.userId;
+    const user = await UserPassword.findById(userId);
+
+    const match = await bcrypt.compare(oldPassword, user.password);
+    if (!match) {
+      return createUnauthorizedResponse(res, "Contraseña incorrecta");
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+    await user.save();
+
+    return createOkResponse(res, "Contraseña cambiada exitosamente");
+  }
+}
+
+function generateToken(user) {
+  const token = jwt.sign(createUserDto(user), env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES });
+
+  return token;
+}
+
+function createUserDto(user) {
+  return {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+    admin: user.admin,
+    type: user.userType
+  };
 }
 
 module.exports = new AuthController();
