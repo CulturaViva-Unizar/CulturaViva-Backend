@@ -137,13 +137,15 @@ class AuthController {
     res.status(200).json({
       success: true,
       message: "Login exitoso",
-      accessToken: token,
-      user: {
-        id: req.user._id,
-        email: req.user.email,
-        name: req.user.name,
-        admin: req.user.admin,
-        type: req.user.userType
+      data:{
+        user: {
+          id: req.user._id,
+          email: req.user.email,
+          name: req.user.name,
+          admin: req.user.admin,
+          userType: req.user.userType
+        },
+        accessToken: token
       }
     });
   }
