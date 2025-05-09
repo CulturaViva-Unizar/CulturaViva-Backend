@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat 1:1</title>
+  <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+</head>
+<body>
+  <h2>Usuario 1</h2>
+  <input type="text" id="messageInput" placeholder="Escribe un mensaje..." />
+  <button onclick="sendMessage()">Enviar mensaje</button>
+
+  <h3>Mensajes:</h3>
+  <ul id="messagesList"></ul>
+
+  <script>
+    const socket = io('http://localhost:3000'); // Conexión al servidor Socket.io
+
+    // Únete al chat (simulando que eres el usuario 1)
+    const chatId = "681de7e27062234e906769f3"; // Obtén el chatId previamente
+    socket.emit('joinChat', chatId);
+
+    // Recibe los mensajes
+    socket.on('receiveMessage', (data) => {
+      const messageElement = document.createElement('li');
+      messageElement.textContent = `${data.user}: ${data.text}`;
+      document.getElementById('messagesList').appendChild(messageElement);
+    });
+
+    // Función para enviar un mensaje
+    function sendMessage() {
+      const message = document.getElementById('messageInput').value;
+      const userId = "67eeaeb719825ae3c3d904bc"; // Este será el ID del usuario que envía el mensaje
+
+      socket.emit('sendMessage', { text: message, userId, chatId });
+    }
+  </script>
+</body>
+</html>

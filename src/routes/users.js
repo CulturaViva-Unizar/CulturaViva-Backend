@@ -61,7 +61,7 @@ router.get('/',
 
 /**
  * @swagger
- * /users/{id}:
+ * /users/:id:
  *   get:
  *     summary: Obtiene el perfil del usuario autenticado
  *     tags: [Users]
@@ -410,7 +410,7 @@ router.post('/:id/attending-events',
 
 /**
  * @swagger
- * /users/:id/saved-events/{eventId}:
+ * /users/:id/saved-events/:eventId:
  *   delete:
  *     summary: Elimina un evento guardado del perfil del usuario
  *     tags: [Users]
@@ -458,7 +458,7 @@ router.delete('/:id/saved-events/:eventId',
 
 /**
  * @swagger
- * /users/:id/attending-events/{eventId}:
+ * /users/:id/attending-events/:eventId:
  *   delete:
  *     summary: Elimina un evento asistido del perfil del usuario
  *     tags: [Users]
@@ -492,7 +492,8 @@ router.delete('/:id/saved-events/:eventId',
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                     type: string
+ *                     pattern: "^[0-9a-fA-F]{24}$"
  *       401:
  *         description: No autorizado
  *       500:
@@ -543,7 +544,48 @@ router.get('/users/:id/comments',
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser, 
     userController.getUserComments);  
-    
+
+/**
+ * @swagger
+ * /users/:id/chats:
+ *   get:
+ *     summary: Obtiene todos los chats de un usuario
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Lista de chats obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Chat'
+ *       404:
+ *         description: Usuario no encontrado
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get(
+  '/users/:id/chats',
+  passport.authenticate('jwt', { session: false }),
+  userController.getUserChats
+);
 
 
 module.exports = router;
@@ -557,6 +599,7 @@ module.exports = router;
  *         id:
  *           type: string
  *           description: ID único del usuario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         name:
  *           type: string
  *           description: Nombre del usuario
@@ -593,8 +636,9 @@ module.exports = router;
  *       type: object
  *       properties:
  *         id:
- *           type: ObjectID
+ *           type: string
  *           description: ID único del comentario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         text:
  *           type: string
  *           description: Texto del comentario
@@ -603,11 +647,13 @@ module.exports = router;
  *           format: date-time
  *           description: Fecha en la que se creó el comentario
  *         user:
- *           type: ObjectID
+ *           type: string
  *           description: ID del usuario que realizó el comentario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         event:
- *           type: ObjectID
+ *           type: string
  *           description: ID del evento al que pertenece el comentario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *       required:
  *         - id
  *         - text
