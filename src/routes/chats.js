@@ -3,7 +3,6 @@ const passport = require('passport');
 require('../config/jwtStrategy');
 
 const chatController = require('../controllers/chatController');
-const messageController = require('../controllers/messageController');
 const router = express.Router();
 
 /**
@@ -45,6 +44,8 @@ const router = express.Router();
  *         description: Error en la validación o usuarios iguales
  *       401:
  *         description: No autorizado
+ *       403:
+ *         description: No tienes acceso a este chat
  *       409: 
  *         description: Chat ya existe entre los usuarios
  *       500:
@@ -53,6 +54,7 @@ const router = express.Router();
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
+  chatController.checkIsUser,
   chatController.createChat
 );
 
@@ -60,7 +62,7 @@ router.post(
  * @swagger
  * /chats/:chatId:
  *   delete:
- *     summary: Elimina un chat por su ID
+ *     summary: Elimina un chat por su ID, así como todos los mensajes asociados.
  *     tags: [Chats]
  *     security:
  *       - bearerAuth: []
@@ -89,12 +91,15 @@ router.post(
  *         description: Chat no encontrado
  *       401:
  *         description: No autorizado
+ *       403:
+ *         description: No tienes acceso a este chat
  *       500:
  *         description: Error interno del servidor
  */
 router.delete(
   '/:chatId',
   passport.authenticate('jwt', { session: false }),
+  chatController.checkUserInChat,
   chatController.deleteChat
 );
 
@@ -125,12 +130,15 @@ router.delete(
  *         description: Chat no encontrado
  *       401:
  *         description: No autorizado
+ *       403:
+ *         description: No tienes acceso a este chat
  *       500:
  *         description: Error interno del servidor
  */
 router.get(
   '/:chatId',
   passport.authenticate('jwt', { session: false }),
+  chatController.checkUserInChat,
   chatController.getChatById
 );
 
@@ -170,13 +178,15 @@ router.get(
  *         description: Chat no encontrado
  *       401:
  *         description: No autorizado
+ *       403:
+ *         description: No tienes acceso a este chat
  *       500:
  *         description: Error interno del servidor
  */
 router.get(
-  '/chats/:chatId/messages',
+  '/:chatId/messages',
   passport.authenticate('jwt', { session: false }),
-  messageController.getMessages
+  chatController.getChatMessages
 );
 
 module.exports = router;

@@ -550,6 +550,7 @@ router.get('/users/:id/comments',
  * /users/:id/chats:
  *   get:
  *     summary: Obtiene todos los chats de un usuario
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -584,6 +585,7 @@ router.get('/users/:id/comments',
 router.get(
   '/users/:id/chats',
   passport.authenticate('jwt', { session: false }),
+  userController.checkAdminOrUser,
   userController.getUserChats
 );
 
