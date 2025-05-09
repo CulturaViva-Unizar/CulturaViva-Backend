@@ -2,6 +2,13 @@ const { UserPassword } = require('../models/userModel.js');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const env = require('../config/env.js');
+const {
+  createBadRequestResponse,
+  createConflictResponse,
+  createCreatedResponse,
+  createUnauthorizedResponse,
+  createOkResponse
+} = require('../utils/utils');
 
 class AuthController {
 
@@ -60,13 +67,9 @@ class AuthController {
       return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Login exitoso",
-      data: {
-        user: createUserDto(userExists),
-        accessToken: generateToken(userExists)
-      }
+    return createOkResponse(res, "Login exitoso", {
+      user: createUserDto(userExists),
+      accessToken: generateToken(userExists)
     });
   }
 
