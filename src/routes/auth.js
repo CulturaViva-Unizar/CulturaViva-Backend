@@ -22,60 +22,23 @@ const validate = require('../middlewares/validateSchema');
  * @swagger
  * /auth/register:
  *   post:
- *     summary: Registra un nuevo usuario
+ *     summary: Registra un nuevo usuario y devuelve token
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 example: usuario@example.com
- *               password:
- *                 type: string
- *                 example: password123
- *               name:
- *                 type: string
- *                 example: Juan Pérez
- *               phone:
- *                 type: string
- *                 example: "+123456789"
+ *             $ref: '#/components/schemas/RegisterRequest'
  *     responses:
  *       201:
- *         description: Usuario creado exitosamente
+ *         description: Registro exitoso con token
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indica si el registro fue exitoso
- *                   example: true
- *                 message:
- *                   type: string
- *                   description: Mensaje de éxito
- *                   example: "Usuario creado exitosamente"
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       description: ID único del usuario registrado
- *                       example: "64b7f9c2e4b0f5d1a8c9e123"
- *                     email:
- *                       type: string
- *                       description: Email del usuario registrado
- *                       example: "usuario@example.com"
- *                     name:
- *                       type: string
- *                       description: Nombre del usuario registrado
- *                       example: "Juan Pérez"
+ *               $ref: '#/components/schemas/AuthResponse'
  *       400:
- *         description: Campos requeridos faltantes
+ *         description: Faltan campos requeridos
  *       409:
  *         description: El email ya está registrado
  *       500:
@@ -83,75 +46,31 @@ const validate = require('../middlewares/validateSchema');
  */
 router.post('/register', 
     validate(registerSchema),
-    authController.register
+    authController.register,
+    authController.generateToken
 );
 
 /**
  * @swagger
  * /auth/login:
  *   post:
- *     summary: Inicia sesión con un usuario existente
+ *     summary: Inicia sesión y devuelve token
  *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 example: usuario@example.com
- *               password:
- *                 type: string
- *                 example: password123
+ *             $ref: '#/components/schemas/LoginRequest'
  *     responses:
  *       200:
- *         description: Login exitoso
+ *         description: Login exitoso con token
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indica si el registro fue exitoso
- *                   example: true
- *                 message:
- *                   type: string
- *                   description: Mensaje de éxito
- *                   example: "Login exitoso"
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       description: ID único del usuario registrado
- *                       example: "64b7f9c2e4b0f5d1a8c9e123"
- *                     email:
- *                       type: string
- *                       description: Email del usuario registrado
- *                       example: "usuario@example.com"
- *                     name:
- *                       type: string
- *                       description: Nombre del usuario registrado
- *                       example: "Juan Pérez"
- *                     admin:
- *                       type: boolean
- *                       description: Indica si es admin o no
- *                       example: "True"
- *                     type:
- *                       type: string
- *                       description: Tipo de usuario
- *                       example: "password"
- *                     accessToken:
- *                       type: string
- *                       description: JWT de acceso
- *                       example: "dfgkfdiogoia-dgjd"
+ *               $ref: '#/components/schemas/AuthResponse'
  *       401:
- *         description: Contraseña incorrecta o usuario bloqueado
- *       404:
- *         description: Usuario no encontrado
+ *         description: Credenciales incorrectas
  *       500:
  *         description: Error interno del servidor
  */
@@ -210,63 +129,23 @@ router.post('/change-password',
 );
 
 /**
- * @swagger
- * /auth/google:
- *   post:
- *     summary: Inicia sesión con google
- *     tags: [Auth]
- *     requestBody:
- *       required: false
- *     responses:
- *       200:
- *         description: Login exitoso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indica si el registro fue exitoso
- *                   example: true
- *                 message:
- *                   type: string
- *                   description: Mensaje de éxito
- *                   example: "Login exitoso"
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       description: ID único del usuario registrado
- *                       example: "64b7f9c2e4b0f5d1a8c9e123"
- *                     email:
- *                       type: string
- *                       description: Email del usuario registrado
- *                       example: "usuario@example.com"
- *                     name:
- *                       type: string
- *                       description: Nombre del usuario registrado
- *                       example: "Juan Pérez"
- *                     admin:
- *                       type: boolean
- *                       description: Indica si es admin o no
- *                       example: "True"
- *                     type:
- *                       type: string
- *                       description: Tipo de usuario
- *                       example: "google"
- *                     accessToken:
- *                       type: string
- *                       description: JWT de acceso
- *                       example: "dfgkfdiogoia-dgjd"
- *       401:
- *         description: Contraseña incorrecta o usuario bloqueado
- *       404:
- *         description: Usuario no encontrado
- *       500:
- *         description: Error interno del servidor
- */
+* @swagger
+* /auth/google:
+*   get:
+*     summary: Redirige a Google para auth o retorna token
+*     tags: [Auth]
+*     responses:
+*       200:
+*         description: Login exitoso con token
+*         content:
+*           application/json:
+*             schema:
+*               $ref: '#/components/schemas/AuthResponse'
+*       401:
+*         description: Credenciales incorrectas
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/google', 
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
@@ -277,63 +156,23 @@ router.get('/google/callback',
 );
 
 /**
- * @swagger
- * /auth/facebook:
- *   post:
- *     summary: Inicia sesión con facebook
- *     tags: [Auth]
- *     requestBody:
- *       required: false
- *     responses:
- *       200:
- *         description: Login exitoso
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   description: Indica si el registro fue exitoso
- *                   example: true
- *                 message:
- *                   type: string
- *                   description: Mensaje de éxito
- *                   example: "Login exitoso"
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       description: ID único del usuario registrado
- *                       example: "64b7f9c2e4b0f5d1a8c9e123"
- *                     email:
- *                       type: string
- *                       description: Email del usuario registrado
- *                       example: "usuario@example.com"
- *                     name:
- *                       type: string
- *                       description: Nombre del usuario registrado
- *                       example: "Juan Pérez"
- *                     admin:
- *                       type: boolean
- *                       description: Indica si es admin o no
- *                       example: "True"
- *                     type:
- *                       type: string
- *                       description: Tipo de usuario
- *                       example: "facebook"
- *                     accessToken:
- *                       type: string
- *                       description: JWT de acceso
- *                       example: "dfgkfdiogoia-dgjd"
- *       401:
- *         description: Contraseña incorrecta o usuario bloqueado
- *       404:
- *         description: Usuario no encontrado
- *       500:
- *         description: Error interno del servidor
- */
+* @swagger
+* /auth/facebook:
+*   get:
+*     summary: Redirige a Facebook para auth
+*     tags: [Auth]
+*     responses:
+*       200:
+*         description: Login exitoso con token
+*         content:
+*           application/json:
+*             schema:
+*               $ref: '#/components/schemas/AuthResponse'
+*       401:
+*         description: Credenciales incorrectas
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/facebook', 
     passport.authenticate('facebook')
 );
@@ -344,3 +183,83 @@ router.get('/facebook/callback',
 );
 
 module.exports = router;
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     RegisterRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *         - name
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *         name:
+ *           type: string
+ *         phone:
+ *           type: string
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *         password:
+ *           type: string
+ *           minLength: 6
+ *     UserDto:
+ *       type: object
+ *       required:
+ *         - id
+ *         - email
+ *         - name
+ *         - admin
+ *         - type
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ObjectId del usuario
+ *         email:
+ *           type: string
+ *         name:
+ *           type: string
+ *         admin:
+ *           type: boolean
+ *         type:
+ *           type: string
+ *           description: Tipo de usuario (discriminatorKey)
+ *     AuthData:
+ *       type: object
+ *       required:
+ *         - user
+ *         - accessToken
+ *       properties:
+ *         user:
+ *           $ref: '#/components/schemas/UserDto'
+ *         accessToken:
+ *           type: string
+ *           description: JWT válido por env.JWT_EXPIRES
+ *     AuthResponse:
+ *       type: object
+ *       required:
+ *         - success
+ *         - message
+ *         - data
+ *       properties:
+ *         success:
+ *           type: boolean
+ *         message:
+ *           type: string
+ *         data:
+ *           $ref: '#/components/schemas/AuthData'
+ */
