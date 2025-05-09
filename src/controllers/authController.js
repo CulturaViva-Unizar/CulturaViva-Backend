@@ -154,11 +154,13 @@ class AuthController {
       success: true,
       message: "Login exitoso",
       data: {
-        id: req.user._id,
-        email: req.user.email,
-        name: req.user.name,
-        admin: req.user.admin,
-        type: req.user.userType,
+        user: {
+            id: req.user._id,
+            email: req.user.email,
+            name: req.user.name,
+            admin: req.user.admin,
+            type: req.user.userType,
+        }, 
         accessToken: token
       }
     });
