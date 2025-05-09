@@ -5,9 +5,9 @@ const env = require('../config/env.js');
 const {
   createBadRequestResponse,
   createConflictResponse,
-  createCreatedResponse,
   createUnauthorizedResponse,
-  createOkResponse
+  createOkResponse,
+  createResponse
 } = require('../utils/utils');
 
 class AuthController {
@@ -15,21 +15,18 @@ class AuthController {
   /**
    * Registra un nuevo usuario en el sistema
    */
-  async register(req, res) {
+  async register(req, res, next) {
     const { email, password, name, phone } = req.body;
 
-    // Validación de campos requeridos
     if (!email || !password || !name) {
       return createBadRequestResponse(res, "Todos los campos son requeridos: email, password, name");
     }
 
-    // Verificar si el usuario ya existe
     const existingUser = await UserPassword.findOne({ email: email.toLowerCase() });
     if (existingUser) {
       return createConflictResponse(res, "El email ya está registrado");
     }
 
-    // Crear el nuevo usuario
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await UserPassword.create({
       email: email.toLowerCase(),
@@ -40,19 +37,17 @@ class AuthController {
       active: true
     });
 
-    return createCreatedResponse(res, "Usuario creado exitosamente", {
-      user: createUserDto(userExists),
-      accessToken: generateToken(user)
-    });
+    req.user = user;
+    res.status(201);
+    next();
   }
 
   /**
    * Realiza el login de un usuario
    */
-  async login(req, res) {
+  async login(req, res, next) {
     const { email, password } = req.body;
 
-    // Buscar usuario
     const userExists = await UserPassword.findOne({ email: email });
     if (!userExists) {
       return createUnauthorizedResponse(res, "Credenciales incorrectas");
@@ -67,10 +62,8 @@ class AuthController {
       return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
 
-    return createOkResponse(res, "Login exitoso", {
-      user: createUserDto(userExists),
-      accessToken: generateToken(userExists)
-    });
+    req.user = userExists;
+    next();
   }
 
   async changePassword(req, res) {
@@ -89,14 +82,26 @@ class AuthController {
     user.password = hashedPassword;
     await user.save();
 
-    return createOkResponse(res, "Contraseña cambiada exitosamente");
+    createOkResponse(res, "Contraseña cambiada exitosamente");
   }
-}
 
-function generateToken(user) {
-  const token = jwt.sign(createUserDto(user), env.JWT_SECRET, { expiresIn: env.JWT_EXPIRES });
+  async generateToken(req, res) {
+    const user = req.user;
+    const token = jwt.sign(
+      createUserDto(user),
+      env.JWT_SECRET,
+      {
+        expiresIn: env.JWT_EXPIRES
+      }
+    );
 
-  return token;
+    const status = res.statusCode !== 200 ? res.statusCode : 200;
+
+    createResponse(res, status, "Token generado exitosamente", {
+      user: createUserDto(user),
+      accessToken: token
+    });
+  }
 }
 
 function createUserDto(user) {

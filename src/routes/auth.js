@@ -83,7 +83,8 @@ const validate = require('../middlewares/validateSchema');
  */
 router.post('/register', 
     validate(registerSchema),
-    authController.register
+    authController.register,
+    authController.generateToken
 );
 
 /**
@@ -157,7 +158,8 @@ router.post('/register',
  */
 router.post('/login', 
     validate(loginSchema),
-    authController.login
+    authController.login,
+    authController.generateToken
 );
 
 /**
