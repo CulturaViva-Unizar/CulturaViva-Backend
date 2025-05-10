@@ -2,6 +2,7 @@ const eventController = require('./itemController');
 const { Item, Event, Place } = require('../models/eventModel');
 const { Comment, Valoration, Response } = require('../models/commentModel');
 const { toObjectId, generateOID } = require('../utils/utils');
+const { User } = require('../models/userModel');
 
 
 class ItemController {
@@ -200,6 +201,73 @@ class ItemController {
             return res.status(500).json({
                 success: false,
                 message: 'Error al obtener las respuestas',
+                data: error
+            });
+        }
+    }
+
+    async deleteComment(req, res) {
+        try {
+            const { id, commentId } = req.params;
+    
+            // Verifica si el comentario existe
+            const comment = await Comment.findById(commentId);
+            if (!comment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Comentario no encontrado'
+                });
+            }
+
+            // Verifica si el usuario es el propietario del comentario
+            console.log('ID del usuario:', req.userId);
+            console.log('ID del comentario:', comment.user.toString());
+            if (comment.user.toString() !== req.userId.toString()) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'No tienes permiso para eliminar este comentario'
+                });
+            }
+    
+            // Verifica si el evento existe
+            const event = await Item.findById(id);
+            if (!event) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Evento no encontrado'
+                });
+            }
+    
+            // Elimina el comentario
+            await Comment.findByIdAndDelete(commentId);
+    
+            // Elimina el ID del comentario de la lista de comentarios del evento
+            await Item.findByIdAndUpdate(
+                id,
+                { $pull: { comments: commentId } },
+                { new: true }
+            );
+
+            // Elimina el ID del comentario de la lista de comentarios del usuario
+            await User.findByIdAndUpdate(
+                req.userId,
+                { $pull: { comments: commentId } },
+                { new: true }
+            );
+
+            await Response.deleteMany({ responseTo: commentId });
+
+
+    
+            return res.status(200).json({
+                success: true,
+                message: 'Comentario eliminado exitosamente'
+            });
+        } catch (error) {
+            console.error('Error al eliminar el comentario:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al eliminar el comentario',
                 data: error
             });
         }

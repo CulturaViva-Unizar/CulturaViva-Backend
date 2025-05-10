@@ -199,6 +199,52 @@ router.post('/events/:id/comments',
 
 /**
  * @swagger
+ * /items/events/{id}/comments/{commentId}:
+ *   delete:
+ *     summary: Elimina un comentario de un evento
+ *     tags:
+ *       - Events
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del evento
+ *         schema:
+ *           type: string
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Comentario eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentario eliminado exitosamente"
+ *       404:
+ *         description: Comentario o evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/events/:id/comments/:commentId',
+  passport.authenticate('jwt', { session: false }),
+  itemController.deleteComment
+);
+
+/**
+ * @swagger
  * /items/events/{id}/comments/{commentId}/responses:
  *   get:
  *     summary: Obtiene las respuestas de un comentario de un evento por su ID
