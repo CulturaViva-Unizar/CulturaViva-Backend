@@ -40,7 +40,7 @@ router.get('/events',
 
 /**
  * @swagger
- * /items/events/:id:
+ * /items/events/{id}:
  *   get:
  *     summary: Obtiene un evento por su ID
  *     tags:
@@ -100,7 +100,7 @@ router.get('/places',
 
 /**
  * @swagger
- * /items/places/:id:
+ * /items/places/{id}:
  *   get:
  *     summary: Obtiene un lugar por su ID
  *     tags:

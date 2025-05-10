@@ -375,8 +375,9 @@ class UserController {
    */
   async getUserChats(req, res) {
     const userId = req.userId;
+    console.log("User ID:", userId);
     try {
-      const user = await User.findById(toObjectId(userId));
+      const user = await User.findById(userId);
       if (!user) {
         return res.status(404).json({
           success: false,

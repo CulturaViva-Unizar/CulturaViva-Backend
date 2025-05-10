@@ -1,6 +1,6 @@
 const Chat = require("../models/chatModel");
 const Message = require("../models/messageModel");
-const mongoose = require('mongoose');
+const { User } = require("../models/userModel");
 
 class ChatController {
 
@@ -92,6 +92,10 @@ class ChatController {
     
         const newChat = new Chat({ user1, user2 });
         await newChat.save();
+
+        // Agregar el chat a los usuarios
+        await User.findByIdAndUpdate(user1, { $push: { chats: newChat._id } });
+        await User.findByIdAndUpdate(user2, { $push: { chats: newChat._id } });
     
         return res.status(201).json({
             success: true,
@@ -124,6 +128,10 @@ class ChatController {
     
         // Elimina los mensajes asociados al chat
         await Message.deleteMany({ chat: chatId });
+
+        // Elimina el chat de los usuarios
+        await User.findByIdAndUpdate(chat.user1, { $pull: { chats: chatId } });
+        await User.findByIdAndUpdate(chat.user2, { $pull: { chats: chatId } });
     
         return res.status(200).json({
             success: true,

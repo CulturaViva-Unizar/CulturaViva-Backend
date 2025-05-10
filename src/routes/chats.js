@@ -60,7 +60,7 @@ router.post(
 
 /**
  * @swagger
- * /chats/:chatId:
+ * /chats/{chatId}:
  *   delete:
  *     summary: Elimina un chat por su ID, así como todos los mensajes asociados.
  *     tags: [Chats]
@@ -105,7 +105,7 @@ router.delete(
 
 /**
  * @swagger
- * /chats/:chatId:
+ * /chats/{chatId}:
  *   get:
  *     summary: Obtiene un chat completo por su ID
  *     tags: [Chats]
@@ -145,7 +145,7 @@ router.get(
 
 /**
  * @swagger
- * /chats/:chatId/messages:
+ * /chats/{chatId}/messages:
  *   get:
  *     summary: Obtiene todos los mensajes de un chat
  *     tags: [Chats]

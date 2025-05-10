@@ -61,7 +61,7 @@ router.get('/',
 
 /**
  * @swagger
- * /users/:id:
+ * /users/{id}:
  *   get:
  *     summary: Obtiene el perfil del usuario autenticado
  *     tags: [Users]
@@ -100,7 +100,7 @@ router.get('/:id',
 
 /**
  * @swagger
- * /users/:id/saved-events:
+ * /users/{id}/saved-events:
  *   get:
  *     summary: Obtiene los eventos guardados por el usuario
  *     tags: [Users]
@@ -175,7 +175,7 @@ router.get('/:id/saved-events',
 
 /**
  * @swagger
- * /users/:id/attending-events:
+ * /users/{id}/attending-events:
  *   get:
  *     summary: Obtiene los eventos a los que el usuario asiste
  *     tags: [Users]
@@ -250,7 +250,7 @@ router.get('/:id/attending-events',
 
 /**
  * @swagger
- * /users/:id:
+ * /users/{id}:
  *   put:
  *     summary: Actualiza el perfil del usuario
  *     tags: [Users]
@@ -307,7 +307,7 @@ router.put('/:id',
 
 /**
  * @swagger
- * /users/:id/saved-events:
+ * /users/{id}/saved-events:
  *   post:
  *     summary: Guarda un evento en el perfil del usuario
  *     tags: [Users]
@@ -358,7 +358,7 @@ router.post('/:id/saved-events',
 
 /**
  * @swagger
- * /users/:id/attending-events:
+ * /users/{id}/attending-events:
  *   post:
  *     summary: Marca un evento como asistido por el usuario
  *     tags: [Users]
@@ -410,7 +410,7 @@ router.post('/:id/attending-events',
 
 /**
  * @swagger
- * /users/:id/saved-events/:eventId:
+ * /users/{id}/saved-events/:eventId:
  *   delete:
  *     summary: Elimina un evento guardado del perfil del usuario
  *     tags: [Users]
@@ -458,7 +458,7 @@ router.delete('/:id/saved-events/:eventId',
 
 /**
  * @swagger
- * /users/:id/attending-events/:eventId:
+ * /users/{id}/attending-events/:eventId:
  *   delete:
  *     summary: Elimina un evento asistido del perfil del usuario
  *     tags: [Users]
@@ -506,7 +506,7 @@ router.delete('/:id/attending-events/:eventId',
 
 /**
  * @swagger
- * /users/:id/comments:
+ * /users/{id}/comments:
  *   get:
  *     summary: Obtiene los comentarios de un usuario por su ID
  *     tags:
@@ -547,7 +547,7 @@ router.get('/users/:id/comments',
 
 /**
  * @swagger
- * /users/:id/chats:
+ * /users/{id}/chats:
  *   get:
  *     summary: Obtiene todos los chats de un usuario
  *     tags: [Users]
@@ -583,7 +583,7 @@ router.get('/users/:id/comments',
  *         description: Error interno del servidor
  */
 router.get(
-  '/users/:id/chats',
+  '/:id/chats',
   passport.authenticate('jwt', { session: false }),
   userController.checkAdminOrUser,
   userController.getUserChats
