@@ -1,23 +1,58 @@
 const getUserByIdSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+    params: {
+      type: 'object',
+      properties: {
+        id: {
+          type: 'string',
+          pattern: '^[a-fA-F0-9]{24}$'
+        }
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      additionalProperties: false
+    }
   },
-  required: ['id'],
+  required: ['params'],
   additionalProperties: false
 };
 
 const getEventsSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }, // Validación de ObjectId
-    name: { type: 'string' },
-    date: { type: 'string', format: 'date' },
-    category: { type: 'string' },
-    page: { type: 'integer', minimum: 1 },
-    limit: { type: 'integer', minimum: 1 }
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      properties: {
+        page: { type: 'string', minimum: 1 },
+        limit: { type: 'string', minimum: 1 },
+        name: { type: 'string' },
+        date: { type: 'string', format: 'date' },
+        category: { type: 'string' }
+      },
+      additionalProperties: false
+    }
   },
-  required: ['id'],
+  required: ['params'],
   additionalProperties: false
 };
 
@@ -36,22 +71,56 @@ const updateUserSchema = {
 const saveEventSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }, // Validación de ObjectId
-    eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
-  },
-  required: ['id', 'eventId'],
-  additionalProperties: false
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      properties: {
+        eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }, // Validación de ObjectId
+      },
+      required: ['eventId'],
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      additionalProperties: false
+    },
+    required: ['params', 'body'],
+    additionalProperties: false
+  }
 };
 
 const deleteEventSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }, // Validación de ObjectId
-    eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' },
+        eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }
+      },
+      required: ['id', 'eventId'],
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      additionalProperties: false
+    }
   },
-  required: ['id', 'eventId'],
+  required: ['params'],
   additionalProperties: false
 };
+
 
 const getUserCommentsSchema = {
   type: 'object',
