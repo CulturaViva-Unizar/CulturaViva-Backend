@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "start": "nodemon ./bin/www",
-    "test": "jest"
+    "test": "jest",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
     "ajv": "^8.17.1",
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "jest": "^29.7.0",
+    "prettier": "^3.5.3",
     "supertest": "^7.1.0"
   }
 }
