@@ -162,12 +162,16 @@ class UserController {
           message: "Usuario no encontrado"
         });
       }
+      const totalItems = await Event.countDocuments({
+        _id: { $in: user.savedItems },
+        ...filters,
+      });
 
-    const savedItems = await Event.find({
-      _id: { $in: user.savedItems },
-      ...filters,
-    }).limit(limit) 
-      .skip((page - 1) * limit);
+      const savedItems = await Event.find({
+        _id: { $in: user.savedItems },
+        ...filters,
+      }).limit(limit) 
+        .skip((page - 1) * limit);
 
       return res.status(200).json({
         success: true,
@@ -175,7 +179,7 @@ class UserController {
           items: savedItems,
           currentPage: page,
           totalPages: Math.ceil(savedItems.length / limit),
-          totalItems: savedItems.length
+          totalItems: totalItems
         },
       });
 
@@ -235,9 +239,12 @@ class UserController {
 
     try {
       const user = await User.findById((userId));
+      const exists = user.savedItems.some(item => item.equals(eventId));
 
-      user.savedItems.push(toObjectId(eventId));
-      await user.save();
+      if (!exists) {
+        user.savedItems.push(toObjectId(eventId));
+        await user.save();
+      }
 
       return res.status(200).json({
         success: true,
@@ -279,6 +286,11 @@ class UserController {
         });
       }
       console.log(user.asistsTo);
+      const totalItems = await Event.countDocuments({
+        _id: { $in: user.asistsTo },
+        ...filters,
+      });
+
       const attendingItems = await Event.find({
         _id: { $in: user.asistsTo },
         ...filters,
@@ -291,7 +303,7 @@ class UserController {
           items: attendingItems,
           currentPage: page,
           totalPages: Math.ceil(attendingItems.length / limit),
-          totalItems: attendingItems.length
+          totalItems: totalItems
         },
       });
 
