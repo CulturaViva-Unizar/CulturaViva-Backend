@@ -1,17 +1,16 @@
-const { UserPassword } = require('../models/userModel.js');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const env = require('../config/env.js');
+const { UserPassword } = require("../models/userModel.js");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const env = require("../config/env.js");
 const {
   createBadRequestResponse,
   createConflictResponse,
   createUnauthorizedResponse,
   createOkResponse,
-  createResponse
-} = require('../utils/utils');
+  createResponse,
+} = require("../utils/utils");
 
 class AuthController {
-
   /**
    * Registra un nuevo usuario en el sistema
    */
@@ -19,10 +18,15 @@ class AuthController {
     const { email, password, name, phone } = req.body;
 
     if (!email || !password || !name) {
-      return createBadRequestResponse(res, "Todos los campos son requeridos: email, password, name");
+      return createBadRequestResponse(
+        res,
+        "Todos los campos son requeridos: email, password, name"
+      );
     }
 
-    const existingUser = await UserPassword.findOne({ email: email.toLowerCase() });
+    const existingUser = await UserPassword.findOne({
+      email: email.toLowerCase(),
+    });
     if (existingUser) {
       return createConflictResponse(res, "El email ya está registrado");
     }
@@ -34,7 +38,7 @@ class AuthController {
       name,
       phone,
       admin: false,
-      active: true
+      active: true,
     });
 
     req.user = user;
@@ -67,7 +71,6 @@ class AuthController {
   }
 
   async changePassword(req, res) {
-
     const { newPassword, oldPassword } = req.body;
 
     const userId = req.userId;
@@ -87,19 +90,15 @@ class AuthController {
 
   async generateToken(req, res) {
     const user = req.user;
-    const token = jwt.sign(
-      createUserDto(user),
-      env.JWT_SECRET,
-      {
-        expiresIn: env.JWT_EXPIRES
-      }
-    );
+    const token = jwt.sign(createUserDto(user), env.JWT_SECRET, {
+      expiresIn: env.JWT_EXPIRES,
+    });
 
     const status = res.statusCode !== 200 ? res.statusCode : 200;
 
     createResponse(res, status, "Token generado exitosamente", {
       user: createUserDto(user),
-      accessToken: token
+      accessToken: token,
     });
   }
 }
@@ -110,7 +109,7 @@ function createUserDto(user) {
     email: user.email,
     name: user.name,
     admin: user.admin,
-    type: user.userType
+    type: user.userType,
   };
 }
 
