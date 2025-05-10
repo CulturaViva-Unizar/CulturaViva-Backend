@@ -29,6 +29,8 @@ const io = socketIo(server, {
     methods: ["GET", "POST"]
   }
 });
+const socketAuthMiddleware = require('../src/middlewares/socketAuthMiddleware');
+io.use(socketAuthMiddleware);
 const handleSocket = require('../src/sockets/socketHandler');
 handleSocket(io);
 

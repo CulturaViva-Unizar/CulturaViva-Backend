@@ -1,15 +1,26 @@
 const Message = require('../models/messageModel');
 const Chat = require('../models/chatModel');
+const { isUserInChat, checkIsWhoHeSays } = require('../utils/chatUtils');
+
 
 module.exports = (io) => {
-
-  // TODO: Autenticación del usuario antes de enchufarse al chat
 
   io.on('connection', (socket) => {
     console.log('Nuevo cliente conectado');
 
     // El usuario se une a la sala del chat 'chatId'
-    socket.on('joinChat', (chatId) => {
+    socket.on('joinChat', async (chatId) => {
+      const userId = socket.user.id; // el user id se obtiene del JWT, middleware anterior
+
+      console.log(`Usuario ${userId} se unió al chat ${chatId}`);
+
+      const allowed = await isUserInChat(userId, chatId);
+
+      if (!allowed) {
+        console.log(`Usuario no autorizado para unirse al chat ${chatId}`);
+        socket.emit('errorMessage', { error: 'No tienes acceso a este chat' });
+        return;
+      }
       socket.join(chatId);
       console.log(`Usuario se unió al chat ${chatId}`);
     });
@@ -24,6 +35,19 @@ module.exports = (io) => {
     socket.on('sendMessage', async (data) => {
       try {
         const { text, userId, chatId } = data;
+        
+        const [isInChat, isWhoHeSays] = await Promise.all([
+          isUserInChat(socket.user.id, chatId),
+          checkIsWhoHeSays(userId, socket.user.id)
+        ]);
+        
+        const allowed = isInChat && isWhoHeSays;
+        if (!allowed) {
+          console.log(`Usuario no autorizado para unirse al chat ${chatId}`);
+          socket.emit('errorMessage', { error: 'No tienes acceso a este chat' });
+          return;
+        }
+
 
         // 1. Crear y guardar el mensaje en mongo
         const message = await Message.create({

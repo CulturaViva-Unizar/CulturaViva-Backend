@@ -1,6 +1,7 @@
 const Chat = require("../models/chatModel");
 const Message = require("../models/messageModel");
 const { User } = require("../models/userModel");
+const { isUserInChat } = require("../utils/chatUtils");
 
 class ChatController {
 
@@ -17,13 +18,14 @@ class ChatController {
                   message: "Chat no encontrado"
               });
           }
-  
-          // Verifica si el usuario es parte del chat
-          if (chat.user1.toString() !== userId.toString() && chat.user2.toString() !== userId.toString()) {
-              return res.status(403).json({
-                  success: false,
-                  message: "No tienes acceso a este chat"
-              });
+
+          if(isUserInChat(userId, chatId)){
+            return next();
+          } else {
+            return res.status(403).json({
+                success: false,
+                message: "No tienes acceso a este chat"
+            });
           }
   
           next();
