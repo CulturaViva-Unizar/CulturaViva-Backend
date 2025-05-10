@@ -17,7 +17,7 @@ const commentSchema = new Schema({
   }, 
   event: {
     type: Schema.Types.ObjectId,
-    ref: 'Event',
+    ref: 'Item',
     required: true
   },
 }, {discriminatorKey: 'commentType'});

@@ -87,6 +87,51 @@ router.get('/events/:id',
   }, 
   itemController.getItemById);
 
+
+/**
+ * @swagger
+ * /items/events/{id}/comments:
+ *   get:
+ *     summary: Obtiene los comentarios de un evento por su ID
+ *     tags:
+ *       - Events
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del evento
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de comentarios obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentarios obtenidos exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/events/:id/comments',
+  (req, res, next) => {
+    req.query.type = 'Event';
+    next();
+  }, 
+  itemController.getItemComments);
+
 /**
  * @swagger
  * /items/places:
@@ -269,4 +314,29 @@ module.exports = router;
  *       required:
  *         - title
  *         - category
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Comment:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID único del comentario
+ *         user:
+ *           type: string
+ *           description: ID del usuario que realizó el comentario
+ *         text:
+ *           type: string
+ *           description: Contenido del comentario
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha y hora en que se creó el comentario
+ *       required:
+ *         - user
+ *         - text
  */

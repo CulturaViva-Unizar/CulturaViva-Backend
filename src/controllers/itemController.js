@@ -1,5 +1,6 @@
 const eventController = require('./itemController');
 const { Item, Event, Place } = require('../models/eventModel');
+const { Comment, Valoration, Response } = require('../models/commentModel');
 const { toObjectId, generateOID } = require('../utils/utils');
 
 
@@ -100,6 +101,32 @@ class ItemController {
         } catch (error) {
             console.error('Error al guardar lugares:', error);
             throw new Error('No se pudieron guardar los lugares');
+        }
+    }
+
+    async getItemComments(req, res) {
+        const type = req.query.type || 'Event';
+        try {
+            const eventId = toObjectId(req.params.id);
+            console.log('ID del evento:', eventId);
+            const event = await Item.findOne({ _id: eventId, itemType: type }).populate('comments');
+            if (!event) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Event not found' 
+                });
+            }
+            return res.status(200).json({
+                success: true,
+                message: "Item obtenido con exito",
+                data: event.comments
+            });
+        } catch (error) {
+            return res.status(500).json({ 
+                success: false,
+                message: 'Error fetching event', 
+                data: error 
+            });
         }
     }
 }
