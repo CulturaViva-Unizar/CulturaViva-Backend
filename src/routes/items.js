@@ -24,9 +24,16 @@ const itemController = require('../controllers/itemController');
  *         content: 
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/Event'
+ *               type: object
+ *               properties:
+ *                success:
+ *                  type: boolean
+ *                message:
+ *                  type: string
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Event'
  *       500:
  *         description: Error interno del servidor
  */
@@ -58,7 +65,16 @@ router.get('/events',
  *         content:
  *          application/json:
  *           schema:
- *              $ref: '#/components/schemas/Event'
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                message:
+ *                  type: string
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Event'
  *       404:
  *         description: Evento no encontrado
  *       500:
@@ -84,9 +100,16 @@ router.get('/events/:id',
  *         content:
  *          application/json:
  *           schema:
- *             type: array
- *             items:
- *                $ref: '#/components/schemas/Place'
+ *             type: object
+ *             properties:
+ *                success:
+ *                  type: booelan
+ *                message:
+ *                  type: string
+ *                data:
+ *                  type: array
+ *                  items:
+ *                    $ref: '#/components/schemas/Place'
  *       500:
  *         description: Error interno del servidor
  */
@@ -118,7 +141,14 @@ router.get('/places',
  *         content: 
  *          application/json:
  *           schema:
- *              $ref: '#/components/schemas/Place'
+ *              type: object
+ *              properties:
+ *                success:
+ *                  type: boolean
+ *                message:
+ *                  type: string
+ *                data:
+ *                  $ref: '#/components/schemas/Place'
  *       404:
  *         description: Lugar no encontrado
  *       500:

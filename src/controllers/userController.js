@@ -10,7 +10,12 @@ class UserController {
   async checkAdmin(req, res, next) {
       try {
           const user = await User.findById(toObjectId(req.userId));
-          if (!user.admin) throw { status: 403, message: "Acceso no autorizado al recurso." };
+          if (!user.admin) {
+            res.status(403).json({
+              success: false,
+              message: "Acceso no autorizado al recurso.",
+            });
+          }
           next();
       } catch (error) {
           console.error("Error al comprobar admin:", error);
@@ -28,9 +33,17 @@ class UserController {
       try {
         if(req.userId.toString() === req.params.id) return next();
         const user = await User.findById(toObjectId(req.userId));
-        if(!user) throw { status: 500, message: "Internal server error." };
+        if(!user) {
+          res.status(500).json({
+            success: false,
+            message: "Error interno del servidor al comprobar el usuario.",
+          });
+        }
         if(user.admin) return next();
-        throw { status: 403, message: "Acceso no autorizado al recurso." };
+        res.status(403).json({
+          success: false,
+          message: "Acceso no autorizado al recurso.",
+        });
       } catch (error) {
           return res.status(error.status || 500 ).json({
               success: false,
@@ -47,6 +60,7 @@ class UserController {
           const users = await User.find({}).select("-password");
           return res.status(200).json({
               success: true,
+              message: "Usuarios obtenidos correctamente",
               data: users
           });
       } catch (error) {
@@ -68,13 +82,14 @@ class UserController {
         const user = await User.findById(toObjectId(userId)).select("-password");
         if (!user) {
             return res.status(404).json({
-            success: false,
-            message: "Usuario no encontrado"
+              success: false,
+              message: "Usuario no encontrado"
             });
         }
         return res.status(200).json({
-            success: true,
-            data: user
+          success: true,
+          message: "Usuario encontrado con exito",
+          data: user
         });
     } catch (error) {
         console.error("Error al obtener usuario:", error);
@@ -156,12 +171,12 @@ class UserController {
 
       return res.status(200).json({
         success: true,
-        data: savedItems,
-        pagination: {
+        data: {
+          items: savedItems,
           currentPage: page,
           totalPages: Math.ceil(savedItems.length / limit),
           totalItems: savedItems.length
-        }
+        },
       });
 
     } catch (error) {
@@ -206,8 +221,8 @@ class UserController {
       } catch{
           console.error("Error al obtener comentarios del usuario:", error);
           return res.status(500).json({
-              success: false,
-              message: "Error interno del servidor al obtener comentarios del usuario",
+            success: false,
+            message: "Error interno del servidor al obtener comentarios del usuario",
           });
       }
   }
@@ -272,12 +287,12 @@ class UserController {
 
       return res.status(200).json({
         success: true,
-        data: attendingItems,
-        pagination: {
+        data: {
+          items: attendingItems,
           currentPage: page,
           totalPages: Math.ceil(attendingItems.length / limit),
           totalItems: attendingItems.length
-        }
+        },
       });
 
     } catch (error) {

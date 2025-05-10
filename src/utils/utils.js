@@ -5,8 +5,8 @@ const crypto = require("crypto");
  * Convierte un valor a ObjectId de mongoose
  */
 function toObjectId(id) {
-  if(id instanceof mongoose.Types.ObjectId) return id;
-  if(typeof id === "string" && mongoose.Types.ObjectId.isValid(id)) return new mongoose.Types.ObjectId(id);
+  if (id instanceof mongoose.Types.ObjectId) return id;
+  if (typeof id === "string" && mongoose.Types.ObjectId.isValid(id)) return new mongoose.Types.ObjectId(id);
   throw new Error("Invalid ObjectId");
 }
 
@@ -19,4 +19,56 @@ function generateOID(apiId) {
   return new mongoose.Types.ObjectId(objectIdHex);
 }
 
-module.exports = { toObjectId, generateOID };
+function createResponse(res, status, message, body = null) {
+  return res.status(status).json({
+    success: status >= 200 && status < 400,
+    message: message,
+    data: body
+  });
+}
+
+function createOkResponse(res, message, body = null) {
+  return createResponse(res, 200, message, body);
+}
+
+function createCreatedResponse(res, message, body = null) {
+  return createResponse(res, 201, message, body);
+}
+
+function createBadRequestResponse(res, message, body = null) {
+  return createResponse(res, 400, message, body);
+}
+
+function createUnauthorizedResponse(res, message, body = null) {
+  return createResponse(res, 401, message, body);
+}
+
+function createNotFoundResponse(res, message, body = null) {
+  return createResponse(res, 404, message, body);
+}
+
+function createForbiddenResponse(res, message, body = null) {
+  return createResponse(res, 403, message, body);
+}
+
+function createConflictResponse(res, message, body = null) {
+  return createResponse(res, 409, message, body);
+}
+
+function createInternalServerErrorResponse(res, message, body = null) {
+  return createResponse(res, 500, message, body);
+}
+
+module.exports = {
+  toObjectId,
+  generateOID,
+  createResponse,
+  createConflictResponse,
+  createOkResponse,
+  createNotFoundResponse,
+  createCreatedResponse,
+  createBadRequestResponse,
+  createUnauthorizedResponse,
+  createForbiddenResponse,
+  createInternalServerErrorResponse
+};

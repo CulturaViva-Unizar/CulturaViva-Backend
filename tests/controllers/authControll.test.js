@@ -137,7 +137,7 @@ describe('Test creacion de usuario', () => {
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
       success: false,
-      message: "Todos los campos son requeridos: email, password, name, phone"
+      message: "Todos los campos son requeridos: email, password, name"
     });
   })
 });

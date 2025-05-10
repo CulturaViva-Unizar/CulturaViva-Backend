@@ -59,6 +59,9 @@ jobs:
           --build-arg JWT_SECRET="${{ secrets.JWT_SECRET }}" \
           --build-arg GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
           --build-arg GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+          --build-arg FACEBOOK_APP_ID="${{ secrets.FACEBOOK_APP_ID }}" \
+          --build-arg FACEBOOK_APP_SECRET="${{ secrets.FACEBOOK_APP_SECRET }}" \
+
           -t backend .
 
       - name: Configure AWS credentials
@@ -77,6 +80,7 @@ jobs:
           REPOSITORY: culturaviva/backend
           IMAGE_TAG: latest
         run: |
+          docker rmi $REGISTRY/$REPOSITORY:$IMAGE_TAG || true
           docker tag backend:latest $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 

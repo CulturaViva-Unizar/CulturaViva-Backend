@@ -31,7 +31,7 @@ passport.use(new GoogleStrategy(options, async (accessToken, refreshToken, profi
         }
     } catch (error) {
         console.error("Error en la estrategia de Google:", error);
-        return done(error, null);
+        return done(error, null, { success: false, message: 'Error en la estrategia de Google' });
     }
 }));
 

@@ -5,11 +5,11 @@ const userSchema = new Schema({
   name: {
     type: String,
     required: true
+    //unique: true  Para permitir multiples tipos de cuenta con el mismo email
   },
   email: {
     type: String,
     required: true,
-    unique: true
   },
   createdAt: { // para hacerlo RESTful 
     type: Date,
@@ -43,7 +43,7 @@ const userSchema = new Schema({
     ref: 'Item',
     default: []
   }]
-}, { discriminatorKey: 'userType'  // esto es para el discriminador
+}, { discriminatorKey: 'userType' 
 });
 
 const User = mongoose.model('User', userSchema);
@@ -55,9 +55,15 @@ const UserPasswordSchema = new Schema({
 const UserPassword = User.discriminator("password", UserPasswordSchema);
 
 const UserGoogleSchema = new Schema({
-  googleId: { type: String, required: true }
+  googleId: { type: String, required: true, unique: true }
 });
 
 const UserGoogle = User.discriminator("google", UserGoogleSchema);
 
-module.exports = { User, UserPassword, UserGoogle };
+const UserFacebookSchema = new Schema({
+  facebookId: { type: String, required: true, unique: true }
+});
+
+const UserFacebook = User.discriminator("facebook", UserFacebookSchema);
+
+module.exports = { User, UserPassword, UserGoogle, UserFacebook };

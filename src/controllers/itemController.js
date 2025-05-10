@@ -17,13 +17,24 @@ class ItemController {
             } else if (type === 'Place') {
                 items = await Place.find();
             } else {
-                return res.status(400).json({ success: false, message: 'Tipo inválido. Usa "event" o "place".' });
+                return res.status(400).json({
+                    success: false,
+                    message: 'Tipo inválido. Usa "event" o "place".' 
+                });
             }
     
-            return res.status(200).json({ success: true, message: 'Éxito al obtener los ítems', data: items });
+            return res.status(200).json({ 
+                success: true, 
+                message: "Items obtenidos correctamente",
+                data: items
+            });
         } catch (error) {
             console.error('Error al obtener ítems:', error);
-            return res.status(500).json({ success: false, message: 'Error al obtener ítems', error });
+            return res.status(500).json({ 
+                success: false, 
+                message: 'Error al obtener ítems', 
+                data: error
+            });
         }
     }
 
@@ -37,11 +48,22 @@ class ItemController {
             console.log('ID del evento:', eventId);
             const event = await Item.findOne({ _id: eventId, itemType: type });
             if (!event) {
-                return res.status(404).json({ succes: false, message: 'Event not found' });
+                return res.status(404).json({
+                    success: false,
+                    message: 'Event not found' 
+                });
             }
-            return res.status(200).json({ success: true, message: 'Evento obtenido', data: event });
+            return res.status(200).json({
+                success: true,
+                message: "Item obtenido con exito",
+                data: event
+            });
         } catch (error) {
-            return res.status(500).json({ message: 'Error fetching event', error });
+            return res.status(500).json({ 
+                success: false,
+                message: 'Error fetching event', 
+                data: error 
+            });
         }
     }
 
