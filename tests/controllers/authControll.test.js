@@ -20,7 +20,7 @@ describe('Test creacion de usuario', () => {
     User.create.mockClear();
   })
 
-  it('Debería registrar un usuario correctamente', async () => {
+    it('Debería registrar un usuario correctamente', async () => {
     const req = {
       body: {
         email: 'test@test.com',
@@ -29,37 +29,44 @@ describe('Test creacion de usuario', () => {
         phone: '123456789'
       }
     };
-
-    let res = {
+  
+    const res = {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
     };
-
+  
+    const next = jest.fn();
+  
     const mockUserCreated = {
       password: "hashedPassword",
       email: "test@test.com",
       name: "Test User",
       phone: "123456789"
-    }
-
+    };
+  
     const mockUser = {
       active: true,
       admin: false,
       ...mockUserCreated
-    }
-
+    };
+  
     UserPassword.create.mockResolvedValue(mockUserCreated);
-    await authController.register(req, res);
-    expect(UserPassword.create).toHaveBeenCalledWith(mockUser);
-    expect(res.status).toHaveBeenCalledWith(201);
-    expect(res.json).toHaveBeenCalledWith({
-      success: true,
-      message: "Usuario creado exitosamente",
-      data: {
-        email: mockUser.email,
-        name: mockUser.name
-      }
+  
+    await authController.register(req, res, next);
+  
+    // Verifica que UserPassword.create fue llamado correctamente
+    expect(UserPassword.create).toHaveBeenCalledWith({
+      email: mockUser.email,
+      password: mockUser.password,
+      name: mockUser.name,
+      phone: mockUser.phone,
+      admin: false,
+      active: true
     });
+  
+    expect(res.status).toHaveBeenCalledWith(201);
+    expect(next).toHaveBeenCalled();
+    expect(req.user).toEqual(mockUserCreated);
   });
 
   it('Debería fallar si el usuario ya existe', async () => {
@@ -94,8 +101,20 @@ describe('Test creacion de usuario', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
     };
+
+    let next = jest.fn(() => {
+      // Simula el siguiente middleware que envía la respuesta
+      res.json({
+        success: true,
+        message: "Usuario creado exitosamente",
+        data: {
+          email: mockUserCreated.email,
+          name: mockUserCreated.name
+        }
+      });
+    });
   
-    await authController.register(reqUser1, res);
+    await authController.register(reqUser1, res, next);
     expect(res.status).toHaveBeenCalledWith(201);
     expect(res.json).toHaveBeenCalledWith({
       success: true,
@@ -112,10 +131,13 @@ describe('Test creacion de usuario', () => {
       status: jest.fn().mockReturnThis(),
       json: jest.fn()
     };
+
+    next = jest.fn()
   
-    await authController.register(reqUser2, res);
+    await authController.register(reqUser2, res, next);
     expect(res.status).toHaveBeenCalledWith(409);
     expect(res.json).toHaveBeenCalledWith({
+      data: null,
       success: false,
       message: "El email ya está registrado"
     });
@@ -133,9 +155,12 @@ describe('Test creacion de usuario', () => {
       json: jest.fn()
     }
 
-    await authController.register(req, res);
+    const next = jest.fn();
+
+    await authController.register(req, res, next);
     expect(res.status).toHaveBeenCalledWith(400);
     expect(res.json).toHaveBeenCalledWith({
+      data: null,
       success: false,
       message: "Todos los campos son requeridos: email, password, name"
     });
