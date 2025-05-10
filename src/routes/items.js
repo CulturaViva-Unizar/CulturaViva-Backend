@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const passport = require('passport');
 
 const itemController = require('../controllers/itemController');
 
@@ -131,6 +132,188 @@ router.get('/events/:id/comments',
     next();
   }, 
   itemController.getItemComments);
+
+/**
+ * @swagger
+ * /items/events/{id}/comments:
+ *   post:
+ *     summary: Crea un comentario para un evento
+ *     tags:
+ *       - Events
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del evento
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Contenido del comentario
+ *                 example: "Este evento fue increíble"
+ *               value:
+ *                 type: number
+ *                 description: Valoración opcional del evento
+ *                 example: 5
+ *     responses:
+ *       201:
+ *         description: Comentario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentario creado exitosamente"
+ *                 data:
+ *                   $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Datos inválidos
+ *       401: 
+ *         description: No autorizado
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/events/:id/comments',
+  passport.authenticate('jwt', { session: false }), 
+  (req, res, next) => {
+    req.query.type = 'Event';
+    next();
+  }, 
+  itemController.createComment);
+
+/**
+ * @swagger
+ * /items/events/{id}/comments/{commentId}/responses:
+ *   get:
+ *     summary: Obtiene las respuestas de un comentario de un evento por su ID
+ *     tags:
+ *       - Events
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del evento
+ *         schema:
+ *           type: string
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Respuesta creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentario creado exitosamente"
+ *                 data:
+ *                   type: array  
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'            
+ *       400:
+ *         description: Datos inválidos
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/events/:id/comments/:commentId/responses',
+  (req, res, next) => {
+    req.query.type = 'Event';
+    next();
+  }, 
+  itemController.getResponses);
+
+/**
+ * @swagger
+ * /items/events/{id}/comments/{commentId}/responses:
+ *   post:
+ *     summary: Añade una respuesta a un comentario de un evento
+ *     tags:
+ *       - Events
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del evento
+ *         schema:
+ *           type: string
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Contenido del comentario
+ *                 example: "¡Tienes razón!"
+ *     responses:
+ *       201:
+ *         description: Comentario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Respuesta creada exitosamente"
+ *                 data:
+ *                   $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Datos inválidos
+ *       401: 
+ *         description: No autorizado
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/events/:id/comments/:commentId/responses',
+  passport.authenticate('jwt', { session: false }), 
+  (req, res, next) => {
+    req.query.type = 'Event';
+    next();
+  }, 
+  itemController.createComment);
 
 /**
  * @swagger

@@ -623,6 +623,12 @@ module.exports = router;
  *         event:
  *           type: ObjectID
  *           description: ID del evento al que pertenece el comentario
+ *         value: 
+ *            type: number
+ *            description: Valoración del evento
+ *         responseTo:
+ *            type: string
+ *            description: ID del comentario al que se responde
  *       required:
  *         - id
  *         - text

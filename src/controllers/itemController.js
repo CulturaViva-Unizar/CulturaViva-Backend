@@ -129,6 +129,81 @@ class ItemController {
             });
         }
     }
+
+    async createComment(req, res) {
+        const userId = req.userId;
+        const { text, value } = req.body;
+        const responseTo = req.params.commentId;
+    
+        if (value != null && responseTo != null) {
+            return res.status(400).json({
+                success: false,
+                message: 'Formato incorrecto. Solo se permite un tipo de comentario'
+            });
+        }
+    
+        const type = value != null ? 'Valoration' : responseTo != null ? 'Response' : 'Comment';
+    
+        try {
+            const commentData = {
+                text,
+                user: userId,
+                event: req.params.id
+            };
+    
+            let comment;
+    
+            if (type === 'Valoration') {
+                comment = await Valoration.create({ ...commentData, value });
+            } else if (type === 'Response') {
+                comment = await Response.create({ ...commentData, responseTo });
+            } else {
+                comment = await Comment.create(commentData);
+            }
+            await Item.findByIdAndUpdate(
+                req.params.id,
+                { $push: { comments: comment._id } },
+                { new: true }
+            );
+    
+            return res.status(201).json({
+                success: true,
+                message: 'Comentario creado exitosamente',
+                data: comment
+            });
+        } catch (error) {
+            console.error('Error al crear el comentario:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al crear el comentario',
+                data: error
+            });
+        }
+    }
+
+    async getResponses(req, res) {
+        try {
+            const responses = await Response.find(
+                { 
+                 responseTo: req.params.commentId, 
+                 event: req.params.id 
+                }
+            ).populate('user', 'name').populate('responseTo', 'text');
+            
+            return res.status(200).json({
+                success: true,
+                message: 'Respuestas obtenidas exitosamente',
+                data: responses
+            });
+        } catch (error) {
+            console.error('Error al obtener las respuestas:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Error al obtener las respuestas',
+                data: error
+            });
+        }
+    }
 }
 
 module.exports = new ItemController(); 
