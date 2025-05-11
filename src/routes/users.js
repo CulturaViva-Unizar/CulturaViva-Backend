@@ -104,7 +104,7 @@ router.get('/:id',
 
 /**
  * @swagger
- * /users/:id/saved-events:
+ * /users/{id}/saved-events:
  *   get:
  *     summary: Obtiene los eventos guardados por el usuario
  *     tags: [Users]
@@ -181,7 +181,7 @@ router.get('/:id/saved-events',
 
 /**
  * @swagger
- * /users/:id/attending-events:
+ * /users/{id}/attending-events:
  *   get:
  *     summary: Obtiene los eventos a los que el usuario asiste
  *     tags: [Users]
@@ -256,7 +256,7 @@ router.get('/:id/attending-events',
 
 /**
  * @swagger
- * /users/:id:
+ * /users/{id}:
  *   put:
  *     summary: Actualiza el perfil del usuario
  *     tags: [Users]
@@ -313,7 +313,7 @@ router.put('/:id',
 
 /**
  * @swagger
- * /users/:id/saved-events:
+ * /users/{id}/saved-events:
  *   post:
  *     summary: Guarda un evento en el perfil del usuario
  *     tags: [Users]
@@ -367,7 +367,7 @@ router.post('/:id/saved-events',
 
 /**
  * @swagger
- * /users/:id/attending-events:
+ * /users/{id}/attending-events:
  *   post:
  *     summary: Marca un evento como asistido por el usuario
  *     tags: [Users]
@@ -419,7 +419,7 @@ router.post('/:id/attending-events',
 
 /**
  * @swagger
- * /users/:id/saved-events/{eventId}:
+ * /users/{id}/saved-events/:eventId:
  *   delete:
  *     summary: Elimina un evento guardado del perfil del usuario
  *     tags: [Users]
@@ -467,7 +467,7 @@ router.delete('/:id/saved-events/:eventId',
 
 /**
  * @swagger
- * /users/:id/attending-events/{eventId}:
+ * /users/{id}/attending-events/:eventId:
  *   delete:
  *     summary: Elimina un evento asistido del perfil del usuario
  *     tags: [Users]
@@ -501,7 +501,8 @@ router.delete('/:id/saved-events/:eventId',
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                     type: string
+ *                     pattern: "^[0-9a-fA-F]{24}$"
  *       401:
  *         description: No autorizado
  *       500:
@@ -514,7 +515,7 @@ router.delete('/:id/attending-events/:eventId',
 
 /**
  * @swagger
- * /users/:id/comments:
+ * /users/{id}/comments:
  *   get:
  *     summary: Obtiene los comentarios de un usuario por su ID
  *     tags:
@@ -554,7 +555,50 @@ router.get('/users/:id/comments',
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser, 
     userController.getUserComments);  
-    
+
+/**
+ * @swagger
+ * /users/{id}/chats:
+ *   get:
+ *     summary: Obtiene todos los chats de un usuario
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Lista de chats obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Chat'
+ *       404:
+ *         description: Usuario no encontrado
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get(
+  '/:id/chats',
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdminOrUser,
+  userController.getUserChats
+);
 
 
 module.exports = router;
@@ -568,6 +612,7 @@ module.exports = router;
  *         id:
  *           type: string
  *           description: ID único del usuario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         name:
  *           type: string
  *           description: Nombre del usuario
@@ -608,8 +653,9 @@ module.exports = router;
  *       type: object
  *       properties:
  *         id:
- *           type: ObjectID
+ *           type: string
  *           description: ID único del comentario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         text:
  *           type: string
  *           description: Texto del comentario
@@ -618,17 +664,20 @@ module.exports = router;
  *           format: date-time
  *           description: Fecha en la que se creó el comentario
  *         user:
- *           type: ObjectID
+ *           type: string
  *           description: ID del usuario que realizó el comentario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         event:
- *           type: ObjectID
+ *           type: string
  *           description: ID del evento al que pertenece el comentario
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         value: 
  *            type: number
  *            description: Valoración del evento
  *         responseTo:
  *            type: string
  *            description: ID del comentario al que se responde
+ *            pattern: "^[0-9a-fA-F]{24}$"
  *       required:
  *         - id
  *         - text

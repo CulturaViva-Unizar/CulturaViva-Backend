@@ -719,6 +719,7 @@ module.exports = router;
  *         id:
  *           type: string
  *           description: ID único del evento
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         title:
  *           type: string
  *           description: Título del evento
@@ -762,7 +763,7 @@ module.exports = router;
  *           description: Indica si el evento es permanente
  *         place:
  *           type: string
- *           description: ID del lugar asociado al evento
+ *           description: Nombre del lugar donde se realiza el evento
  *       required:
  *         - title
  *         - category
@@ -777,6 +778,7 @@ module.exports = router;
  *         id:
  *           type: string
  *           description: ID único del lugar
+ *           pattern: "^[0-9a-fA-F]{24}$"
  *         title:
  *           type: string
  *           description: Título del lugar

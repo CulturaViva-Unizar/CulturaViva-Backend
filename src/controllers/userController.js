@@ -385,6 +385,33 @@ class UserController {
     }
   }
 
+  /**
+   * Devuelve todos los chats en los que participa el usuario
+   */
+  async getUserChats(req, res) {
+    const userId = req.userId;
+    console.log("User ID:", userId);
+    try {
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "Usuario no encontrado"
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: "Chats obtenidos exitosamente",
+        data: user.chats
+      });
+    } catch (error) {
+      console.error("Error al obtener los chats del usuario:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error interno del servidor al obtener los chats del usuario",
+      });
+    }
+  }
 }
 
 module.exports = new UserController();
