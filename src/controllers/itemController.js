@@ -10,36 +10,69 @@ class ItemController {
     /**
      * Obtiene todos los ítems (eventos o lugares)
      */
-    async getItems(req, res) {
+        async getItems(req, res) {
+        const { name, startDate, endDate, category, sort, order } = req.query;
+    
         const type = req.query.type || 'Event';
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 16;
+    
+        const filters = {};
+        if (name) filters.name = name;
+        if (category) filters.category = category;
+    
+        // Manejo de fechas
+        if (startDate || endDate) {
+            filters.date = {};
+            if (startDate) filters.date.$gte = new Date(startDate);
+            if (endDate) filters.date.$lte = new Date(endDate);
+        }
+    
         try {
             let items;
+            const sortOrder = order === 'desc' ? -1 : 1;
+            const sortOptions = sort ? { [sort]: sortOrder } : {};
+    
             if (type === 'Event') {
-                items = await Event.find();
+                items = await Event.find(filters)
+                    .select('-__v')
+                    .sort(sortOptions)
+                    .limit(limit)
+                    .skip((page - 1) * limit);
             } else if (type === 'Place') {
-                items = await Place.find();
+                items = await Place.find(filters)
+                    .select('-__v')
+                    .sort(sortOptions)
+                    .limit(limit)
+                    .skip((page - 1) * limit);
             } else {
                 return res.status(400).json({
                     success: false,
-                    message: 'Tipo inválido. Usa "event" o "place".' 
+                    message: 'Tipo inválido. Usa "event" o "place".'
                 });
             }
     
-            return res.status(200).json({ 
-                success: true, 
+            const totalItems = await (type === 'Event' ? Event : Place).countDocuments(filters);
+    
+            return res.status(200).json({
+                success: true,
                 message: "Items obtenidos correctamente",
-                data: items
+                data: {
+                    items,
+                    currentPage: page,
+                    totalPages: Math.ceil(totalItems / limit),
+                    totalItems
+                }
             });
         } catch (error) {
             console.error('Error al obtener ítems:', error);
-            return res.status(500).json({ 
-                success: false, 
-                message: 'Error al obtener ítems', 
+            return res.status(500).json({
+                success: false,
+                message: 'Error al obtener ítems',
                 data: error
             });
         }
     }
-
     /**
      * Obtiene un ítem (evento o lugar) por su ID
      */

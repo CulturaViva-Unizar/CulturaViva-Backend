@@ -16,9 +16,64 @@ const itemController = require('../controllers/itemController');
  * @swagger
  * /items/events:
  *   get:
- *     summary: Obtiene todos los eventos
+ *     summary: Obtiene todos los eventos con filtros opcionales
  *     tags:
  *       - Events
+ *     parameters:
+ *       - name: name
+ *         in: query
+ *         required: false
+ *         description: Filtra eventos por nombre
+ *         schema:
+ *           type: string
+ *       - name: startDate
+ *         in: query
+ *         required: false
+ *         description: Fecha inicial para filtrar eventos (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         required: false
+ *         description: Fecha final para filtrar eventos (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: category
+ *         in: query
+ *         required: false
+ *         description: Filtra eventos por categoría
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         description: Número de página para la paginación
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         description: Número de elementos por página
+ *         schema:
+ *           type: integer
+ *           default: 16
+ *       - name: sort
+ *         in: query
+ *         required: false
+ *         description: Campo por el cual ordenar los resultados (por ejemplo, "date", "category")
+ *         schema:
+ *           type: string
+ *       - name: order
+ *         in: query
+ *         required: false
+ *         description: Orden de los resultados (asc para ascendente, desc para descendente)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
  *     responses:
  *       200:
  *         description: Lista de eventos obtenida exitosamente
@@ -27,14 +82,14 @@ const itemController = require('../controllers/itemController');
  *             schema:
  *               type: object
  *               properties:
- *                success:
- *                  type: boolean
- *                message:
- *                  type: string
- *                data:
- *                  type: array
- *                  items:
- *                    $ref: '#/components/schemas/Event'
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
  *       500:
  *         description: Error interno del servidor
  */
@@ -365,25 +420,80 @@ router.post('/events/:id/comments/:commentId/responses',
  * @swagger
  * /items/places:
  *   get:
- *     summary: Obtiene todos los lugares
+ *     summary: Obtiene todos los lugares con filtros opcionales
  *     tags:
  *       - Places
+ *     parameters:
+ *       - name: name
+ *         in: query
+ *         required: false
+ *         description: Filtra lugares por nombre
+ *         schema:
+ *           type: string
+ *       - name: startDate
+ *         in: query
+ *         required: false
+ *         description: Fecha inicial para filtrar eventos (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         required: false
+ *         description: Fecha final para filtrar eventos (YYYY-MM-DD)
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: category
+ *         in: query
+ *         required: false
+ *         description: Filtra lugares por categoría
+ *         schema:
+ *           type: string
+ *       - name: page
+ *         in: query
+ *         required: false
+ *         description: Número de página para la paginación
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         required: false
+ *         description: Número de elementos por página
+ *         schema:
+ *           type: integer
+ *           default: 16
+ *       - name: sort
+ *         in: query
+ *         required: false
+ *         description: Campo por el cual ordenar los resultados (por ejemplo, "date", "category")
+ *         schema:
+ *           type: string
+ *       - name: order
+ *         in: query
+ *         required: false
+ *         description: Orden de los resultados (asc para ascendente, desc para descendente)
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
  *     responses:
  *       200:
  *         description: Lista de lugares obtenida exitosamente
- *         content:
- *          application/json:
- *           schema:
- *             type: object
- *             properties:
- *                success:
- *                  type: booelan
- *                message:
- *                  type: string
- *                data:
- *                  type: array
- *                  items:
- *                    $ref: '#/components/schemas/Place'
+ *         content: 
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Place'
  *       500:
  *         description: Error interno del servidor
  */
