@@ -77,6 +77,7 @@ async function getEventosCulturales() {
             endDate: evento.endDate ? new Date(evento.endDate) : null,
             place: evento.location ? evento.location : "",
             description: evento.description ? cleanHtmltags(evento.description) : "",
+            category: evento.type ? evento.type : "",
           };
         })
       );
