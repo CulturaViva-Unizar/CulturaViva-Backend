@@ -219,10 +219,9 @@ class ItemController {
                 });
             }
 
-            // Verifica si el usuario es el propietario del comentario
-            console.log('ID del usuario:', req.userId);
-            console.log('ID del comentario:', comment.user.toString());
-            if (comment.user.toString() !== req.userId.toString()) {
+            // Verifica si el usuario es el propietario del comentario o es admin
+            const user = await User.findById(req.userId)
+            if (comment.user.toString() !== req.userId.toString() && !user.admin) {
                 return res.status(403).json({
                     success: false,
                     message: 'No tienes permiso para eliminar este comentario'

@@ -1,4 +1,5 @@
 const { fetchJsonFromUrl } = require('../api/zaragozaJson'); 
+const { cleanHtmltags } = require('../utils/utils');
 
 const PLACE_URLS = {
   'Sala de Música': process.env.SALAS_MUSICA_URL,
@@ -23,15 +24,15 @@ async function processPlace(type, url) {
     id : lugar.id,
     title: lugar.title,
     type: type,
-    description: lugar.description || null,
+    description: lugar.description ? cleanHtmltags(lugar.description) : "",
     coordinates: {
       latitude: lugar.latitud,
       longitude: lugar.longitud,
-    } || null,
-    direction: lugar.streetAddress || null,
-    openingHours: lugar.openingHours || null,
-    phone: lugar.telephone || null,
-    email: lugar.email || null,
+    } || "",
+    direction: lugar.streetAddress || "",
+    openingHours: lugar.openingHours ? cleanHtmltags(lugar.openingHours) : "",
+    phone: lugar.telephone || "",
+    email: lugar.email || "",
   }));
 
   return lugares;

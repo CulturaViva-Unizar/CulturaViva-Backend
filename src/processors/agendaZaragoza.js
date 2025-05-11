@@ -1,5 +1,6 @@
 const { fetchFromAPI } = require('../api/zaragozaApi'); 
 const { Place } = require('../models/eventModel');
+const { cleanHtmltags } = require('../utils/utils');
 
 // Swagger: https://www.zaragoza.es/docs-api_sede/#/Agenda%20Zaragoza/get_servicio_actividades_evento_list
 // la url al .env mejor
@@ -62,10 +63,10 @@ async function getEventosCulturales() {
             ...evento,
             price: Array.isArray(evento.price)
               ? evento.price.map((p) => ({
-                  grupo: p.fareGroup || null,
-                  precio: p.hasCurrencyValue || null,
+                  grupo: p.fareGroup || "",
+                  precio: p.hasCurrencyValue || "",
                 }))
-              : null,
+              : [],
             coordinates: evento.geometry
               ? {
                   latitude: evento.geometry.coordinates[1],
@@ -74,7 +75,8 @@ async function getEventosCulturales() {
               : await getCoordinates(evento),
             startDate: evento.startDate ? new Date(evento.startDate) : null,
             endDate: evento.endDate ? new Date(evento.endDate) : null,
-            place: evento.location ? evento.location : null,
+            place: evento.location ? evento.location : "",
+            description: evento.description ? cleanHtmltags(evento.description) : "",
           };
         })
       );

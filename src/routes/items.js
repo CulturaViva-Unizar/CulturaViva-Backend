@@ -435,6 +435,279 @@ router.get('/places/:id',
   }, 
   itemController.getItemById);
 
+
+/**
+ * @swagger
+ * /items/places/{id}/comments:
+ *   get:
+ *     summary: Obtiene los comentarios de un lugar por su ID
+ *     tags:
+ *       - Events
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del lugar
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lista de comentarios obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentarios obtenidos exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: Lugar no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/places/:id/comments',
+  (req, res, next) => {
+    req.query.type = 'Event';
+    next();
+  }, 
+  itemController.getItemComments);
+
+/**
+ * @swagger
+ * /items/places/{id}/comments:
+ *   post:
+ *     summary: Crea un comentario para un lugar
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del lugar
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Contenido del comentario
+ *                 example: "Este lugar fue increíble"
+ *               value:
+ *                 type: number
+ *                 description: Valoración opcional del lugar
+ *                 example: 5
+ *     responses:
+ *       201:
+ *         description: Comentario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentario creado exitosamente"
+ *                 data:
+ *                   $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Datos inválidos
+ *       401: 
+ *         description: No autorizado
+ *       404:
+ *         description: Lugar no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/places/:id/comments',
+  passport.authenticate('jwt', { session: false }), 
+  (req, res, next) => {
+    req.query.type = 'Place';
+    next();
+  }, 
+  itemController.createComment);
+
+/**
+ * @swagger
+ * /items/places/{id}/comments/{commentId}:
+ *   delete:
+ *     summary: Elimina un comentario de un lugar
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del lugar
+ *         schema:
+ *           type: string
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Comentario eliminado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentario eliminado exitosamente"
+ *       404:
+ *         description: Comentario o evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.delete('/places/:id/comments/:commentId',
+  passport.authenticate('jwt', { session: false }),
+  itemController.deleteComment
+);
+
+/**
+ * @swagger
+ * /items/places/{id}/comments/{commentId}/responses:
+ *   get:
+ *     summary: Obtiene las respuestas de un comentario de un lugar por su ID
+ *     tags:
+ *       - Places
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del lugar
+ *         schema:
+ *           type: string
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario
+ *         schema:
+ *           type: string
+ *     responses:
+ *       201:
+ *         description: Respuesta creada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Comentario creado exitosamente"
+ *                 data:
+ *                   type: array  
+ *                   items:
+ *                     $ref: '#/components/schemas/Comment'            
+ *       400:
+ *         description: Datos inválidos
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/places/:id/comments/:commentId/responses',
+  (req, res, next) => {
+    req.query.type = 'Place';
+    next();
+  }, 
+  itemController.getResponses);
+
+/**
+ * @swagger
+ * /items/places/{id}/comments/{commentId}/responses:
+ *   post:
+ *     summary: Añade una respuesta a un comentario de un lugar
+ *     tags:
+ *       - Places
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: ID del lugar
+ *         schema:
+ *           type: string
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 description: Contenido del comentario
+ *                 example: "¡Tienes razón!"
+ *     responses:
+ *       201:
+ *         description: Comentario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Respuesta creada exitosamente"
+ *                 data:
+ *                   $ref: '#/components/schemas/Comment'
+ *       400:
+ *         description: Datos inválidos
+ *       401: 
+ *         description: No autorizado
+ *       404:
+ *         description: Evento no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.post('/places/:id/comments/:commentId/responses',
+  passport.authenticate('jwt', { session: false }), 
+  (req, res, next) => {
+    req.query.type = 'Place';
+    next();
+  }, 
+  itemController.createComment);
+
 module.exports = router;
 /**
  * @swagger
