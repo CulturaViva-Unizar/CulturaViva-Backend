@@ -46,6 +46,18 @@ const itemController = require('../controllers/itemController');
  *         description: Filtra eventos por categoría
  *         schema:
  *           type: string
+ *       - name: minPrice
+ *         in: query
+ *         required: false
+ *         description: Precio mínimo para filtrar eventos
+ *         schema:
+ *           type: number
+ *       - name: maxPrice
+ *         in: query
+ *         required: false
+ *         description: Precio máximo para filtrar eventos
+ *         schema:
+ *           type: number
  *       - name: page
  *         in: query
  *         required: false
@@ -450,6 +462,18 @@ router.post('/events/:id/comments/:commentId/responses',
  *         description: Filtra lugares por categoría
  *         schema:
  *           type: string
+ *       - name: minPrice
+ *         in: query
+ *         required: false
+ *         description: Precio mínimo para filtrar eventos
+ *         schema:
+ *           type: number
+ *       - name: maxPrice
+ *         in: query
+ *         required: false
+ *         description: Precio máximo para filtrar eventos
+ *         schema:
+ *           type: number
  *       - name: page
  *         in: query
  *         required: false
@@ -849,8 +873,10 @@ module.exports = router;
  *           type: string
  *           description: URL de la imagen del evento
  *         price:
- *           type: number
- *           description: Precio del evento
+ *           type: array
+ *           description: Información de precios del evento
+ *           items:
+ *             $ref: '#/components/schemas/PriceItem'
  *         coordinates:
  *           type: object
  *           properties:
@@ -878,6 +904,7 @@ module.exports = router;
  *         - title
  *         - category
  */
+
 /**
  * @swagger
  * components:
@@ -908,8 +935,10 @@ module.exports = router;
  *           type: string
  *           description: URL de la imagen del lugar
  *         price:
- *           type: number
- *           description: Precio asociado al lugar
+ *           type: array
+ *           description: Información de precios del evento
+ *           items:
+ *             $ref: '#/components/schemas/PriceItem'
  *         coordinates:
  *           type: object
  *           properties:
@@ -953,4 +982,45 @@ module.exports = router;
  *       required:
  *         - user
  *         - text
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Comment:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           description: ID único del comentario
+ *         user:
+ *           type: string
+ *           description: ID del usuario que realizó el comentario
+ *         text:
+ *           type: string
+ *           description: Contenido del comentario
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Fecha y hora en que se creó el comentario
+ *       required:
+ *         - user
+ *         - text
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     PriceItem:
+ *       type: object
+ *       properties:
+ *         grupo:
+ *           type: string
+ *           description: Grupo al que aplica el precio (por ejemplo, "Adultos", "Niños")
+ *         precio:
+ *           type: integer
+ *           nullable: true
+ *           description: Precio asociado al grupo (puede ser `null` si no aplica)
  */

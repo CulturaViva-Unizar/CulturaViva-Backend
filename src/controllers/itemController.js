@@ -11,7 +11,7 @@ class ItemController {
      * Obtiene todos los ítems (eventos o lugares)
      */
     async getItems(req, res) {
-        const { name, startDate, endDate, category, sort, order } = req.query;
+        const { name, startDate, endDate, category, sort, order, minPrice, maxPrice } = req.query;
     
         const type = req.query.type || 'Event';
         const page = parseInt(req.query.page) || 1;
@@ -29,31 +29,77 @@ class ItemController {
         }
     
         try {
-            let items;
             const sortOrder = order === 'desc' ? -1 : 1;
     
+            const aggregationPipeline = [
+                { $match: filters },
+            ];
+    
+            // Cálculo del número de comentarios si se ordena por 'comments'
             if (sort === 'comments') {
-                items = await (type === 'Event' ? Event : Place).aggregate([
-                    { $match: filters },
-                    {
-                        $addFields: {
-                            commentCount: { $size: { $ifNull: ['$comments', []] } } 
-                        }
-                    },
-                    { $sort: { commentCount: sortOrder } }, 
-                    { $project: { commentCount: 0, "__v": 0 }},
-                    { $skip: (page - 1) * limit }, 
-                    { $limit: limit } 
-                ]);
-            } else {
-                const sortOptions = sort ? { [sort]: sortOrder } : {};
-                items = await (type === 'Event' ? Event : Place).find(filters)
-                    .select('-__v')
-                    .sort(sortOptions)
-                    .limit(limit)
-                    .skip((page - 1) * limit);
+                aggregationPipeline.push({
+                    $addFields: {
+                        commentCount: { $size: { $ifNull: ['$comments', []] } }
+                    }
+                });
             }
     
+            // Cálculo del precio mínimo si se filtra por precio
+            if (minPrice || maxPrice) {
+                aggregationPipeline.push({
+                    $addFields: {
+                        minPrice: {
+                            $min: {
+                                $map: {
+                                    input: '$price',
+                                    as: 'p',
+                                    in: {
+                                        $cond: {
+                                            if: { $eq: ['$$p.precio', null] },
+                                            then: 0,
+                                            else: '$$p.precio'
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            
+                const priceFilters = [];
+                if (minPrice) {
+                    priceFilters.push({ $gte: ['$minPrice', parseFloat(minPrice)] });
+                }
+                if (maxPrice) {
+                    priceFilters.push({ $lte: ['$minPrice', parseFloat(maxPrice)] });
+                }
+            
+                if (priceFilters.length > 0) {
+                    aggregationPipeline.push({
+                        $match: { $expr: { $and: priceFilters } }
+                    });
+                }
+            }
+            // Ordenamiento
+            if (sort) {
+                aggregationPipeline.push({ $sort: { [sort === 'comments' ? 'commentCount' : sort]: sortOrder } });
+            }
+    
+            // Paginación
+            aggregationPipeline.push(
+                { $skip: (page - 1) * limit },
+                { $limit: limit }
+            );
+    
+            // Exclusión de campos no deseados
+            aggregationPipeline.push({
+                $project: { commentCount: 0, minPrice: 0, __v: 0 }
+            });
+    
+            // Ejecución de la agregación
+            const items = await (type === 'Event' ? Event : Place).aggregate(aggregationPipeline);
+    
+            // Cálculo del total de ítems
             const totalItems = await (type === 'Event' ? Event : Place).countDocuments(filters);
     
             return res.status(200).json({
