@@ -8,6 +8,7 @@ var app = require('../src/app');
 var debug = require('debug')('culturaviva-backend:server');
 var http = require('http');
 const env = require('../src/config/env.js')
+const socketIo = require('socket.io')
 
 /**
  * Get port from environment and store in Express.
@@ -21,6 +22,18 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+
+const io = socketIo(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+const socketAuthMiddleware = require('../src/middlewares/socketAuthMiddleware');
+io.use(socketAuthMiddleware);
+const handleSocket = require('../src/sockets/socketHandler');
+handleSocket(io);
+
 
 /**
  * Listen on provided port, on all network interfaces.

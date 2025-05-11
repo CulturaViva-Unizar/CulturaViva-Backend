@@ -9,6 +9,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var itemRouter = require('./routes/items');
+var chatsRouter = require('./routes/chats');
 var statisticsRouter = require('./routes/statistics');
 
 const swaggerJsdoc = require("swagger-jsdoc");
@@ -39,6 +40,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/items', itemRouter)
+app.use('/chats', chatsRouter);
 app.use('/statistics', statisticsRouter)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
@@ -50,5 +52,25 @@ app.use((err, req, res, next) => {
     };
     return createInternalServerErrorResponse(res, 'Error interno del servidor');
 });
+
+const ItemController = require('./controllers/itemController');
+const { getEventosCulturales } = require('./processors/agendaZaragoza');
+const { getPlaces } = require('./processors/lugares');
+
+/*
+(async () => {
+    try {
+        const eventos = await getEventosCulturales();
+        await ItemController.guardarEventos(eventos);
+        console.log(`Total eventos obtenidos: ${eventos.length}`);
+
+        //const places = await getPlaces();
+        //await ItemController.guardarLugares(places);
+        //console.log(`Total lugares obtenidos: ${places.length}`);
+    } catch (error) {
+        console.error('Error al procesar eventos o lugares:', error);
+    }
+})();
+*/
 
 module.exports = app;

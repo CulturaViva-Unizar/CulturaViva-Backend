@@ -1,13 +1,13 @@
 const Ajv = require('ajv');
 const addFormats = require('ajv-formats');
+const { createBadRequestResponse } = require('../utils/utils');
 
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
 const validateSchema = (schema) => (req, res, next) => {
-  if (['POST', 'PUT', 'PATCH'].includes(req.method) &&
-      req.headers['content-type'] !== 'application/json') {
-    return res.status(400).json({ error: 'Content-Type must be application/json' });
+  if (req.headers['content-type'] !== 'application/json') {
+    return createBadRequestResponse(res, 'Content-Type must be application/json');  
   }
 
   const validate = ajv.compile(schema);
@@ -22,7 +22,7 @@ const validateSchema = (schema) => (req, res, next) => {
 
   if (!valid) {
     console.log('Validation errors:', validate.errors);
-    return res.status(400).json({ errors: validate.errors });
+    return createBadRequestResponse(res, 'Invalid request data', validate.errors);
   }
 
   next();

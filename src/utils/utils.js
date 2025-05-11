@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const crypto = require("crypto");
+const sanitizeHtml = require('sanitize-html');
+
 
 /**
  * Convierte un valor a ObjectId de mongoose
@@ -59,6 +61,13 @@ function createInternalServerErrorResponse(res, message, body = null) {
   return createResponse(res, 500, message, body);
 }
 
+function cleanHtmltags(str){
+  return sanitizeHtml(str, {
+    allowedTags: [],
+    allowedAttributes: {}
+  });
+}
+
 module.exports = {
   toObjectId,
   generateOID,
@@ -70,5 +79,6 @@ module.exports = {
   createBadRequestResponse,
   createUnauthorizedResponse,
   createForbiddenResponse,
-  createInternalServerErrorResponse
+  createInternalServerErrorResponse,
+  cleanHtmltags
 };

@@ -1,44 +1,45 @@
 const { User } = require("../models/userModel");
 const { Event } = require("../models/eventModel");
-const { Comment } = require("../models/commentModel");
-const { toObjectId } = require("../utils/utils");
-const {
-  createOkResponse,
-  createNotFoundResponse,
+const { 
+  toObjectId,
   createForbiddenResponse,
-} = require("../utils/utils");
+  createInternalServerErrorResponse,
+  createOkResponse, 
+  createNotFoundResponse
+ } = require("../utils/utils");
+const { create } = require("../models/chatModel");
 
 class UserController {
   /**
    * Comprueba si el usuario es admin
    */
   async checkAdmin(req, res, next) {
-    const user = await User.findById(toObjectId(req.userId));
-    if (!user.admin) {
-      return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
-    }
-    next();
+      const user = await User.findById(toObjectId(req.userId));
+      if (!user.admin) {
+        return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
+      }
+      next();
   }
 
   /**
    * Comprueba si el usuario es admin o dueño del perfil
    */
   async checkAdminOrUser(req, res, next) {
-    if (req.userId.toString() === req.params.id) return next();
-    const user = await User.findById(toObjectId(req.userId));
-    if (!user) return createNotFoundResponse(res, "Usuario no encontrado.");
-    if (user.admin) return next();
-    createForbiddenResponse(res, "Acceso no autorizado al recurso.");
+      if(req.userId.toString() === req.params.id) return next();
+      const user = await User.findById(toObjectId(req.userId));
+      if(!user) {
+        return createInternalServerErrorResponse(res, "Error interno del servidor.");
+      }
+      if(user.admin) return next();
+      return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
   }
 
   /**
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-    const users = await User.find({}).select("-password");
-    return createOkResponse(res, "Usuarios obtenidos correctamente", {
-      users,
-    });
+      const users = await User.find({}).select("-password");
+      return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
   }
 
   /**
@@ -46,20 +47,20 @@ class UserController {
    */
   async getUserById(req, res) {
     const userId = req.params.id;
+    console.log("User ID:", userId);
     const user = await User.findById(toObjectId(userId)).select("-password");
-    if (!user) createNotFoundResponse(res, "Usuario no encontrado");
-
-    createOkResponse(res, "Usuario encontrado con exito", {
-      user,
-    });
-  }
+    if (!user) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
+    }
+    return createOkResponse(res, "Usuario obtenido exitosamente", user);
+}
 
   /**
    * Actualiza todo el perfil del usuario
    */
   async updateProfile(req, res) {
-    const { name, email, phone } = req.body;
-    const userId = req.params.id;
+      const { name, email, phone } = req.body;
+      const userId = req.params.id;
 
     const updatedUser = await User.findByIdAndUpdate(
       toObjectId(userId),
@@ -67,19 +68,19 @@ class UserController {
       { new: true, runValidators: true }
     );
 
-    if (!updatedUser)
-      return createNotFoundResponse(res, "Usuario no encontrado");
+      if (!updatedUser) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
+      }
 
-    createOkResponse(res, "Perfil actualizado exitosamente", {
-      user: updatedUser,
-    });
+      return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
+
 
   /**
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-    const { name, date, category } = req.query;
+      const { name, date, category } = req.query;
 
     const userId = req.userId;
     const page = parseInt(req.query.page) || 1;
@@ -93,9 +94,9 @@ class UserController {
 
     const user = await User.findById(toObjectId(userId));
 
-    if (!user) {
-      return createNotFoundResponse(res, "Usuario no encontrado");
-    }
+      if (!user) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
+      }
 
     const totalItems = await Event.countDocuments({
       _id: { $in: user.savedItems },
@@ -123,21 +124,19 @@ class UserController {
   async getUserComments(req, res) {
     const userId = req.params.userId;
 
-    const user = await User.findById(toObjectId(userId));
-    if (!user) {
-      return createNotFoundResponse(res, "Usuario no encontrado");
-    }
+      const user = await User.findById(toObjectId(userId));
+      if (!user) {
+          return createNotFoundResponse(res, "Usuario no encontrado"); 
+      }
 
-    const comments = await Comment.find({ userId: userId });
-    if (!comments || comments.length === 0) {
-      return createNotFoundResponse(res, "No se encontraron comentarios para este usuario");
-    }
+      const comments = await CommentModel.find({ userId: userId });
 
-    return createOkResponse(res, "Comentarios obtenidos exitosamente", {
-      comments,
-    });
+      if (!comments || comments.length === 0) {
+          return createNotFoundResponse(res, "No se encontraron comentarios para este usuario");
+      }
+
+      return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
-
   /**
    * Guarda un evento en el perfil del usuario
    */
@@ -153,9 +152,8 @@ class UserController {
       await user.save();
     }
 
-    createOkResponse(res, "Evento guardado exitosamente", {
-      savedItems: user.savedItems,
-    });
+    return createOkResponse(res, "Evento guardado exitosamente", user.savedItems);
+
   }
 
   /**
@@ -169,27 +167,20 @@ class UserController {
     const limit = parseInt(req.query.limit) || 16;
 
     const filters = {};
-    if (name) filters.name = name;
-    if (date) filters.date = date;
-    if (category) filters.category = category;
+    if (name) filters.name = name
+    if (date) filters.date = date
+    if (category) filters.category = category
 
-    const user = await User.findById(toObjectId(userId));
+    const user = await User.findById(toObjectId(userId))
 
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-
     console.log(user.asistsTo);
-    const totalItems = await Event.countDocuments({
-      _id: { $in: user.asistsTo },
-      ...filters,
-    });
-
     const attendingItems = await Event.find({
       _id: { $in: user.asistsTo },
       ...filters,
-    })
-      .limit(limit)
+    }).limit(limit) 
       .skip((page - 1) * limit);
 
     createOkResponse(res, "Items obtenidos exitosamente", {
@@ -218,9 +209,7 @@ class UserController {
       await user.save();
     }
 
-    createOkResponse(res, "Evento marcado como asistente exitosamente", {
-      asistsTo: user.asistsTo,
-    });
+    return createOkResponse(res, "Evento marcado como asistente exitosamente", user.asistsTo);
   }
 
   /**
@@ -229,16 +218,13 @@ class UserController {
   async removeSavedItem(req, res) {
     const userId = req.userId;
     const { eventId } = req.params;
+
     const user = await User.findById(toObjectId(userId));
 
-    user.savedItems = user.savedItems.filter(
-      (item) => item.toString() !== eventId
-    );
+    user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
     await user.save();
 
-    createOkResponse(res, "Evento eliminado de los guardados exitosamente", {
-      savedItems: user.savedItems,
-    });
+    return createOkResponse(res, "Evento eliminado de los guardados exitosamente", user.savedItems);
   }
 
   /**
@@ -247,17 +233,24 @@ class UserController {
   async removeAttendingItem(req, res) {
     const userId = req.userId;
     const { eventId } = req.params;
+
     const user = await User.findById(toObjectId(userId));
+    user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
+    await user.save();
+    return createOkResponse(res, "Evento eliminado de los asistidos exitosamente", user.asistsTo);
+  }
+
+  /**
+   * Devuelve todos los chats en los que participa el usuario
+   */
+  async getUserChats(req, res) {
+    const userId = req.userId;
+    console.log("User ID:", userId);
+    const user = await User.findById(userId);
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-
-    user.asistsTo = user.asistsTo.filter((item) => item.toString() !== eventId);
-    await user.save();
-
-    createOkResponse(res, "Evento eliminado de los asistidos exitosamente", {
-      asistsTo: user.asistsTo,
-    });
+    return createOkResponse(res, "Chats obtenidos exitosamente", user.chats);
   }
 }
 

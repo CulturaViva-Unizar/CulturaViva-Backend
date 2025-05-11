@@ -56,6 +56,11 @@ const itemSchema = new Schema({
     type: coordinatesSchema,
     required: false
   },
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment',
+    default: []
+  }]
 }, {discriminatorKey: 'itemType'});
 
 const Item = mongoose.model('Item', itemSchema);
@@ -81,7 +86,8 @@ const eventSchema = new Schema({
   },
   asistentes: [{
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
+    default: []
   }]
 });
 
