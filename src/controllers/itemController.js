@@ -20,20 +20,23 @@ class ItemController {
      */
     async getItems(req, res) {
         const { name, startDate, endDate, category, sort, order, minPrice, maxPrice } = req.query;
-    
+
         const type = req.query.type || 'Event';
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 16;
     
         const filters = {};
-        if (name) filters.name = name;
+        if (name) filters.title = name;
         if (category) filters.category = category;
     
-        // Manejo de fechas
-        if (startDate || endDate) {
-            filters.date = {};
-            if (startDate) filters.date.$gte = new Date(startDate);
-            if (endDate) filters.date.$lte = new Date(endDate);
+        if (startDate) {
+            filters.startDate = {};
+            filters.startDate.$gte = new Date(startDate);
+        }
+
+        if (endDate) {
+            filters.endDate = {};
+            filters.endDate.$lte = new Date(endDate);
         }
 
         const aggregationPipeline = buildAggregationPipeline(filters, {
