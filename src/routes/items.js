@@ -63,7 +63,7 @@ const itemController = require('../controllers/itemController');
  *       - name: sort
  *         in: query
  *         required: false
- *         description: Campo por el cual ordenar los resultados (por ejemplo, "date", "category")
+ *         description: Campo por el cual ordenar los resultados (por ejemplo, "date", "category"). Si es "comments", ordena por número de comentarios.
  *         schema:
  *           type: string
  *       - name: order
@@ -467,7 +467,7 @@ router.post('/events/:id/comments/:commentId/responses',
  *       - name: sort
  *         in: query
  *         required: false
- *         description: Campo por el cual ordenar los resultados (por ejemplo, "date", "category")
+ *         description: Campo por el cual ordenar los resultados (por ejemplo, "date", "category"). Si es "comments", ordena por número de comentarios.
  *         schema:
  *           type: string
  *       - name: order

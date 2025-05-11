@@ -10,7 +10,7 @@ class ItemController {
     /**
      * Obtiene todos los ítems (eventos o lugares)
      */
-        async getItems(req, res) {
+    async getItems(req, res) {
         const { name, startDate, endDate, category, sort, order } = req.query;
     
         const type = req.query.type || 'Event';
@@ -31,25 +31,27 @@ class ItemController {
         try {
             let items;
             const sortOrder = order === 'desc' ? -1 : 1;
-            const sortOptions = sort ? { [sort]: sortOrder } : {};
     
-            if (type === 'Event') {
-                items = await Event.find(filters)
-                    .select('-__v')
-                    .sort(sortOptions)
-                    .limit(limit)
-                    .skip((page - 1) * limit);
-            } else if (type === 'Place') {
-                items = await Place.find(filters)
-                    .select('-__v')
-                    .sort(sortOptions)
-                    .limit(limit)
-                    .skip((page - 1) * limit);
+            if (sort === 'comments') {
+                items = await (type === 'Event' ? Event : Place).aggregate([
+                    { $match: filters },
+                    {
+                        $addFields: {
+                            commentCount: { $size: { $ifNull: ['$comments', []] } } 
+                        }
+                    },
+                    { $sort: { commentCount: sortOrder } }, 
+                    { $project: { commentCount: 0, "__v": 0 }},
+                    { $skip: (page - 1) * limit }, 
+                    { $limit: limit } 
+                ]);
             } else {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Tipo inválido. Usa "event" o "place".'
-                });
+                const sortOptions = sort ? { [sort]: sortOrder } : {};
+                items = await (type === 'Event' ? Event : Place).find(filters)
+                    .select('-__v')
+                    .sort(sortOptions)
+                    .limit(limit)
+                    .skip((page - 1) * limit);
             }
     
             const totalItems = await (type === 'Event' ? Event : Place).countDocuments(filters);
