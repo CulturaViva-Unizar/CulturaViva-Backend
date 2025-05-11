@@ -1,6 +1,13 @@
 const { User } = require("../models/userModel");
 const { Event } = require("../models/eventModel");
-const { toObjectId } = require("../utils/utils");
+const { 
+  toObjectId,
+  createForbiddenResponse,
+  createInternalServerErrorResponse,
+  createOkResponse, 
+  createNotFoundResponse
+ } = require("../utils/utils");
+const { create } = require("../models/chatModel");
 
 class UserController {
 
@@ -8,68 +15,32 @@ class UserController {
    * Comprueba si el usuario es admin
    */
   async checkAdmin(req, res, next) {
-      try {
-          const user = await User.findById(toObjectId(req.userId));
-          if (!user.admin) {
-            res.status(403).json({
-              success: false,
-              message: "Acceso no autorizado al recurso.",
-            });
-          }
-          next();
-      } catch (error) {
-          console.error("Error al comprobar admin:", error);
-          return res.status(error.status || 500).json({
-              success: false,
-              message: error.message || "Error interno del servidor.",
-          });
+      const user = await User.findById(toObjectId(req.userId));
+      if (!user.admin) {
+        return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
       }
+      next();
   }
 
   /**
    * Comprueba si el usuario es admin o dueño del perfil
    */
   async checkAdminOrUser(req, res, next) {
-      try {
-        if(req.userId.toString() === req.params.id) return next();
-        const user = await User.findById(toObjectId(req.userId));
-        if(!user) {
-          res.status(500).json({
-            success: false,
-            message: "Error interno del servidor al comprobar el usuario.",
-          });
-        }
-        if(user.admin) return next();
-        res.status(403).json({
-          success: false,
-          message: "Acceso no autorizado al recurso.",
-        });
-      } catch (error) {
-          return res.status(error.status || 500 ).json({
-              success: false,
-              message: error.message || "Error interno del servidor.",
-          });
+      if(req.userId.toString() === req.params.id) return next();
+      const user = await User.findById(toObjectId(req.userId));
+      if(!user) {
+        return createInternalServerErrorResponse(res, "Error interno del servidor.");
       }
+      if(user.admin) return next();
+      return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
   }
 
   /**
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-      try {
-          const users = await User.find({}).select("-password");
-          return res.status(200).json({
-              success: true,
-              message: "Usuarios obtenidos correctamente",
-              data: users
-          });
-      } catch (error) {
-          console.error("Error al obtener usuarios:", error);
-          return res.status(500).json({
-              success: false,
-              message: "Error interno del servidor al obtener usuarios",
-          });
-      }
+      const users = await User.find({}).select("-password");
+      return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
   }
 
   /**
@@ -78,33 +49,17 @@ class UserController {
   async getUserById(req, res) {
     const userId = req.params.id;
     console.log("User ID:", userId);
-    try {
-        const user = await User.findById(toObjectId(userId)).select("-password");
-        if (!user) {
-            return res.status(404).json({
-              success: false,
-              message: "Usuario no encontrado"
-            });
-        }
-        return res.status(200).json({
-          success: true,
-          message: "Usuario encontrado con exito",
-          data: user
-        });
-    } catch (error) {
-        console.error("Error al obtener usuario:", error);
-        return res.status(500).json({
-            success: false,
-            message: "Error interno del servidor al obtener usuario por ID",
-        });
+    const user = await User.findById(toObjectId(userId)).select("-password");
+    if (!user) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
     }
+    return createOkResponse(res, "Usuario obtenido exitosamente", user);
 }
 
   /**
    * Actualiza todo el perfil del usuario
    */
   async updateProfile(req, res) {
-    try {
       const { name, email, phone } = req.body;
       const userId = req.params.id;
 
@@ -115,25 +70,10 @@ class UserController {
       );
 
       if (!updatedUser) {
-        return res.status(404).json({
-          success: false,
-          message: "Usuario no encontrado"
-        });
+        return createNotFoundResponse(res, "Usuario no encontrado");
       }
 
-      return res.status(200).json({
-        success: true,
-        message: "Perfil actualizado exitosamente",
-        data: updatedUser
-      });    
-
-    } catch (error) {
-      console.error("Error al actualizar el perfil entero:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al actualizar el perfil entero",
-      });
-    }
+      return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
 
 
@@ -141,7 +81,6 @@ class UserController {
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-    try {
       const { name, date, category } = req.query;
 
       const userId = req.userId;
@@ -157,10 +96,7 @@ class UserController {
       const user = await User.findById(toObjectId(userId))
 
       if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "Usuario no encontrado"
-        });
+        return createNotFoundResponse(res, "Usuario no encontrado");
       }
 
     const savedItems = await Event.find({
@@ -169,23 +105,12 @@ class UserController {
     }).limit(limit) 
       .skip((page - 1) * limit);
 
-      return res.status(200).json({
-        success: true,
-        data: {
-          items: savedItems,
-          currentPage: page,
-          totalPages: Math.ceil(savedItems.length / limit),
-          totalItems: savedItems.length
-        },
+      return createOkResponse(res, "Items guardados obtenidos exitosamente", {
+        items: savedItems,
+        currentPage: page,
+        totalPages: Math.ceil(savedItems.length / limit),
+        totalItems: savedItems.length
       });
-
-    } catch (error) {
-      console.error("Error al obtener los items guardados:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al obtener los items guardados",
-      });
-    }
   }
 
   /**
@@ -194,37 +119,18 @@ class UserController {
   async getUserComments(req, res) {
       const userId = req.params.userId;
 
-      try {
-          const user = await User.findById(toObjectId(userId));
-          if (!user) {
-              return res.status(404).json({
-                  success: false,
-                  message: "Usuario no encontrado"
-              });
-          }
-
-          const comments = await CommentModel.find({ userId: userId });
-
-          if (!comments || comments.length === 0) {
-              return res.status(404).json({
-                  success: false,
-                  message: "No se encontraron comentarios para este usuario"
-              });
-          }
-
-          return res.status(200).json({
-              success: true,
-              message: "Comentarios obtenidos exitosamente",
-              data: comments
-          });
-
-      } catch{
-          console.error("Error al obtener comentarios del usuario:", error);
-          return res.status(500).json({
-            success: false,
-            message: "Error interno del servidor al obtener comentarios del usuario",
-          });
+      const user = await User.findById(toObjectId(userId));
+      if (!user) {
+          return createNotFoundResponse(res, "Usuario no encontrado"); 
       }
+
+      const comments = await CommentModel.find({ userId: userId });
+
+      if (!comments || comments.length === 0) {
+          return createNotFoundResponse(res, "No se encontraron comentarios para este usuario");
+      }
+
+      return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
   /**
    * Guarda un evento en el perfil del usuario
@@ -233,24 +139,12 @@ class UserController {
     const userId = req.userId;
     const { eventId } = req.body;
 
-    try {
-      const user = await User.findById((userId));
+    const user = await User.findById((userId));
 
-      user.savedItems.push(toObjectId(eventId));
-      await user.save();
+    user.savedItems.push(toObjectId(eventId));
+    await user.save();
 
-      return res.status(200).json({
-        success: true,
-        message: "Evento guardado exitosamente",
-        data: user.savedItems
-      });
-    } catch (error) {
-      console.error("Error al guardar el evento:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al guardar el evento",
-      });
-    }
+    return createOkResponse(res, "Evento guardado exitosamente", user.savedItems);
   }
 
   /**
@@ -269,39 +163,24 @@ class UserController {
     if (date) filters.date = date
     if (category) filters.category = category
 
-    try {
-      const user = await User.findById(toObjectId(userId))
+    const user = await User.findById(toObjectId(userId))
 
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "Usuario no encontrado"
-        });
-      }
-      console.log(user.asistsTo);
-      const attendingItems = await Event.find({
-        _id: { $in: user.asistsTo },
-        ...filters,
-      }).limit(limit) 
-        .skip((page - 1) * limit);
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          items: attendingItems,
-          currentPage: page,
-          totalPages: Math.ceil(attendingItems.length / limit),
-          totalItems: attendingItems.length
-        },
-      });
-
-    } catch (error) {
-      console.error("Error al obtener los eventos a los que asiste:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al obtener los eventos a los que asiste",
-      });
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
     }
+    console.log(user.asistsTo);
+    const attendingItems = await Event.find({
+      _id: { $in: user.asistsTo },
+      ...filters,
+    }).limit(limit) 
+      .skip((page - 1) * limit);
+
+    return createOkResponse(res, "Eventos asistidos obtenidos exitosamente", {
+      items: attendingItems,
+      currentPage: page,
+      totalPages: Math.ceil(attendingItems.length / limit),
+      totalItems: attendingItems.length
+    });
   }
 
   /**
@@ -311,25 +190,12 @@ class UserController {
     const userId = req.userId;
     const { eventId } = req.body;
 
-    try {
-      const user = await User.findById(toObjectId(userId));
+    const user = await User.findById(toObjectId(userId));
 
-      user.asistsTo.push(toObjectId(eventId));
-      await user.save();
+    user.asistsTo.push(toObjectId(eventId));
+    await user.save();
 
-      return res.status(200).json({
-        success: true,
-        message: "Evento marcado como asistente exitosamente",
-        data: user.attendingItems
-      });
-    }
-    catch (error) {
-      console.error("Error al marcar el evento como asistente:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al marcar el evento como asistente",
-      });
-    }
+    return createOkResponse(res, "Evento marcado como asistente exitosamente", user.asistsTo);
   }
 
   /**
@@ -339,24 +205,12 @@ class UserController {
     const userId = req.userId;
     const { eventId } = req.params;
 
-    try {
-      const user = await User.findById(toObjectId(userId));
+    const user = await User.findById(toObjectId(userId));
 
-      user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
-      await user.save();
+    user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
+    await user.save();
 
-      return res.status(200).json({
-        success: true,
-        message: "Evento eliminado de los guardados exitosamente",
-        data: user.savedItems
-      });
-    } catch (error) {
-      console.error("Error al eliminar el evento guardado:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al eliminar el evento guardado",
-      });
-    }
+    return createOkResponse(res, "Evento eliminado de los guardados exitosamente", user.savedItems);
   }
 
   /**
@@ -366,23 +220,10 @@ class UserController {
     const userId = req.userId;
     const { eventId } = req.params;
 
-    try {
-      const user = await User.findById(toObjectId(userId));
-      user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
-      await user.save();
-      return res.status(200).json({
-        success: true,
-        message: "Evento eliminado de los asistidos exitosamente",
-        data: user.attendingItems
-      });
-    }
-    catch (error) {
-      console.error("Error al eliminar el evento asistido:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al eliminar el evento asistido",
-      });
-    }
+    const user = await User.findById(toObjectId(userId));
+    user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
+    await user.save();
+    return createOkResponse(res, "Evento eliminado de los asistidos exitosamente", user.asistsTo);
   }
 
   /**
@@ -391,26 +232,11 @@ class UserController {
   async getUserChats(req, res) {
     const userId = req.userId;
     console.log("User ID:", userId);
-    try {
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "Usuario no encontrado"
-        });
-      }
-      return res.status(200).json({
-        success: true,
-        message: "Chats obtenidos exitosamente",
-        data: user.chats
-      });
-    } catch (error) {
-      console.error("Error al obtener los chats del usuario:", error);
-      return res.status(500).json({
-        success: false,
-        message: "Error interno del servidor al obtener los chats del usuario",
-      });
+    const user = await User.findById(userId);
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
     }
+    return createOkResponse(res, "Chats obtenidos exitosamente", user.chats);
   }
 }
 

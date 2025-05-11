@@ -1,3 +1,5 @@
+const { createBadRequestResponse } = require("../utils/utils");
+
 module.exports = (req, res, next) => {
   if (req.method === 'POST' || req.method === 'PUT') {
     let rawData = '';
@@ -11,7 +13,7 @@ module.exports = (req, res, next) => {
         req.body = JSON.parse(rawData);
         next(); 
       } catch (e) {
-        return res.status(400).json({ error: 'Invalid JSON format', message: e.message });
+        return createBadRequestResponse(res, "Invalid JSON format");
       }
     });
   } else {
