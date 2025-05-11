@@ -25,6 +25,8 @@ var app = express();
 
 db.connectDB();
 
+app.use(cors());
+
 //app.use(validateJson);
 app.use(logger('dev'));
 app.use(express.json());
