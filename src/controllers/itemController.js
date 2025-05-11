@@ -11,7 +11,7 @@ const { toObjectId,
     } = require('../utils/utils');
 const { User } = require('../models/userModel');
 const { buildAggregationPipeline } = require('../utils/pipelineUtils');
-
+const { escapeRegExp } = require('../utils/utils');
 
 class ItemController {
 
@@ -26,7 +26,11 @@ class ItemController {
         const limit = parseInt(req.query.limit) || 16;
     
         const filters = {};
-        if (name) filters.title = name;
+        if (name) {
+            const pattern = escapeRegExp(name.trim());
+            filters.title = { $regex: pattern, $options: 'i' };
+        }
+
         if (category) filters.category = category;
     
         if (startDate) {

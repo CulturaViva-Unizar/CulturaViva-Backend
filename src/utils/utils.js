@@ -21,6 +21,11 @@ function generateOID(apiId) {
   return new mongoose.Types.ObjectId(objectIdHex);
 }
 
+function escapeRegExp(str = '') {
+  // Sustituye los caracteres especiales de las expresiones regulares
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function createResponse(res, status, message, body = null) {
   return res.status(status).json({
     success: status >= 200 && status < 400,
@@ -71,6 +76,7 @@ function cleanHtmltags(str){
 module.exports = {
   toObjectId,
   generateOID,
+  escapeRegExp,
   createResponse,
   createConflictResponse,
   createOkResponse,
