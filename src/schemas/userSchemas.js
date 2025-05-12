@@ -82,7 +82,7 @@ const saveEventSchema = {
     body: {
       type: 'object',
       properties: {
-        eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }, // Validación de ObjectId
+        eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }
       },
       required: ['eventId'],
       additionalProperties: false
@@ -90,10 +90,10 @@ const saveEventSchema = {
     query: {
       type: 'object',
       additionalProperties: false
-    },
-    required: ['params', 'body'],
-    additionalProperties: false
-  }
+    }
+  },
+  required: ['params', 'body'],
+  additionalProperties: false
 };
 
 const deleteEventSchema = {

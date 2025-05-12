@@ -6,8 +6,8 @@ const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
 const validateSchema = (schema) => (req, res, next) => {
-  if (req.headers['content-type'] !== 'application/json') {
-    return createBadRequestResponse(res, 'Content-Type must be application/json');  
+  if ( req.headers['content-type'] !== 'application/json') {
+    return res.status(400).json({ error: 'Content-Type must be application/json' });
   }
 
   const validate = ajv.compile(schema);
