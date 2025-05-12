@@ -1,5 +1,7 @@
 const { User } = require("../models/userModel");
 const { Event } = require("../models/eventModel");
+const { Comment } = require("../models/commentModel");
+
 const { 
   toObjectId,
   createForbiddenResponse,
@@ -122,19 +124,17 @@ class UserController {
    * Obtiene todos los comentarios de un usuario
    */
   async getUserComments(req, res) {
-    const userId = req.params.userId;
+    const userId = req.userId;
 
       const user = await User.findById(toObjectId(userId));
       if (!user) {
           return createNotFoundResponse(res, "Usuario no encontrado"); 
       }
-
-      const comments = await CommentModel.find({ userId: userId });
-
+      const comments = await Comment.find({ user: toObjectId(userId) })
+        .sort({ date: -1 });
       if (!comments || comments.length === 0) {
           return createNotFoundResponse(res, "No se encontraron comentarios para este usuario");
       }
-
       return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
   /**

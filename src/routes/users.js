@@ -556,10 +556,10 @@ router.delete('/:id/attending-events/:eventId',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/users/:id/comments',
+router.get('/:id/comments',
     validate(getUserCommentsSchema),
     passport.authenticate('jwt', { session: false }), 
-    userController.checkAdminOrUser, 
+    //userController.checkAdminOrUser, 
     userController.getUserComments);  
 
 /**

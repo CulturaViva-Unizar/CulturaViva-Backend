@@ -125,9 +125,24 @@ const deleteEventSchema = {
 const getUserCommentsSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      additionalProperties: false
+    }
   },
-  required: ['id'],
+  required: ['params'],
   additionalProperties: false
 };
 
