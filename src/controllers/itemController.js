@@ -109,7 +109,15 @@ class ItemController {
         const type = req.query.type || 'Event';
         const eventId = toObjectId(req.params.id);
         console.log('ID del evento:', eventId);
-        const event = await Item.findOne({ _id: eventId, itemType: type }).populate('comments');
+        console.log('Tipo de evento:', type);
+        const event = await Item.findOne({ _id: eventId, itemType: type })
+        .populate({
+            path: 'comments',
+            populate: {
+                path: 'user',
+                select: 'name -userType'
+            }
+        });
         if (!event) {
             return createNotFoundResponse(res, "Item no encontrado");
         }
@@ -157,7 +165,7 @@ class ItemController {
                 responseTo: req.params.commentId, 
                 event: req.params.id 
             }
-        ).populate('user', 'name').populate('responseTo', 'text');
+        ).populate('user', 'name -userType').populate('responseTo', 'text');
         
         return createOkResponse(res, "Respuestas obtenidas exitosamente", responses);
     }

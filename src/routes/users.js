@@ -772,9 +772,15 @@ module.exports = router;
  *           format: date-time
  *           description: Fecha en la que se creó el comentario
  *         user:
- *           type: string
- *           description: ID del usuario que realizó el comentario
- *           pattern: "^[0-9a-fA-F]{24}$"
+ *           type: object
+ *           properties:
+ *             id:
+ *               type: string
+ *               description: ID único del usuario
+ *               pattern: "^[0-9a-fA-F]{24}$"
+ *             name:
+ *               type: string
+ *               description: Nombre del usuario
  *         event:
  *           type: string
  *           description: ID del evento al que pertenece el comentario

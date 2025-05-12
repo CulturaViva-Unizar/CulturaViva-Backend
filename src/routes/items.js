@@ -576,7 +576,7 @@ router.get('/places/:id',
  *   get:
  *     summary: Obtiene los comentarios de un lugar por su ID
  *     tags:
- *       - Events
+ *       - Places
  *     parameters:
  *       - name: id
  *         in: path
@@ -609,7 +609,7 @@ router.get('/places/:id',
  */
 router.get('/places/:id/comments',
   (req, res, next) => {
-    req.query.type = 'Event';
+    req.query.type = 'Place';
     next();
   }, 
   itemController.getItemComments);
@@ -957,56 +957,6 @@ module.exports = router;
  *       required:
  *         - title
  *         - category
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Comment:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           description: ID único del comentario
- *         user:
- *           type: string
- *           description: ID del usuario que realizó el comentario
- *         text:
- *           type: string
- *           description: Contenido del comentario
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Fecha y hora en que se creó el comentario
- *       required:
- *         - user
- *         - text
- */
-
-/**
- * @swagger
- * components:
- *   schemas:
- *     Comment:
- *       type: object
- *       properties:
- *         id:
- *           type: string
- *           description: ID único del comentario
- *         user:
- *           type: string
- *           description: ID del usuario que realizó el comentario
- *         text:
- *           type: string
- *           description: Contenido del comentario
- *         createdAt:
- *           type: string
- *           format: date-time
- *           description: Fecha y hora en que se creó el comentario
- *       required:
- *         - user
- *         - text
  */
 
 /**
