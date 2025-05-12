@@ -114,9 +114,6 @@ class UserController {
       }
       const comments = await Comment.find({ user: toObjectId(userId) })
         .sort({ date: -1 });
-      if (!comments || comments.length === 0) {
-          return createNotFoundResponse(res, "No se encontraron comentarios para este usuario");
-      }
       return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
   /**
@@ -142,22 +139,23 @@ class UserController {
    * Obtiene los eventos a los que el usuario asiste
    */
   async getAttendingItems(req, res) {
-    console.log("Llego!")
-    const { name, date, category, page, limit } = req.query;
+    const { name, category, page, limit } = req.query;
     const userId = req.userId;
+    const today = new Date();
 
-    const filters = {};
-    if (name) filters.name = name;
-    if (date) filters.date = date;
-    if (category) filters.category = category;
+    let filters = {};
+    if (category) {
+      filters.category = category;
+    }
 
     const user = await User.findById(toObjectId(userId));
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
+    const dateFilter = { startDate: { $gte: today } };
     const additionalQuery = { _id: { $in: user.asistsTo } };
-    const finalQuery = { ...filters, ...additionalQuery };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Event);
+    const finalQuery = { ...filters, ...additionalQuery, ...dateFilter };
+    const paginatedResults = await handlePagination(page, limit, finalQuery, Event, { startDate: "asc" });
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
