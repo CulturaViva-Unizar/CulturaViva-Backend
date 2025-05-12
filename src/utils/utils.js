@@ -68,6 +68,25 @@ function cleanHtmltags(str){
   });
 }
 
+async function handlePagination(query, filters, Model, additionalQuery = {}) {
+  const page = parseInt(query.page) || 1;
+  const limit = parseInt(query.limit) || 16;
+
+  const finalQuery = { ...filters, ...additionalQuery };
+  
+  const totalItems = await Model.countDocuments(finalQuery);
+  const items = await Model.find(finalQuery)
+    .limit(limit)
+    .skip((page - 1) * limit);
+
+  return {
+    items,
+    currentPage: page,
+    totalPages: Math.ceil(totalItems / limit),
+    totalItems
+  };
+}
+
 module.exports = {
   toObjectId,
   generateOID,
@@ -80,5 +99,6 @@ module.exports = {
   createUnauthorizedResponse,
   createForbiddenResponse,
   createInternalServerErrorResponse,
-  cleanHtmltags
+  cleanHtmltags,
+  handlePagination
 };
