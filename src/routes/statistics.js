@@ -40,10 +40,39 @@ router.get('/users',
     userController.checkAdmin, 
     statisticsController.userCount
 );
-
+/**
+ * @swagger
+ * /statistics/users:
+ *   get:
+ *     summary: Devuelve la cantidad de usuarios
+ *     tags: [Statistics]
+ *     security:
+ *     - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         description: Categoria de eventos a contar. Por defecto, cuenta todos los eventos.
+ *         required: false
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Devuelve la cantidad de eventos segun el filtro
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/events', 
-    //passport.authenticate('jwt', { session: false }),
-    //userController.checkAdmin, 
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin, 
     statisticsController.eventCount
 );
 

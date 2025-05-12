@@ -26,10 +26,10 @@ class StatisticsController {
 
   async eventCount(req, res) {
     let count = 0;
-
-    const match = {};
-    if (req.query.type) match.category = req.query.type;
-
+    let match = {};
+    if (req.query.category) {
+      match = { category: req.query.category };
+    }
     count = await Item.countDocuments(match);
     createOkResponse(res, "Conteo de eventos obtenido exitosamente", {
       count: count,
