@@ -204,7 +204,6 @@ router.get('/upcoming-events',
  *         description: Error interno del servidor
  */
 router.get('/:id', 
-    validate(getUserByIdSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser,
     userController.getUserById);
@@ -282,7 +281,6 @@ router.get('/:id',
  *         description: Error interno del servidor
  */
 router.get('/:id/saved-events', 
-    validate(getEventsSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.getSavedItems);
 
@@ -357,7 +355,6 @@ router.get('/:id/saved-events',
  *         description: Error interno del servidor
  */
 router.get('/:id/attending-events', 
-    validate(getEventsSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.getAttendingItems);
 
@@ -574,7 +571,6 @@ router.post('/:id/attending-events',
  *         description: Error interno del servidor
  */
 router.delete('/:id/saved-events/:eventId', 
-    validate(deleteEventSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.removeSavedItem);
 
@@ -623,7 +619,6 @@ router.delete('/:id/saved-events/:eventId',
  *         description: Error interno del servidor
  */
 router.delete('/:id/attending-events/:eventId', 
-    validate(deleteEventSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.removeAttendingItem);
 
@@ -665,7 +660,6 @@ router.delete('/:id/attending-events/:eventId',
  *         description: Error interno del servidor
  */
 router.get('/:id/comments',
-    validate(getUserCommentsSchema),
     passport.authenticate('jwt', { session: false }), 
     //userController.checkAdminOrUser, 
     userController.getUserComments);  

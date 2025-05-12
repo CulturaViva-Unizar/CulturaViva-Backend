@@ -142,6 +142,7 @@ class UserController {
    * Obtiene los eventos a los que el usuario asiste
    */
   async getAttendingItems(req, res) {
+    console.log("Llego!")
     const { name, date, category, page, limit } = req.query;
     const userId = req.userId;
 
