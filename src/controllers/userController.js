@@ -7,7 +7,8 @@ const {
   createForbiddenResponse,
   createInternalServerErrorResponse,
   createOkResponse, 
-  createNotFoundResponse
+  createNotFoundResponse,
+  handlePagination
  } = require("../utils/utils");
 const { create } = require("../models/chatModel");
 
@@ -82,42 +83,23 @@ class UserController {
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-      const { name, date, category } = req.query;
-
+    const { name, date, category } = req.query;
     const userId = req.userId;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 16;
 
     const filters = {};
     if (name) filters.name = name;
     if (date) filters.date = date;
     if (category) filters.category = category;
-    console.log(filters);
 
     const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
 
-      if (!user) {
-        return createNotFoundResponse(res, "Usuario no encontrado");
-      }
+    const additionalQuery = { _id: { $in: user.savedItems } };
+    const paginatedResults = await handlePagination(req.query, filters, Event, additionalQuery);
 
-    const totalItems = await Event.countDocuments({
-      _id: { $in: user.savedItems },
-      ...filters,
-    });
-    
-    const savedItems = await Event.find({
-      _id: { $in: user.savedItems },
-      ...filters,
-    })
-      .limit(limit)
-      .skip((page - 1) * limit);
-
-    createOkResponse(res, "Items obtenidos exitosamente", {
-      items: savedItems,
-      currentPage: page,
-      totalPages: Math.ceil(savedItems.length / limit),
-      totalItems: totalItems,
-    });
+    return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
   /**
@@ -161,39 +143,22 @@ class UserController {
    */
   async getAttendingItems(req, res) {
     const { name, date, category } = req.query;
-
     const userId = req.userId;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 16;
 
     const filters = {};
-    if (name) filters.name = name
-    if (date) filters.date = date
-    if (category) filters.category = category
+    if (name) filters.name = name;
+    if (date) filters.date = date;
+    if (category) filters.category = category;
 
-    const user = await User.findById(toObjectId(userId))
-
+    const user = await User.findById(toObjectId(userId));
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-    const totalItems = await Event.countDocuments({
-      _id: { $in: user.savedItems },
-      ...filters,
-    });
 
-    console.log(user.asistsTo);
-    const attendingItems = await Event.find({
-      _id: { $in: user.asistsTo },
-      ...filters,
-    }).limit(limit) 
-      .skip((page - 1) * limit);
+    const additionalQuery = { _id: { $in: user.asistsTo } };
+    const paginatedResults = await handlePagination(req.query, filters, Event, additionalQuery);
 
-    createOkResponse(res, "Items obtenidos exitosamente", {
-      items: attendingItems,
-      currentPage: page,
-      totalPages: Math.ceil(attendingItems.length / limit),
-      totalItems: totalItems,
-    });
+    return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
   /**
@@ -256,6 +221,16 @@ class UserController {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
     return createOkResponse(res, "Chats obtenidos exitosamente", user.chats);
+  }
+
+  /**
+   * Devuelve los eventos mas populares
+   */
+  async getPopularEvents(req, res) {
+    const user = await User.findById(userId);
+    const events = await Event.find({})
+      .sort({ asistentes: -1 }); 
+    return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
   }
 }
 
