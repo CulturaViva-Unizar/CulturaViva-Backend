@@ -102,7 +102,7 @@ class UserController {
       _id: { $in: user.savedItems },
       ...filters,
     });
-
+    
     const savedItems = await Event.find({
       _id: { $in: user.savedItems },
       ...filters,
@@ -176,6 +176,11 @@ class UserController {
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
+    const totalItems = await Event.countDocuments({
+      _id: { $in: user.savedItems },
+      ...filters,
+    });
+
     console.log(user.asistsTo);
     const attendingItems = await Event.find({
       _id: { $in: user.asistsTo },
