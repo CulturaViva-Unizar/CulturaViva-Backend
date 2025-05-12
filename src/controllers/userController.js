@@ -234,8 +234,12 @@ class UserController {
    * Devuelve los eventos mas populares
    */
   async getPopularEvents(req, res) {
-    const { page, limit } = req.query;
-    const finalQuery = {};
+    const { page, limit, category } = req.query;
+    let filters = {};
+    if (category) {
+      filters.category = category;
+    }
+    const finalQuery = { ...filters };
     const events = await handlePagination(page, limit, finalQuery, Event, { asistentes: "desc" });
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
   }
