@@ -1,5 +1,5 @@
 const { User } = require("../models/userModel");
-const { Event } = require("../models/eventModel");
+const { Item, Event } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel");
 
 const { 
@@ -83,7 +83,7 @@ class UserController {
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-    const { name, date, category } = req.query;
+    const { name, date, category, page, limit } = req.query;
     const userId = req.userId;
 
     const filters = {};
@@ -98,7 +98,7 @@ class UserController {
 
     const additionalQuery = { _id: { $in: user.savedItems } };
     const finalQuery = { ...filters, ...additionalQuery };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Event);
+    const paginatedResults = await handlePagination(page, limit, finalQuery, Item);
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
@@ -199,7 +199,7 @@ class UserController {
     user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
     await user.save();
 
-    return createOkResponse(res, "Evento eliminado de los guardados exitosamente", user.savedItems);
+    return createOkResponse(res, "Item eliminado de los guardados exitosamente", user.savedItems);
   }
 
   /**
@@ -237,6 +237,17 @@ class UserController {
     const finalQuery = {};
     const events = await handlePagination(page, limit, finalQuery, Event, { asistentes: "desc" });
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
+  }
+
+  /**
+   * Devuelve los eventos proximos
+   */
+  async getUpcomingEvents(req, res) {
+    const { page, limit } = req.query;
+    const today = new Date();
+    const finalQuery = { startDate: { $gte: today } };
+    const events = await handlePagination(page, limit, finalQuery, Event, { startDate: "asc" });
+    return createOkResponse(res, "Eventos proximos obtenidos exitosamente", events);
   }
 }
 
