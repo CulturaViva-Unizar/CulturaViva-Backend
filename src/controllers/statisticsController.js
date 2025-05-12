@@ -1,17 +1,17 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
 
-const { createResponse } = require("../utils/utils");
+const { createOkResponse } = require("../utils/utils");
 
 class StatisticsController {
   async userCount(req, res) {
     let count = 0;
 
     switch (req.query.type) {
-      case "activo":
+      case "activos":
         count = await User.countDocuments({ active: true });
         break;
-      case "inactivo":
+      case "inactivos":
         count = await User.countDocuments({ active: false });
         break;
       default:
@@ -19,8 +19,7 @@ class StatisticsController {
         break;
     }
 
-    const status = res.statusCode !== 200 ? res.statusCode : 200;
-    createResponse(res, status, "Conteo de usuarios obtenido exitosamente", {
+    createOkResponse(res, "Conteo de usuarios obtenido exitosamente", {
       count: count,
     });
   }
@@ -32,8 +31,7 @@ class StatisticsController {
     if (req.query.type) match.category = req.query.type;
 
     count = await Item.countDocuments(match);
-    const status = res.statusCode !== 200 ? res.statusCode : 200;
-    createResponse(res, status, "Conteo de eventos obtenido exitosamente", {
+    createOkResponse(res, "Conteo de eventos obtenido exitosamente", {
       count: count,
     });
   }
