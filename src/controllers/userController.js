@@ -95,8 +95,8 @@ class UserController {
     }
 
     const additionalQuery = { _id: { $in: user.savedItems } };
-    const paginatedResults = await handlePagination(req.query, filters, Event, additionalQuery);
-
+    const finalQuery = { ...filters, ...additionalQuery };
+    const paginatedResults = await handlePagination(page, limit, finalQuery, Event);
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
@@ -142,7 +142,7 @@ class UserController {
    * Obtiene los eventos a los que el usuario asiste
    */
   async getAttendingItems(req, res) {
-    const { name, date, category } = req.query;
+    const { name, date, category, page, limit } = req.query;
     const userId = req.userId;
 
     const filters = {};
@@ -154,10 +154,9 @@ class UserController {
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-
     const additionalQuery = { _id: { $in: user.asistsTo } };
-    const paginatedResults = await handlePagination(req.query, filters, Event, additionalQuery);
-
+    const finalQuery = { ...filters, ...additionalQuery };
+    const paginatedResults = await handlePagination(page, limit, finalQuery, Event);
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
@@ -173,10 +172,16 @@ class UserController {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
 
+    const event = await Event.findById(toObjectId(eventId));
+    if (!event) {
+      return createNotFoundResponse(res, "Evento no encontrado");
+    }
+
     const exists = user.asistsTo.some((item) => item.equals(eventId));
     if (!exists) {
       user.asistsTo.push(toObjectId(eventId));
-      await user.save();
+      event.asistentes.push(toObjectId(userId));
+      await Promise.all([user.save(), event.save()]);
     }
 
     return createOkResponse(res, "Evento marcado como asistente exitosamente", user.asistsTo);
@@ -203,10 +208,11 @@ class UserController {
   async removeAttendingItem(req, res) {
     const userId = req.userId;
     const { eventId } = req.params;
-
     const user = await User.findById(toObjectId(userId));
     user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
-    await user.save();
+    const event = await Event.findById(toObjectId(eventId));
+    event.asistentes = event.asistentes.filter(user => user.toString() !== userId);
+    await Promise.all([user.save(), event.save()]);
     return createOkResponse(res, "Evento eliminado de los asistidos exitosamente", user.asistsTo);
   }
 
@@ -227,9 +233,9 @@ class UserController {
    * Devuelve los eventos mas populares
    */
   async getPopularEvents(req, res) {
-    const user = await User.findById(userId);
-    const events = await Event.find({})
-      .sort({ asistentes: -1 }); 
+    const { page, limit } = req.query;
+    const finalQuery = {};
+    const events = await handlePagination(page, limit, finalQuery, Event, { asistentes: "desc" });
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
   }
 }
