@@ -10,7 +10,6 @@ const {
 const { create } = require("../models/chatModel");
 
 class UserController {
-
   /**
    * Comprueba si el usuario es admin
    */
@@ -63,11 +62,11 @@ class UserController {
       const { name, email, phone } = req.body;
       const userId = req.params.id;
 
-      const updatedUser = await User.findByIdAndUpdate(
-        toObjectId(userId),
-        { name, email, phone },
-        { new: true, runValidators: true }
-      );
+    const updatedUser = await User.findByIdAndUpdate(
+      toObjectId(userId),
+      { name, email, phone },
+      { new: true, runValidators: true }
+    );
 
       if (!updatedUser) {
         return createNotFoundResponse(res, "Usuario no encontrado");
@@ -83,41 +82,47 @@ class UserController {
   async getSavedItems(req, res) {
       const { name, date, category } = req.query;
 
-      const userId = req.userId;
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 16;
+    const userId = req.userId;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 16;
 
-      const filters = {};
-      if (name) filters.name = name
-      if (date) filters.date = date
-      if (category) filters.category = category
-      console.log(filters);
-      
-      const user = await User.findById(toObjectId(userId))
+    const filters = {};
+    if (name) filters.name = name;
+    if (date) filters.date = date;
+    if (category) filters.category = category;
+    console.log(filters);
+
+    const user = await User.findById(toObjectId(userId));
 
       if (!user) {
         return createNotFoundResponse(res, "Usuario no encontrado");
       }
 
+    const totalItems = await Event.countDocuments({
+      _id: { $in: user.savedItems },
+      ...filters,
+    });
+    
     const savedItems = await Event.find({
       _id: { $in: user.savedItems },
       ...filters,
-    }).limit(limit) 
+    })
+      .limit(limit)
       .skip((page - 1) * limit);
 
-      return createOkResponse(res, "Items guardados obtenidos exitosamente", {
-        items: savedItems,
-        currentPage: page,
-        totalPages: Math.ceil(savedItems.length / limit),
-        totalItems: savedItems.length
-      });
+    createOkResponse(res, "Items obtenidos exitosamente", {
+      items: savedItems,
+      currentPage: page,
+      totalPages: Math.ceil(savedItems.length / limit),
+      totalItems: totalItems,
+    });
   }
 
   /**
    * Obtiene todos los comentarios de un usuario
    */
   async getUserComments(req, res) {
-      const userId = req.params.userId;
+    const userId = req.params.userId;
 
       const user = await User.findById(toObjectId(userId));
       if (!user) {
@@ -139,19 +144,22 @@ class UserController {
     const userId = req.userId;
     const { eventId } = req.body;
 
-    const user = await User.findById((userId));
+    const user = await User.findById(userId);
+    const exists = user.savedItems.some((item) => item.equals(eventId));
 
-    user.savedItems.push(toObjectId(eventId));
-    await user.save();
+    if (!exists) {
+      user.savedItems.push(toObjectId(eventId));
+      await user.save();
+    }
 
     return createOkResponse(res, "Evento guardado exitosamente", user.savedItems);
+
   }
 
   /**
    * Obtiene los eventos a los que el usuario asiste
    */
   async getAttendingItems(req, res) {
-
     const { name, date, category } = req.query;
 
     const userId = req.userId;
@@ -168,6 +176,11 @@ class UserController {
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
+    const totalItems = await Event.countDocuments({
+      _id: { $in: user.savedItems },
+      ...filters,
+    });
+
     console.log(user.asistsTo);
     const attendingItems = await Event.find({
       _id: { $in: user.asistsTo },
@@ -175,11 +188,11 @@ class UserController {
     }).limit(limit) 
       .skip((page - 1) * limit);
 
-    return createOkResponse(res, "Eventos asistidos obtenidos exitosamente", {
+    createOkResponse(res, "Items obtenidos exitosamente", {
       items: attendingItems,
       currentPage: page,
       totalPages: Math.ceil(attendingItems.length / limit),
-      totalItems: attendingItems.length
+      totalItems: totalItems,
     });
   }
 
@@ -191,9 +204,15 @@ class UserController {
     const { eventId } = req.body;
 
     const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
 
-    user.asistsTo.push(toObjectId(eventId));
-    await user.save();
+    const exists = user.asistsTo.some((item) => item.equals(eventId));
+    if (!exists) {
+      user.asistsTo.push(toObjectId(eventId));
+      await user.save();
+    }
 
     return createOkResponse(res, "Evento marcado como asistente exitosamente", user.asistsTo);
   }

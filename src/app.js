@@ -10,6 +10,7 @@ var usersRouter = require('./routes/users');
 var authRouter = require('./routes/auth');
 var itemRouter = require('./routes/items');
 var chatsRouter = require('./routes/chats');
+var statisticsRouter = require('./routes/statistics');
 
 const swaggerJsdoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
@@ -40,6 +41,7 @@ app.use('/users', usersRouter);
 app.use('/auth', authRouter);
 app.use('/items', itemRouter)
 app.use('/chats', chatsRouter);
+app.use('/statistics', statisticsRouter)
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 

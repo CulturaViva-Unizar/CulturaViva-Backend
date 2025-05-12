@@ -347,13 +347,13 @@ router.put('/:id',
  *                   type: boolean
  *                 message:
  *                   type: string
- *                 data:
+ *                 data:  
  *                   type: object
-*                   properties:
-*                     items:
-*                       type: array
-*                       items:
-*                         $ref: '#/components/schemas/Event'
+ *                   properties: 
+ *                      items:
+ *                          type: array
+ *                          items:
+ *                              $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       500:
@@ -401,10 +401,13 @@ router.post('/:id/saved-events',
  *                   type: boolean
  *                 message:
  *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                 data:  
+ *                   type: object
+ *                   properties: 
+ *                      items:
+ *                          type: array
+ *                          items:
+ *                              $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       500:
@@ -450,10 +453,13 @@ router.post('/:id/attending-events',
  *                   type: boolean
  *                 message:
  *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                 data:  
+ *                   type: object
+ *                   properties: 
+ *                      items:
+ *                          type: array
+ *                          items:
+ *                              $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       500:
