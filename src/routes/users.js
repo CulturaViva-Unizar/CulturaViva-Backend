@@ -58,7 +58,7 @@ const router = express.Router();
  */
 router.get('/', 
     passport.authenticate('jwt', { session: false }), 
-    //userController.checkAdmin, 
+    userController.checkAdmin, 
     userController.getUsers);
 
 /**

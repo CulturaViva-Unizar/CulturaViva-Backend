@@ -48,7 +48,8 @@ class UserController {
       }
       const finalQuery = { ...filters };
       const selectCondition = { password: 0 };
-      const users = await handlePagination(page, limit, finalQuery, User, {}, selectCondition);
+      const orderCondition = { name: "asc" };
+      const users = await handlePagination(page, limit, finalQuery, User, orderCondition, selectCondition);
       return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
   }
 
