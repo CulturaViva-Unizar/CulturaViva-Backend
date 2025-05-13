@@ -117,60 +117,6 @@ router.get('/popular-events',
 
 /**
  * @swagger
- * /users/upcoming-events:
- *   get:
- *     summary: Obtiene los eventos mas proximos
- *     tags: [Users]
- *     parameters:
- *       - in: query
- *         name: category
- *         schema:
- *           type: string
- *         description: Filtrar por categoría del evento
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Número de página
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         description: Límite de resultados por página
- *     responses:
- *       200:
- *         description: Lista de eventos populares obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 data:
- *                   type: object
- *                   properties:
- *                     currentPage:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
- *                     totalItems:
- *                       type: integer
- *                     items:
- *                       type: array
- *                       items:
- *                         $ref: '#/components/schemas/Event'
- *       401:
- *         description: No autorizado
- *       500:
- *         description: Error interno del servidor
- */
-router.get('/upcoming-events',
-    userController.getUpcomingEvents
-);
-
-/**
- * @swagger
  * /users/{id}:
  *   get:
  *     summary: Obtiene el perfil del usuario autenticado
@@ -289,7 +235,7 @@ router.get('/:id/saved-events',
  * @swagger
  * /users/{id}/attending-events:
  *   get:
- *     summary: Obtiene los eventos a los que el usuario asiste
+ *     summary: Obtiene los eventos a los que el usuario ya ha asistido. Historial de eventos pasados asistidos 
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
@@ -354,9 +300,64 @@ router.get('/:id/saved-events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id/attending-events', 
+router.get('/:id/attend-events', 
     passport.authenticate('jwt', { session: false }), 
     userController.getAttendingItems);
+
+/**
+ * @swagger
+ * /users/upcoming-events:
+ *   get:
+ *     summary: Obtiene los eventos mas proximos a los que vas a asistir
+ *     tags: [Users]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         description: Filtrar por categoría del evento
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Lista de eventos populares obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/:id/upcoming-events',
+    passport.authenticate('jwt', { session: false }), 
+    userController.getUpcomingEvents
+);
 
 
 /**

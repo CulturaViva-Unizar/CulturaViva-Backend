@@ -152,9 +152,9 @@ class UserController {
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-    const dateFilter = { startDate: { $gte: today } };
-    const additionalQuery = { _id: { $in: user.asistsTo } };
-    const finalQuery = { ...filters, ...additionalQuery, ...dateFilter };
+    const dateFilter = { endDate: { $lt: today } };
+    const asistFilter = { _id: { $in: user.asistsTo } };
+    const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
     const paginatedResults = await handlePagination(page, limit, finalQuery, Event, { startDate: "asc" });
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
@@ -237,6 +237,7 @@ class UserController {
     if (category) {
       filters.category = category;
     }
+    
     const finalQuery = { ...filters };
     const events = await handlePagination(page, limit, finalQuery, Event, { asistentes: "desc" });
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
@@ -246,9 +247,21 @@ class UserController {
    * Devuelve los eventos proximos
    */
   async getUpcomingEvents(req, res) {
-    const { page, limit } = req.query;
+    const { page, limit, category } = req.query;
+    const userId = req.userId;
+    const user = await User.findById(toObjectId(userId));
+    let filters = {};
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
+    
+    if (category) {
+      filters.category = category;
+    }
     const today = new Date();
-    const finalQuery = { startDate: { $gte: today } };
+    const dateFilter = { endDate: { $gte: today } };
+    const asistFilter = { _id: { $in: user.asistsTo } };
+    const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
     const events = await handlePagination(page, limit, finalQuery, Event, { startDate: "asc" });
     return createOkResponse(res, "Eventos proximos obtenidos exitosamente", events);
   }
