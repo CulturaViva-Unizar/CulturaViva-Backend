@@ -34,7 +34,23 @@ const router = express.Router();
  *    summary: Obtiene todos los usuarios
  *    tags: [Users]
  *    security:
- *     - bearerAuth: []
+ *      - bearerAuth: []
+ *    parameters:
+ *      - in: query
+ *        name: page
+ *        schema:
+ *           ype: integer
+ *        description: Número de página
+ *      - in: query
+ *        name: limit
+ *        schema:
+ *          type: integer
+ *        description: Límite de resultados por página
+ *      - in: query
+ *        name: userType
+ *        schema:
+ *          type: string
+ *        description: Tipo de usuario (Habilitados o Deshabilitados)
  *    responses:
  *     200:
  *      description: Lista de usuarios obtenida exitosamente

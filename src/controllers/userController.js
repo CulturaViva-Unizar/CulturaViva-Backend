@@ -43,8 +43,8 @@ class UserController {
   async getUsers(req, res) {
       const { page, limit } = req.query;
       let filters = {};
-      if (req.query.isActive) {
-        filters.active = req.query.isActive;
+      if (req.query.userType) {
+        filters.active = req.query.userType == "Habilitados" ? true : false;
       }
       const finalQuery = { ...filters };
       const selectCondition = { password: 0 };
