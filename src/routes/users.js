@@ -322,11 +322,19 @@ router.get('/:id/attend-events',
 
 /**
  * @swagger
- * /users/upcoming-events:
+ * /users/{id}/upcoming-events:
  *   get:
  *     summary: Obtiene los eventos mas proximos a los que vas a asistir
  *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
  *       - in: query
  *         name: category
  *         schema:
@@ -678,7 +686,7 @@ router.delete('/:id/attending-events/:eventId',
  */
 router.get('/:id/comments',
     passport.authenticate('jwt', { session: false }), 
-    //userController.checkAdminOrUser, 
+    userController.checkAdminOrUser, 
     userController.getUserComments);  
 
 /**
