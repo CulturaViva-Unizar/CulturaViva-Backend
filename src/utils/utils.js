@@ -73,12 +73,13 @@ function cleanHtmltags(str){
   });
 }
 
-async function handlePagination(_page, _limit, finalQuery = {}, Model, orderCondition = {}) {
+async function handlePagination(_page, _limit, finalQuery = {}, Model, orderCondition = {}, selectCondition = {}) {
   const page = _page || 1;
   const limit = _limit || 16;
   
   const totalItems = await Model.countDocuments(finalQuery);
   const items = await Model.find(finalQuery)
+    .select(selectCondition)
     .limit(limit)
     .skip((page - 1) * limit)
     .sort(orderCondition);

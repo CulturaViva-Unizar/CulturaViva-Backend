@@ -41,7 +41,14 @@ class UserController {
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-      const users = await User.find({}).select("-password");
+      const { page, limit } = req.query;
+      let filters = {};
+      if (req.query.isActive) {
+        filters.active = req.query.isActive;
+      }
+      const finalQuery = { ...filters };
+      const selectCondition = { password: 0 };
+      const users = await handlePagination(page, limit, finalQuery, User, {}, selectCondition);
       return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
   }
 
