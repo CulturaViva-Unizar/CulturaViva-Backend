@@ -1,6 +1,7 @@
 const { User } = require("../models/userModel");
 const { Item, Event } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel");
+const { createChatDTO } = require("../utils/chatUtils");
 
 const { 
   toObjectId,
@@ -229,11 +230,16 @@ class UserController {
   async getUserChats(req, res) {
     const userId = req.userId;
     console.log("User ID:", userId);
-    const user = await User.findById(userId);
+    const user = await User.findById(userId).populate('chats');
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-    return createOkResponse(res, "Chats obtenidos exitosamente", user.chats);
+
+    const chatsDTO = await Promise.all(
+      user.chats.map(chat => createChatDTO(chat, userId))
+    );
+
+    return createOkResponse(res, "Chats obtenidos exitosamente", chatsDTO);
   }
 
   /**

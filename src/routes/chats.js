@@ -27,12 +27,9 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             properties:
- *               user1:
+ *               user:
  *                 type: string
- *                 description: ID del primer usuario
- *               user2:
- *                 type: string
- *                 description: ID del segundo usuario
+ *                 description: ID del usuario con el que se desea chatear
  *     responses:
  *       201:
  *         description: Chat creado exitosamente
@@ -54,92 +51,7 @@ const router = express.Router();
 router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
-  chatController.checkIsUser,
   chatController.createChat
-);
-
-/**
- * @swagger
- * /chats/{chatId}:
- *   delete:
- *     summary: Elimina un chat por su ID, así como todos los mensajes asociados.
- *     tags: [Chats]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: chatId
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del chat a eliminar
- *     responses:
- *       200:
- *         description: Chat eliminado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 message:
- *                   type: string
- *                   example: "Chat eliminado exitosamente"
- *       404:
- *         description: Chat no encontrado
- *       401:
- *         description: No autorizado
- *       403:
- *         description: No tienes acceso a este chat
- *       500:
- *         description: Error interno del servidor
- */
-router.delete(
-  '/:chatId',
-  passport.authenticate('jwt', { session: false }),
-  chatController.checkUserInChat,
-  chatController.deleteChat
-);
-
-/**
- * @swagger
- * /chats/{chatId}:
- *   get:
- *     summary: Obtiene un chat completo por su ID
- *     tags: [Chats]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: chatId
- *         required: true
- *         schema:
- *           type: string
- *           pattern: "^[0-9a-fA-F]{24}$"
- *         description: ID del chat que se desea obtener
- *     responses:
- *       200:
- *         description: Chat obtenido exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Chat'
- *       404:
- *         description: Chat no encontrado
- *       401:
- *         description: No autorizado
- *       403:
- *         description: No tienes acceso a este chat
- *       500:
- *         description: Error interno del servidor
- */
-router.get(
-  '/:chatId',
-  passport.authenticate('jwt', { session: false }),
-  chatController.checkUserInChat,
-  chatController.getChatById
 );
 
 
@@ -202,14 +114,16 @@ module.exports = router;
  *           type: string
  *           description: ID único del chat
  *           pattern: "^[0-9a-fA-F]{24}$"
- *         user1:
- *           type: string
- *           description: ID del primer usuario
- *           pattern: "^[0-9a-fA-F]{24}$"
- *         user2: 
- *           type: string
- *           description: ID del segundo usuario
- *           pattern: "^[0-9a-fA-F]{24}$"
+ *         user:
+ *           type: object
+ *           properties:
+ *            id:
+ *              type: string
+ *              description: ID del usuario remoto
+ *              pattern: "^[0-9a-fA-F]{24}$"
+ *            name:
+ *              type: string
+ *              description: Nombre del usuario remoto
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -220,8 +134,7 @@ module.exports = router;
  *           description: Fecha de última actualización del chat
  *       required:
  *        - id
- *        - user1
- *        - user2
+ *        - user
  *        - createdAt
  *        - updatedAt
  */
