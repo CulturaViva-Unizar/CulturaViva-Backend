@@ -544,7 +544,7 @@ router.post('/:id/attending-events',
 
 /**
  * @swagger
- * /users/{id}/saved-events/:eventId:
+ * /users/{id}/saved-events/{eventId}:
  *   delete:
  *     summary: Elimina un evento guardado del perfil del usuario
  *     tags: [Users]
@@ -594,25 +594,25 @@ router.delete('/:id/saved-events/:eventId',
 
 /**
  * @swagger
- * /users/{id}/attending-events/:eventId:
+ * /users/{id}/attending-events/{eventId}:
  *   delete:
  *     summary: Elimina un evento asistido del perfil del usuario
  *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
- *         name: id
+ *       - name: id
+ *         in: path
  *         required: true
- *         schema:
- *           type: string
  *         description: ID del usuario
- *       - in: path
- *         name: eventId
- *         required: true
  *         schema:
  *           type: string
+ *       - name: eventId
+ *         in: path  
+ *         required: true
  *         description: ID del evento a eliminar
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Evento eliminado exitosamente
