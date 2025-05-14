@@ -76,4 +76,12 @@ router.get('/events',
     statisticsController.eventCount
 );
 
+router.get('/visits', 
+    //passport.authenticate('jwt', { session: false }),
+    //userController.checkAdmin, 
+    statisticsController.getVisits
+);
+
+router.get('/visits/initialize', statisticsController.initializeVisits);
+
 module.exports = router;
