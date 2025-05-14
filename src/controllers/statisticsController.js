@@ -50,25 +50,35 @@ class StatisticsController {
       {
         $group: {
           _id: {
-            $toInt: {
-              $substr: ['$date', 5, 2] // Extrae solo el mes (MM)
-            }
+            year: { $substr: ['$date', 0, 4] },
+            month: { $substr: ['$date', 5, 2] }
           },
           total: { $sum: '$count' }
         }
       },
       {
-        $sort: { _id: 1 }
+        $sort: { 
+          "_id.year": 1,
+          "_id.month": 1 
+        }
+      },
+      {
+        $project: {
+          _id: {
+            $concat: ["$_id.year", "-", "$_id.month"]
+          },
+          total: 1
+        }
       }
     ]);
 
-    const monthlyVisits = {};    
+    const monthlyVisits = {};
     stats.forEach(stat => {
       monthlyVisits[stat._id] = stat.total;
     });
 
     return createOkResponse(res, "Visitas obtenidas exitosamente", {
-      "months": monthlyVisits
+      months: stats
     });
   }
 

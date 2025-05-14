@@ -84,7 +84,7 @@ router.get('/events',
  *     summary: Devuelve la cantidad de visitas por mes
  *     tags: [Statistics]
  *     security:
- *     - bearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: range
@@ -101,24 +101,33 @@ router.get('/events',
  *               type: object
  *               properties:
  *                 success:
- *                  type: boolean
+ *                   type: boolean
+ *                   example: true
  *                 message:
- *                  type: string
+ *                   type: string
+ *                   example: "Visitas obtenidas exitosamente"
  *                 data:
  *                   type: object
  *                   properties:
  *                     months:
- *                       type: object
- *                       additionalProperties:
- *                         type: integer
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           total:
+ *                             type: integer
+ *                             minimum: 0
+ *                           _id:
+ *                             type: string
+ *                             pattern: '^\d{4}-\d{2}$'
+ *                             description: Fecha en formato YYYY-MM
  *                       example:
- *                         "1": 0
- *                         "2": 0
- *                         "3": 0
- *                         "4": 0
- *                         "5": 4
- *                         "12": 0
- *                  
+ *                         - _id: "2025-03"
+ *                           total: 0
+ *                         - _id: "2025-04"
+ *                           total: 0
+ *                         - _id: "2025-05"
+ *                           total: 4
  *       403:
  *         description: Acceso denegado
  *       500:
