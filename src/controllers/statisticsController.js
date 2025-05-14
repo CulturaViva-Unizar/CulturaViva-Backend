@@ -6,6 +6,9 @@ const { createOkResponse, createInternalServerErrorResponse } = require("../util
 
 class StatisticsController {
 
+  /**
+   * Middleware para contar visitas
+  */
   async countVisits(req, res, next) {
       const today = new Date().toISOString().split('T')[0];
       let visit = await Visit.findOne({ date: today });
@@ -17,7 +20,10 @@ class StatisticsController {
       await visit.save();
       next();
     }
-
+  
+  /**
+   * Obtiene las visitas por meses
+  */
   async getVisits(req, res) {
     const range = req.query.range || '12';
     const today = new Date();
