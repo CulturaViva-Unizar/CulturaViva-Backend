@@ -156,6 +156,13 @@ class ItemController {
             { new: true }
         );
 
+        await User.findByIdAndUpdate(
+            userId,
+            { $push: { comments: comment._id } },
+            { new: true }
+        );
+        
+
         return createCreatedResponse(res, "Comentario creado exitosamente", comment);
     }
 
@@ -191,8 +198,11 @@ class ItemController {
             return createNotFoundResponse(res, "Evento no encontrado");
         }
 
-        // Elimina el comentario
-        await Comment.findByIdAndDelete(commentId);
+        // Marcamos el comentario como eliminado en lugar de eliminarlo físicamente
+        // Esto es útil para mantener el historial de comentarios y para las estadísticas
+        comment.deleted = true;
+        comment.deleteAt = new Date();
+        await comment.save();
 
         // Elimina el ID del comentario de la lista de comentarios del evento
         await Item.findByIdAndUpdate(
@@ -202,11 +212,12 @@ class ItemController {
         );
 
         // Elimina el ID del comentario de la lista de comentarios del usuario
-        await User.findByIdAndUpdate(
-            req.userId,
-            { $pull: { comments: commentId } },
-            { new: true }
-        );
+        // Comentado porque nos interasa mantener el historial de comentarios de cada usuario
+        // await User.findByIdAndUpdate(
+        //     req.userId,
+        //     { $pull: { comments: commentId } },
+        //     { new: true }
+        // );
 
         await Response.deleteMany({ responseTo: commentId });
 
