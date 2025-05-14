@@ -122,6 +122,7 @@ class UserController {
           return createNotFoundResponse(res, "Usuario no encontrado"); 
       }
       const comments = await Comment.find({ user: toObjectId(userId) })
+        .populate('user', 'name -userType')
         .sort({ date: -1 });
       return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
