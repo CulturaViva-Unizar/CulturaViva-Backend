@@ -40,9 +40,10 @@ router.get('/users',
     userController.checkAdmin, 
     statisticsController.userCount
 );
+
 /**
  * @swagger
- * /statistics/users:
+ * /statistics/events:
  *   get:
  *     summary: Devuelve la cantidad de usuarios
  *     tags: [Statistics]
@@ -76,6 +77,53 @@ router.get('/events',
     statisticsController.eventCount
 );
 
+/**
+ * @swagger
+ * /statistics/visits:
+ *   get:
+ *     summary: Devuelve la cantidad de visitas por mes
+ *     tags: [Statistics]
+ *     security:
+ *     - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: range
+ *         description: Rango en meses. Posibles valores 1, 3, 6, 12
+ *         required: false
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Devuelve la cantidad de visitas por mes
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                  type: boolean
+ *                 message:
+ *                  type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     months:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                       example:
+ *                         "1": 0
+ *                         "2": 0
+ *                         "3": 0
+ *                         "4": 0
+ *                         "5": 4
+ *                         "12": 0
+ *                  
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/visits', 
     //passport.authenticate('jwt', { session: false }),
     //userController.checkAdmin, 
