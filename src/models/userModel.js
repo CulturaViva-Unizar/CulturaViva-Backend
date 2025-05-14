@@ -42,7 +42,12 @@ const userSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'Item',
     default: []
-  }]
+  }],
+  comments: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Comment',
+    default: []
+  }],
 }, { discriminatorKey: 'userType' 
 });
 
