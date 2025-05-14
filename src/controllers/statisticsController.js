@@ -1,9 +1,78 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
+const { Visit } = require("../models/statisticsModel");
 
-const { createOkResponse } = require("../utils/utils");
+const { createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
 
 class StatisticsController {
+
+  async countVisits(req, res, next) {
+      const today = new Date().toISOString().split('T')[0];
+      let visit = await Visit.findOne({ date: today });
+      if (!visit) {
+        visit = new Visit({ date: today, count: 1 });
+      } else {
+        visit.count++;
+      }
+      await visit.save();
+      next();
+    }
+
+  async getVisits(req, res) {
+    const range = req.query.range || '12';
+    const today = new Date();
+    let startDate = new Date();
+
+    switch (range) {
+      case '1':
+        startDate.setMonth(today.getMonth() - 1);
+        break;
+      case '3':
+        startDate.setMonth(today.getMonth() - 3);
+        break;
+      case '6':
+        startDate.setMonth(today.getMonth() - 6);
+        break;
+      case '12':
+        startDate.setFullYear(today.getFullYear() - 1);
+        break;
+      default:
+        startDate.setFullYear(today.getFullYear() - 1);
+    }
+
+    const from = startDate.toISOString().split('T')[0];
+    const stats = await Visit.aggregate([
+      {
+        $match: {
+          date: { $gte: from }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $toInt: {
+              $substr: ['$date', 5, 2] // Extrae solo el mes (MM)
+            }
+          },
+          total: { $sum: '$count' }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]);
+
+    const monthlyVisits = {};    
+    stats.forEach(stat => {
+      monthlyVisits[stat._id] = stat.total;
+    });
+
+    return createOkResponse(res, "Visitas obtenidas exitosamente", monthlyVisits);
+  }
+
+  /**
+   * Obtiene el conteo de usuarios
+   */
   async userCount(req, res) {
     let count = 0;
 
@@ -24,6 +93,9 @@ class StatisticsController {
     });
   }
 
+  /**
+   * Obtiene el conteo de eventos
+   */
   async eventCount(req, res) {
     let count = 0;
     let match = {};
@@ -80,6 +152,39 @@ class StatisticsController {
       "Conteo de eventos por categoría obtenido exitosamente",
       result
     );
+  }
+
+  async initializeVisits(req, res) {
+    try {
+      const today = new Date();
+      const startDate = new Date(today.getFullYear() - 1, today.getMonth(), 1); // Empezar desde hace 1 año
+      const monthlyVisits = [];
+
+      for (let date = new Date(startDate); date <= today; date.setMonth(date.getMonth() + 1)) {
+        const formattedDate = date.toISOString().split('T')[0].substring(0, 7) + '-01'; // Format: YYYY-MM-01
+        monthlyVisits.push({
+          date: formattedDate,
+          count: 0
+        });
+      }
+
+      const operations = monthlyVisits.map(visit => ({
+        updateOne: {
+          filter: { date: visit.date },
+          update: { $setOnInsert: { count: 0 } },
+          upsert: true
+        }
+      }));
+
+      await Visit.bulkWrite(operations);
+
+      return createOkResponse(res, "Visitas inicializadas exitosamente", {
+        monthsInitialized: monthlyVisits.length
+      });
+    } catch (error) {
+      console.error('Error al inicializar visitas:', error);
+      return createInternalServerErrorResponse(res, "Error al inicializar las visitas");
+    }
   }
 }
 
