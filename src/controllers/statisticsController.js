@@ -67,7 +67,9 @@ class StatisticsController {
       monthlyVisits[stat._id] = stat.total;
     });
 
-    return createOkResponse(res, "Visitas obtenidas exitosamente", monthlyVisits);
+    return createOkResponse(res, "Visitas obtenidas exitosamente", {
+      "months": monthlyVisits
+    });
   }
 
   /**
