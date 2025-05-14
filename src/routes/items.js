@@ -112,6 +112,40 @@ router.get('/events',
   }, 
   itemController.getItems);
 
+/**
+ * @swagger
+ * /items/events/categories:
+ *   get:
+ *     summary: Obtiene todas las categorías de eventos
+ *     tags:
+ *       - Events
+ *     responses:
+ *       200:
+ *         description: Lista de categorías de eventos obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Categorías obtenidas exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/events/categories',
+  (req, res, next) => {
+    req.query.type = 'Event';
+    next();
+  }, 
+  itemController.getCategories);
 
 /**
  * @swagger
@@ -527,6 +561,42 @@ router.get('/places',
     next();
   }, 
   itemController.getItems);
+
+/**
+ * @swagger
+ * /items/places/categories:
+ *   get:
+ *     summary: Obtiene todas las categorías de lugares
+ *     tags:
+ *       - Places
+ *     responses:
+ *       200:
+ *         description: Lista de categorías de lugares obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Categorías obtenidas exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/places/categories',
+  (req, res, next) => {
+    console.log('Fetching categories for places');
+    req.query.type = 'Place';
+    next();
+  }, 
+  itemController.getCategories);
 
 
 /**

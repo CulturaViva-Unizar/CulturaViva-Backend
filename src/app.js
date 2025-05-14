@@ -57,20 +57,21 @@ const ItemController = require('./controllers/itemController');
 const { getEventosCulturales } = require('./processors/agendaZaragoza');
 const { getPlaces } = require('./processors/lugares');
 
-/*
+/* 
 (async () => {
     try {
         const eventos = await getEventosCulturales();
         await ItemController.guardarEventos(eventos);
         console.log(`Total eventos obtenidos: ${eventos.length}`);
 
-        //const places = await getPlaces();
-        //await ItemController.guardarLugares(places);
-        //console.log(`Total lugares obtenidos: ${places.length}`);
+        const places = await getPlaces();
+        await ItemController.guardarLugares(places);
+        console.log(`Total lugares obtenidos: ${places.length}`);
     } catch (error) {
         console.error('Error al procesar eventos o lugares:', error);
     }
 })();
 */
+
 
 module.exports = app;

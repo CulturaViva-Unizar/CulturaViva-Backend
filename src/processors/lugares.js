@@ -33,6 +33,7 @@ async function processPlace(type, url) {
     openingHours: lugar.openingHours ? cleanHtmltags(lugar.openingHours) : "",
     phone: lugar.telephone || "",
     email: lugar.email || "",
+    category: lugar.tipoEquipamiento[0] || "",
   }));
 
   return lugares;

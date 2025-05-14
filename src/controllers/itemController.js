@@ -70,6 +70,7 @@ class ItemController {
      */
     async getItemById(req, res) {
         const type = req.query.type || 'Event';
+        console.log('Tipo de evento:', type);
         const eventId = toObjectId(req.params.id);
         console.log('ID del evento:', eventId);
         const event = await Item.findOne({ _id: eventId, itemType: type });
@@ -108,6 +109,7 @@ class ItemController {
     async getItemComments(req, res) {
         const type = req.query.type || 'Event';
         const eventId = toObjectId(req.params.id);
+        const userName = req.query.userName;
         console.log('ID del evento:', eventId);
         console.log('Tipo de evento:', type);
         const event = await Item.findOne({ _id: eventId, itemType: type })
@@ -213,6 +215,13 @@ class ItemController {
 
 
         return createOkResponse(res, "Comentario eliminado exitosamente");
+    }
+
+    async getCategories(req, res) {
+        console.log("getCategories");
+        const type = req.query.type || 'Event';
+        const categories = await Item.distinct('category', { itemType: type });
+        return createOkResponse(res, "Categorías obtenidas exitosamente", categories);
     }
 }
 
