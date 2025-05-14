@@ -134,8 +134,8 @@ router.get('/events',
  *         description: Error interno del servidor
  */
 router.get('/visits', 
-    //passport.authenticate('jwt', { session: false }),
-    //userController.checkAdmin, 
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin, 
     statisticsController.getVisits
 );
 
