@@ -93,7 +93,7 @@ class UserController {
    */
   async getSavedItems(req, res) {
     const { name, date, category, page, limit } = req.query;
-    const userId = req.userId;
+    const userId = req.params.id;
 
     const filters = {};
     if (name) filters.name = name;
@@ -115,7 +115,7 @@ class UserController {
    * Obtiene todos los comentarios de un usuario
    */
   async getUserComments(req, res) {
-    const userId = req.userId;
+    const userId = req.req.params.id;
 
       const user = await User.findById(toObjectId(userId));
       if (!user) {
@@ -131,7 +131,7 @@ class UserController {
    * Guarda un evento en el perfil del usuario
    */
   async saveItem(req, res) {
-    const userId = req.userId;
+    const userId = req.params.id;
     const { eventId } = req.body;
 
     const user = await User.findById(userId);
@@ -151,7 +151,7 @@ class UserController {
    */
   async getAttendingItems(req, res) {
     const { name, category, page, limit } = req.query;
-    const userId = req.userId;
+    const userId = req.params.id;
     const today = new Date();
 
     let filters = {};
@@ -174,7 +174,7 @@ class UserController {
    * Marca como asistiente a un evento
    */
   async attendItem(req, res) {
-    const userId = req.userId;
+    const userId = req.params.id;
     const { eventId } = req.body;
 
     const user = await User.findById(toObjectId(userId));
@@ -201,7 +201,7 @@ class UserController {
    * Elimina un evento guardado del perfil del usuario
    */
   async removeSavedItem(req, res) {
-    const userId = req.userId;
+    const userId = req.params.id;
     const { eventId } = req.params;
 
     const user = await User.findById(toObjectId(userId));
@@ -216,7 +216,7 @@ class UserController {
    * Elimina un evento al que el usuario asiste
    */
   async removeAttendingItem(req, res) {
-    const userId = req.userId;
+    const userId = req.params.id;
     const { eventId } = req.params;
     const user = await User.findById(toObjectId(userId));
     user.asistsTo = user.asistsTo.filter(item => item.toString() !== eventId);
@@ -230,7 +230,7 @@ class UserController {
    * Devuelve todos los chats en los que participa el usuario
    */
   async getUserChats(req, res) {
-    const userId = req.userId;
+    const userId = req.req.params.id;
     console.log("User ID:", userId);
     const user = await User.findById(userId).populate('chats');
     if (!user) {
@@ -264,7 +264,7 @@ class UserController {
    */
   async getUpcomingEvents(req, res) {
     const { page, limit, category } = req.query;
-    const userId = req.userId;
+    const userId = req.params.id;
     const user = await User.findById(toObjectId(userId));
     let filters = {};
     if (!user) {
