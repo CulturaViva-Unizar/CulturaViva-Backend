@@ -111,15 +111,13 @@ class StatisticsController {
    * Obtiene el conteo de eventos
    */
   async eventCount(req, res) {
-    let count = 0;
-    let match = {};
+    const now = new Date();
+    const match = { startDate: { $gte: now } };
     if (req.query.category) {
-      match = { category: req.query.category };
+      match.category = req.query.category;
     }
-    count = await Item.countDocuments(match);
-    createOkResponse(res, "Conteo de eventos obtenido exitosamente", {
-      count: count,
-    });
+    const count = await Item.countDocuments(match);
+    return createOkResponse(res, "Conteo de eventos obtenido exitosamente", { count });
   }
 
   async initializeVisits(req, res) {
@@ -174,7 +172,8 @@ class StatisticsController {
   async eventsByCategory(req, res) {
     const now = new Date();
     const pipeline = [
-      { $group: { _id: "$category", count: { $sum: 1 }, startDate: { $gte: now } } },
+      { $match: { startDate: { $gte: now } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
     const result = await Item.aggregate(pipeline);

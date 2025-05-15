@@ -184,7 +184,7 @@ router.get(
  * @swagger
  * /statistics/events:
  *   get:
- *     summary: Devuelve la cantidad de usuarios
+ *     summary: Devuelve la cantidad de eventos
  *     tags: [Statistics]
  *     security:
  *     - bearerAuth: []
