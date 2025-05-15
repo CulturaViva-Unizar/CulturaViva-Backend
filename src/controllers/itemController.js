@@ -113,6 +113,7 @@ class ItemController {
         const event = await Item.findOne({ _id: eventId, itemType: type })
         .populate({
             path: 'comments',
+            match: { deleted: false },
             populate: {
                 path: 'user',
                 select: 'name -userType'
@@ -170,7 +171,8 @@ class ItemController {
         const responses = await Response.find(
             { 
                 responseTo: req.params.commentId, 
-                event: req.params.id 
+                event: req.params.id,
+                deleted: false
             }
         ).populate('user', 'name -userType').populate('responseTo', 'text');
         
@@ -198,18 +200,17 @@ class ItemController {
             return createNotFoundResponse(res, "Evento no encontrado");
         }
 
-        // Marcamos el comentario como eliminado en lugar de eliminarlo físicamente
-        // Esto es útil para mantener el historial de comentarios y para las estadísticas
+        // Soft-delete del comentario
         comment.deleted = true;
         comment.deleteAt = new Date();
         await comment.save();
 
         // Elimina el ID del comentario de la lista de comentarios del evento
-        await Item.findByIdAndUpdate(
-            id,
-            { $pull: { comments: commentId } },
-            { new: true }
-        );
+        // await Item.findByIdAndUpdate(
+        //     id,
+        //     { $pull: { comments: commentId } },
+        //     { new: true }
+        // );
 
         // Elimina el ID del comentario de la lista de comentarios del usuario
         // Comentado porque nos interasa mantener el historial de comentarios de cada usuario
@@ -218,12 +219,20 @@ class ItemController {
         //     { $pull: { comments: commentId } },
         //     { new: true }
         // );
+    
+    // Elimina las respuestas asociadas al comentario
+    await Response.updateMany(
+            { responseTo: commentId },
+            { 
+                $set: { 
+                    deleted: true,
+                    deleteAt: new Date()
+                } 
+            }
+        );
 
-        await Response.deleteMany({ responseTo: commentId });
 
-
-
-        return createOkResponse(res, "Comentario eliminado exitosamente");
+    return createOkResponse(res, "Comentario eliminado exitosamente");
     }
 }
 

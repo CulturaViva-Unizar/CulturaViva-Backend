@@ -122,10 +122,9 @@ class UserController {
           return createNotFoundResponse(res, "Usuario no encontrado"); 
       }
 
-      const userComments = user.comments.populate();
       const comments = await Comment.find({ user: toObjectId(userId) })
         .sort({ date: -1 });
-      return createOkResponse(res, "Comentarios obtenidos exitosamente", userComments);
+      return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
   /**
    * Guarda un evento en el perfil del usuario
