@@ -70,15 +70,27 @@ class ItemController {
      */
     async getItemById(req, res) {
         const type = req.query.type || 'Event';
-        console.log('Tipo de evento:', type);
         const eventId = toObjectId(req.params.id);
+
+        // Procesar campos solicitados: ?fields=title,image
+        const fields = req.query.fields
+        ? req.query.fields.split(',').join(' ')
+        : null;
+
+        console.log('Tipo de evento:', type);
         console.log('ID del evento:', eventId);
-        const event = await Item.findOne({ _id: eventId, itemType: type });
-        if (!event) {
-            return createNotFoundResponse(res, "Item no encontrado");
-        }
+        if (fields) console.log('Campos solicitados:', fields);
+
+        const query = Item.findOne({ _id: eventId, itemType: type });
+        if (fields) query.select(fields);
+
+        const event = await query;
+
+        if (!event) return createNotFoundResponse(res, "Item no encontrado");
+
         return createOkResponse(res, "Item obtenido con éxito", event);
     }
+
 
     async guardarEventos(eventos) {
         // La API falla (es posible: la llevan -vagos- funcionarios) y no devuelve nada
