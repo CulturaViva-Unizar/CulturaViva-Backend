@@ -268,7 +268,7 @@ class UserController {
     if (category) {
       filters.category = category;
     }
-    
+    const today = new Date();
     const dateFilter = { endDate: { $gte: today } };
     const finalQuery = { ...filters, ...dateFilter };
     const sortCondition = { asistentes: -1 };
