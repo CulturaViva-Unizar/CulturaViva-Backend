@@ -1,8 +1,7 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
 const { Visit } = require("../models/statisticsModel");
-
-const { createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
+const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
 
 class StatisticsController {
 
