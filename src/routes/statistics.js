@@ -35,10 +35,149 @@ const passport = require('passport');
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/users', 
+router.get('/users',
     passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin, 
+    userController.checkAdmin,
     statisticsController.userCount
+);
+
+/**
+ * @swagger
+ * /statistics/users/{id}/attended-by-category:
+ *   get:
+ *     summary: Obtiene el conteo de eventos asistidos por categoría para un usuario
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Conteo de eventos por categoría obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                         description: Categoría del evento
+ *                       count:
+ *                         type: integer
+ *                         description: Número de eventos asistidos en esa categoría
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get(
+    '/users/:id/attended-by-category',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdminOrUser,
+    statisticsController.assistedEventsByCategory
+);
+
+/**
+ * @swagger
+ * /statistics/popular-by-category:
+ *   get:
+ *     summary: Obtiene el conteo de eventos populares por categoría para un usuario
+ *     tags:
+ *       - Statistics
+ *     responses:
+ *       200:
+ *         description: Conteo de eventos populares por categoría obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                         description: Categoría del evento
+ *                       count:
+ *                         type: integer
+ *                         description: Número de eventos populares en esa categoría
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get(
+    '/popular-by-category',
+    statisticsController.eventsByCategory
+);
+
+/** @swagger
+ * /statistics/users/{id}/upcoming-by-category:
+ *   get:
+ *     summary: Obtiene el conteo de eventos próximos por categoría para un usuario
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Conteo de eventos próximos por categoría obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       category:
+ *                         type: string
+ *                         description: Categoría del evento
+ *                       count:
+ *                         type: integer
+ *                         description: Número de eventos próximos en esa categoría
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get(
+    '/users/:id/upcoming-by-category',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdminOrUser,
+    statisticsController.upcomingByCategory
 );
 
 /**
@@ -71,9 +210,9 @@ router.get('/users',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/events', 
+router.get('/events',
     passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin, 
+    userController.checkAdmin,
     statisticsController.eventCount
 );
 
@@ -133,9 +272,9 @@ router.get('/events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/visits', 
+router.get('/visits',
     passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin, 
+    userController.checkAdmin,
     statisticsController.getVisits
 );
 

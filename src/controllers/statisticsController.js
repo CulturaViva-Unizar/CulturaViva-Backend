@@ -1,8 +1,7 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
 const { Visit } = require("../models/statisticsModel");
-
-const { createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
+const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
 
 class StatisticsController {
 
@@ -122,52 +121,6 @@ class StatisticsController {
     });
   }
 
-  async assistedEvents(req, res) {
-    const userId = req.params.id;
-
-    // const result = await Event.aggregate([
-    //     {
-    //         $match: { asistentes: toObjectId(userId) }
-    //     },
-    //     {
-    //         $group: {
-    //             _id: "$category",
-    //             count: { $sum: 1 }
-    //         }
-    //     }
-    // ]);
-
-    const matchStage = { asistentes: toObjectId(userId) };
-
-    if (req.query.type) matchStage.category = req.query.category;
-
-    const pipeline = [
-      { $match: matchStage },
-      {
-        $group: {
-          _id: "$category",
-          count: { $sum: 1 },
-        },
-      },
-
-      {
-        $project: {
-          _id: 0,
-          category: "$_id",
-          count: 1,
-        },
-      },
-    ];
-    const result = await Item.aggregate(pipeline);
-    const status = res.statusCode !== 200 ? res.statusCode : 200;
-    createResponse(
-      res,
-      status,
-      "Conteo de eventos por categoría obtenido exitosamente",
-      result
-    );
-  }
-
   async initializeVisits(req, res) {
     try {
       const today = new Date();
@@ -199,6 +152,39 @@ class StatisticsController {
       console.error('Error al inicializar visitas:', error);
       return createInternalServerErrorResponse(res, "Error al inicializar las visitas");
     }
+  }
+
+  async assistedEventsByCategory(req, res) {
+    const userId = req.params.id;
+    const now = new Date();
+    const pipeline = [
+      { $match: { asistentes: toObjectId(userId), endDate: { $lt: now } } },
+      { $group:   { _id: "$category", count: { $sum: 1 } } },
+      { $project: { _id: 0, category: "$_id", count: 1 } }
+    ];
+    const result = await Item.aggregate(pipeline);
+    return createOkResponse(res, "Conteo de eventos asistidos por categoría obtenido exitosamente", result);
+  }
+
+  async eventsByCategory(req, res) {
+    const pipeline = [
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $project: { _id: 0, category: "$_id", count: 1 } }
+    ];
+    const result = await Item.aggregate(pipeline);
+    return createOkResponse(res, "Conteo de eventos por categoría obtenido exitosamente", result);
+  }
+
+  async upcomingByCategory(req, res) {
+    const userId = req.params.id;
+    const now = new Date();
+    const pipeline = [
+      { $match: { asistentes: toObjectId(userId), startDate: { $gt: now } } },
+      { $group:   { _id: "$category", count: { $sum: 1 } } },
+      { $project: { _id: 0, category: "$_id", count: 1 } }
+    ];
+    const result = await Item.aggregate(pipeline);
+    return createOkResponse(res, "Conteo de próximos eventos por categoría obtenido exitosamente", result);
   }
 }
 
