@@ -664,12 +664,12 @@ router.delete('/:id/attending-events/:eventId',
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - name: id
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
- *         description: ID del usuario
  *         schema:
  *           type: string
+ *         description: ID del usuario
  *     responses:
  *       200:
  *         description: Comentarios obtenidos exitosamente
@@ -685,7 +685,42 @@ router.delete('/:id/attending-events/:eventId',
  *                 data:
  *                   type: array
  *                   items:
- *                     $ref: '#/components/schemas/Comment'
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         pattern: "^[0-9a-fA-F]{24}$"
+ *                       text:
+ *                         type: string
+ *                       date:
+ *                         type: string
+ *                         format: date-time
+ *                       user:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             pattern: "^[0-9a-fA-F]{24}$"
+ *                           name:
+ *                             type: string
+ *                       event:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             pattern: "^[0-9a-fA-F]{24}$"
+ *                           name:
+ *                             type: string
+ *                           itemType:
+ *                             type: string
+ *                             enum: [Event, Place]
+ *                       value:
+ *                         type: number
+ *                         description: Valoración (solo para Valoration)
+ *                       responseTo:
+ *                         type: string
+ *                         pattern: "^[0-9a-fA-F]{24}$"
+ *                         description: Referencia al comentario padre (solo para Response)
  *       404:
  *         description: Usuario o comentarios no encontrados
  *       500:

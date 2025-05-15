@@ -47,6 +47,10 @@ const valorationSchema = new Schema({
     type: Number,
     required: true
   },
+  text: {
+    type: String,
+    required: false
+  }
 });
 
 const Valoration = Comment.discriminator('Valoration', valorationSchema);

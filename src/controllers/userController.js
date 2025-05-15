@@ -125,6 +125,7 @@ class UserController {
 
       const comments = await Comment.find({ user: toObjectId(userId) })
         .populate('user', 'name -userType')
+        .populate('event', 'name itemType')
         .sort({ date: -1 });
       return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
