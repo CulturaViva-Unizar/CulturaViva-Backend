@@ -35,9 +35,9 @@ const passport = require('passport');
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/users', 
+router.get('/users',
     passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin, 
+    userController.checkAdmin,
     statisticsController.userCount
 );
 
@@ -90,24 +90,15 @@ router.get(
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser,
     statisticsController.assistedEventsByCategory
-  );
+);
 
 /**
  * @swagger
- * /popular-by-category:
+ * /statistics/popular-by-category:
  *   get:
  *     summary: Obtiene el conteo de eventos populares por categoría para un usuario
  *     tags:
  *       - Statistics
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: ID del usuario
  *     responses:
  *       200:
  *         description: Conteo de eventos populares por categoría obtenido exitosamente
@@ -134,14 +125,13 @@ router.get(
  *       500:
  *         description: Error interno del servidor
  */
-  router.get(
+router.get(
     '/popular-by-category',
     statisticsController.eventsByCategory
-  );
-  
-/**
- * @swagger
- * /upcoming-by-category:
+);
+
+/** @swagger
+ * /statistics/users/{id}/upcoming-by-category:
  *   get:
  *     summary: Obtiene el conteo de eventos próximos por categoría para un usuario
  *     tags:
@@ -183,12 +173,12 @@ router.get(
  *       500:
  *         description: Error interno del servidor
  */
-  router.get(
+router.get(
     '/users/:id/upcoming-by-category',
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser,
     statisticsController.upcomingByCategory
-  );
+);
 
 /**
  * @swagger
@@ -220,9 +210,9 @@ router.get(
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/events', 
+router.get('/events',
     passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin, 
+    userController.checkAdmin,
     statisticsController.eventCount
 );
 
@@ -282,9 +272,9 @@ router.get('/events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/visits', 
+router.get('/visits',
     passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin, 
+    userController.checkAdmin,
     statisticsController.getVisits
 );
 
