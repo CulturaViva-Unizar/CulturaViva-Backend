@@ -73,7 +73,7 @@ function cleanHtmltags(str){
   });
 }
 
-async function handlePagination(_page, _limit, finalQuery = {}, Model, orderCondition = {}, selectCondition = {}) {
+async function handlePagination(_page, _limit, finalQuery = {}, Model, orderCondition = {}, selectCondition) {
   const page = parseInt(_page) || 1;
   const limit = parseInt(_limit) || 16;
   const skip  = (page - 1) * limit;

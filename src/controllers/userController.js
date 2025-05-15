@@ -107,7 +107,8 @@ class UserController {
 
     const additionalQuery = { _id: { $in: user.savedItems } };
     const finalQuery = { ...filters, ...additionalQuery };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Item);
+    const sortCondition = { startDate: 1 };
+    const paginatedResults = await handlePagination(page, limit, finalQuery, Item, sortCondition);
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
@@ -166,7 +167,8 @@ class UserController {
     const dateFilter = { endDate: { $lt: today } };
     const asistFilter = { _id: { $in: user.asistsTo } };
     const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Event, { startDate: "asc" });
+    const orderCondition = { startDate: 1 };
+    const paginatedResults = await handlePagination(page, limit, finalQuery, Event, orderCondition);
     return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
   }
 
@@ -255,7 +257,8 @@ class UserController {
     }
     
     const finalQuery = { ...filters };
-    const events = await handlePagination(page, limit, finalQuery, Event, { asistentes: "desc" });
+    const sortCondition = { asistentes: -1 };
+    const events = await handlePagination(page, limit, finalQuery, Event, sortCondition);
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
   }
 
@@ -278,7 +281,8 @@ class UserController {
     const dateFilter = { endDate: { $gte: today } };
     const asistFilter = { _id: { $in: user.asistsTo } };
     const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
-    const events = await handlePagination(page, limit, finalQuery, Event, { startDate: "asc" });
+    const orderCondition = { startDate: 1 };
+    const events = await handlePagination(page, limit, finalQuery, Event, orderCondition);
     return createOkResponse(res, "Eventos proximos obtenidos exitosamente", events);
   }
 }
