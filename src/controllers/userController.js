@@ -269,7 +269,8 @@ class UserController {
       filters.category = category;
     }
     
-    const finalQuery = { ...filters };
+    const dateFilter = { endDate: { $gte: today } };
+    const finalQuery = { ...filters, ...dateFilter };
     const sortCondition = { asistentes: -1 };
     const events = await handlePagination(page, limit, finalQuery, Event, sortCondition);
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);

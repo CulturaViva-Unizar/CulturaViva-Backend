@@ -1,6 +1,7 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
 const { Visit } = require("../models/statisticsModel");
+
 const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
 
 class StatisticsController {
@@ -9,17 +10,17 @@ class StatisticsController {
    * Middleware para contar visitas
   */
   async countVisits(req, res, next) {
-      const today = new Date().toISOString().split('T')[0];
-      let visit = await Visit.findOne({ date: today });
-      if (!visit) {
-        visit = new Visit({ date: today, count: 1 });
-      } else {
-        visit.count++;
-      }
-      await visit.save();
-      next();
+    const today = new Date().toISOString().split('T')[0];
+    let visit = await Visit.findOne({ date: today });
+    if (!visit) {
+      visit = new Visit({ date: today, count: 1 });
+    } else {
+      visit.count++;
     }
-  
+    await visit.save();
+    next();
+  }
+
   /**
    * Obtiene las visitas por meses
   */
@@ -62,9 +63,9 @@ class StatisticsController {
         }
       },
       {
-        $sort: { 
+        $sort: {
           "_id.year": 1,
-          "_id.month": 1 
+          "_id.month": 1
         }
       },
       {
@@ -156,10 +157,14 @@ class StatisticsController {
 
   async assistedEventsByCategory(req, res) {
     const userId = req.params.id;
+    const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
     const now = new Date();
     const pipeline = [
-      { $match: { asistentes: toObjectId(userId), endDate: { $lt: now } } },
-      { $group:   { _id: "$category", count: { $sum: 1 } } },
+      { $match: { _id: { $in: user.asistsTo }, endDate: { $lt: now } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
     const result = await Item.aggregate(pipeline);
@@ -167,8 +172,9 @@ class StatisticsController {
   }
 
   async eventsByCategory(req, res) {
+    const now = new Date();
     const pipeline = [
-      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $group: { _id: "$category", count: { $sum: 1 }, startDate: { $gte: now } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
     const result = await Item.aggregate(pipeline);
@@ -177,10 +183,14 @@ class StatisticsController {
 
   async upcomingByCategory(req, res) {
     const userId = req.params.id;
+    const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
     const now = new Date();
     const pipeline = [
-      { $match: { asistentes: toObjectId(userId), startDate: { $gt: now } } },
-      { $group:   { _id: "$category", count: { $sum: 1 } } },
+      { $match: { _id: { $in: user.asistsTo }, startDate: { $gte: now } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
     const result = await Item.aggregate(pipeline);
