@@ -73,8 +73,8 @@ const router = express.Router();
  *      description: Error interno del servidor
  */
 router.get('/', 
-    passport.authenticate('jwt', { session: false }), 
-    userController.checkAdmin, 
+    //passport.authenticate('jwt', { session: false }), 
+    //userController.checkAdmin, 
     userController.getUsers);
 
 /**

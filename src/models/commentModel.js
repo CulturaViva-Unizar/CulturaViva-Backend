@@ -20,6 +20,14 @@ const commentSchema = new Schema({
     ref: 'Item',
     required: true
   },
+    deleted: {
+    type: Boolean,
+    default: false
+  },
+  deleteAt: {
+    type: Date,
+    default: null
+  }
 }, {discriminatorKey: 'commentType'});
 
 const Comment = mongoose.model('Comment', commentSchema);

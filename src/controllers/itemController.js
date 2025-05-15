@@ -115,6 +115,7 @@ class ItemController {
         const event = await Item.findOne({ _id: eventId, itemType: type })
         .populate({
             path: 'comments',
+            match: { deleted: false },
             populate: {
                 path: 'user',
                 select: 'name -userType'
@@ -158,6 +159,13 @@ class ItemController {
             { new: true }
         );
 
+        await User.findByIdAndUpdate(
+            userId,
+            { $push: { comments: comment._id } },
+            { new: true }
+        );
+        
+
         return createCreatedResponse(res, "Comentario creado exitosamente", comment);
     }
 
@@ -165,7 +173,8 @@ class ItemController {
         const responses = await Response.find(
             { 
                 responseTo: req.params.commentId, 
-                event: req.params.id 
+                event: req.params.id,
+                deleted: false
             }
         ).populate('user', 'name -userType').populate('responseTo', 'text');
         
@@ -193,28 +202,39 @@ class ItemController {
             return createNotFoundResponse(res, "Evento no encontrado");
         }
 
-        // Elimina el comentario
-        await Comment.findByIdAndDelete(commentId);
+        // Soft-delete del comentario
+        comment.deleted = true;
+        comment.deleteAt = new Date();
+        await comment.save();
 
         // Elimina el ID del comentario de la lista de comentarios del evento
-        await Item.findByIdAndUpdate(
-            id,
-            { $pull: { comments: commentId } },
-            { new: true }
-        );
+        // await Item.findByIdAndUpdate(
+        //     id,
+        //     { $pull: { comments: commentId } },
+        //     { new: true }
+        // );
 
         // Elimina el ID del comentario de la lista de comentarios del usuario
-        await User.findByIdAndUpdate(
-            req.userId,
-            { $pull: { comments: commentId } },
-            { new: true }
+        // Comentado porque nos interasa mantener el historial de comentarios de cada usuario
+        // await User.findByIdAndUpdate(
+        //     req.userId,
+        //     { $pull: { comments: commentId } },
+        //     { new: true }
+        // );
+    
+    // Elimina las respuestas asociadas al comentario
+    await Response.updateMany(
+            { responseTo: commentId },
+            { 
+                $set: { 
+                    deleted: true,
+                    deleteAt: new Date()
+                } 
+            }
         );
 
-        await Response.deleteMany({ responseTo: commentId });
 
-
-
-        return createOkResponse(res, "Comentario eliminado exitosamente");
+    return createOkResponse(res, "Comentario eliminado exitosamente");
     }
 
     async getCategories(req, res) {
