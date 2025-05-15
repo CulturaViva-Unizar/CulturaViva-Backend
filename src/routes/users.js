@@ -709,7 +709,7 @@ router.delete('/:id/attending-events/:eventId',
  *                           id:
  *                             type: string
  *                             pattern: "^[0-9a-fA-F]{24}$"
- *                           name:
+ *                           title:
  *                             type: string
  *                           itemType:
  *                             type: string
