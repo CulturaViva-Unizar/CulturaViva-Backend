@@ -30,6 +30,15 @@ const chatSchema = new Schema({
     type: Date,
     default: Date.now
   },
+}, {
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
 });
 
 const Chat = mongoose.model('Chat', chatSchema);

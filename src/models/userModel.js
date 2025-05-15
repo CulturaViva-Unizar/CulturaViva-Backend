@@ -48,7 +48,16 @@ const userSchema = new Schema({
     ref: 'Comment',
     default: []
   }],
-}, { discriminatorKey: 'userType' 
+}, { 
+  discriminatorKey: 'userType',
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
 });
 
 const User = mongoose.model('User', userSchema);

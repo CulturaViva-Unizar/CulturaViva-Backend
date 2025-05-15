@@ -61,7 +61,17 @@ const itemSchema = new Schema({
     ref: 'Comment',
     default: []
   }]
-}, {discriminatorKey: 'itemType'});
+}, {
+  discriminatorKey: 'itemType',
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
+});
 
 const Item = mongoose.model('Item', itemSchema);
 

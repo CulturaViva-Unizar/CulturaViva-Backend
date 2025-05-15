@@ -28,7 +28,17 @@ const commentSchema = new Schema({
     type: Date,
     default: null
   }
-}, {discriminatorKey: 'commentType'});
+}, {
+  discriminatorKey: 'commentType',
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
+});
 
 const Comment = mongoose.model('Comment', commentSchema);
 

@@ -74,18 +74,41 @@ function cleanHtmltags(str){
 }
 
 async function handlePagination(_page, _limit, finalQuery = {}, Model, orderCondition = {}, selectCondition = {}) {
-  const page = _page || 1;
-  const limit = _limit || 16;
+  const page = parseInt(_page) || 1;
+  const limit = parseInt(_limit) || 16;
   const skip  = (page - 1) * limit;
-  
+
+  const aggregationPipeline = [
+    { $match: finalQuery },
+  ]
+
+  if (orderCondition) {
+    aggregationPipeline.push({ $sort: orderCondition });
+  }
+
+  aggregationPipeline.push(
+    { $skip: skip },
+    { $limit: limit }
+  );
+
+  aggregationPipeline.push(
+    { $addFields: { id: "$_id" } },
+  )
+
+  aggregationPipeline.push(
+    { $project: {
+        _id: 0,
+      } });
+    
+  if (selectCondition) {
+    aggregationPipeline.push(
+      { $project: selectCondition }
+    );
+  }
+
   const [totalItems, items] = await Promise.all([
     Model.countDocuments(finalQuery),
-    Model.find(finalQuery)
-      .sort(orderCondition)
-      .skip(skip)
-      .limit(limit)
-      .select(selectCondition)
-      .lean()
+    Model.aggregate(aggregationPipeline),
   ]);
 
   const totalPages = Math.ceil(10 / limit);
