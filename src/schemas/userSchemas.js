@@ -59,12 +59,31 @@ const getEventsSchema = {
 const updateUserSchema = {
   type: 'object',
   properties: {
-    id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }, // Validación de ObjectId
-    name: { type: 'string', minLength: 1 },
-    email: { type: 'string', format: 'email' },
-    phone: { type: 'string', pattern: '^\\+?[0-9]{7,15}$' }
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    body:
+    {
+      type: 'object',
+      properties: {
+        name: { type: 'string', minLength: 1 },
+        email: { type: 'string', format: 'email' },
+        phone: { type: 'string', pattern: '^\\+?[0-9]{7,15}$' },
+        active: { type: 'boolean' },
+        password: { type: 'string', minLength: 6 }
+      },
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      additionalProperties: false
+    }
   },
-  required: ['id'],
   additionalProperties: false
 };
 

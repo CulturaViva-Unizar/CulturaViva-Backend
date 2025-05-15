@@ -6,6 +6,7 @@ const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
 const validateSchema = (schema) => (req, res, next) => {
+  console.log('Validating request with schema:', schema);
   if ( req.headers['content-type'] !== 'application/json') {
     return res.status(400).json({ error: 'Content-Type must be application/json' });
   }

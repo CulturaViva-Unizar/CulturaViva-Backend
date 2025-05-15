@@ -42,15 +42,19 @@ class UserController {
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-      const { page, limit } = req.query;
+      const { page, limit, name } = req.query;
       let filters = {};
       if (req.query.userType) {
         filters.active = req.query.userType == "Habilitados" ? true : false;
       }
+
+      if(name) filters.name = { $regex: name, $options: "i" };
+
       const finalQuery = { ...filters };
       const selectCondition = { password: 0 };
       const orderCondition = { name: 1 };
       const users = await handlePagination(page, limit, finalQuery, User, orderCondition, selectCondition);
+      
       return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
   }
 
@@ -65,25 +69,33 @@ class UserController {
         return createNotFoundResponse(res, "Usuario no encontrado");
     }
     return createOkResponse(res, "Usuario obtenido exitosamente", user);
-}
+  }
 
   /**
    * Actualiza todo el perfil del usuario
    */
   async updateProfile(req, res) {
-      const { name, email, phone } = req.body;
+      const { name, email, phone, active, password } = req.body;
       const userId = req.params.id;
-
-    const updatedUser = await User.findByIdAndUpdate(
-      toObjectId(userId),
-      { name, email, phone },
-      { new: true, runValidators: true }
-    );
-
+  
+      // Construir solo los campos que vienen en el body
+      const updateFields = {};
+      if (name !== undefined) updateFields.name = name;
+      if (email !== undefined) updateFields.email = email;
+      if (phone !== undefined) updateFields.phone = phone;
+      if (active !== undefined) updateFields.active = active;
+      if (password !== undefined) updateFields.password = password;
+  
+      const updatedUser = await User.findByIdAndUpdate(
+          toObjectId(userId),
+          updateFields,
+          { new: true, runValidators: true }
+      );
+  
       if (!updatedUser) {
-        return createNotFoundResponse(res, "Usuario no encontrado");
+          return createNotFoundResponse(res, "Usuario no encontrado");
       }
-
+  
       return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
 

@@ -13,7 +13,7 @@ const
     getEventsSchema,
     updateUserSchema,
     saveEventSchema,
-    deleteEventSchema,
+    deleteEventSchema, 
     getUserCommentsSchema 
    } = require('../schemas/userSchemas');
 
@@ -51,6 +51,11 @@ const router = express.Router();
  *        schema:
  *          type: string
  *        description: Tipo de usuario (Habilitados o Deshabilitados)
+ *      - in: query
+ *        name: name
+ *        schema: 
+ *          type: string
+ *        description: Nombre del usuario
  *    responses:
  *     200:
  *      description: Lista de usuarios obtenida exitosamente
@@ -415,6 +420,10 @@ router.get('/:id/upcoming-events',
  *                 type: string
  *               phone:
  *                 type: string
+ *               password:
+ *                 type: string
+ *               active:
+ *                 type: boolean
  *     responses:
  *       200:
  *         description: Perfil actualizado exitosamente

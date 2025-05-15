@@ -20,7 +20,7 @@ const commentSchema = new Schema({
     ref: 'Item',
     required: true
   },
-    deleted: {
+  deleted: {
     type: Boolean,
     default: false
   },
