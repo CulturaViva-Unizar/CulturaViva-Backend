@@ -115,7 +115,7 @@ class UserController {
    * Obtiene todos los comentarios de un usuario
    */
   async getUserComments(req, res) {
-    const userId = req.req.params.id;
+    const userId = req.params.id;
 
       const user = await User.findById(toObjectId(userId));
       if (!user) {
@@ -230,7 +230,7 @@ class UserController {
    * Devuelve todos los chats en los que participa el usuario
    */
   async getUserChats(req, res) {
-    const userId = req.req.params.id;
+    const userId = req.params.id;
     console.log("User ID:", userId);
     const user = await User.findById(userId).populate('chats');
     if (!user) {
