@@ -11,6 +11,15 @@ const visitSchema = new mongoose.Schema({
     type: Number,
     default: 0
   }
+}, {
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
 });
 
 const Visit = mongoose.model('Visit', visitSchema);
