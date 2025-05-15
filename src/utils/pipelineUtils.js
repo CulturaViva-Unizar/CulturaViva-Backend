@@ -12,6 +12,8 @@ function buildAggregationPipeline(filters, options) {
         { $match: filters }, // Aplica los filtros básicos
     ];
 
+    aggregationPipeline.push({ $addFields: { id: "$_id" } });   
+
     // Cálculo del número de comentarios si se ordena por 'comments'
     if (sort === 'comments') {
         aggregationPipeline.push({
@@ -71,7 +73,7 @@ function buildAggregationPipeline(filters, options) {
 
     // Exclusión de campos no deseados
     aggregationPipeline.push({
-        $project: { commentCount: 0, minPrice: 0, __v: 0 }
+        $project: { commentCount: 0, minPrice: 0, __v: 0, _id: 0 }
     });
 
     return aggregationPipeline;

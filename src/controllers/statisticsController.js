@@ -70,18 +70,14 @@ class StatisticsController {
       },
       {
         $project: {
-          _id: {
+          _id: 0,
+          id: {
             $concat: ["$_id.year", "-", "$_id.month"]
           },
           total: 1
         }
       }
     ]);
-
-    const monthlyVisits = {};
-    stats.forEach(stat => {
-      monthlyVisits[stat._id] = stat.total;
-    });
 
     return createOkResponse(res, "Visitas obtenidas exitosamente", {
       months: stats
