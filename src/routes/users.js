@@ -250,7 +250,7 @@ router.get('/:id/saved-events',
 
 /**
  * @swagger
- * /users/{id}/attending-events:
+ * /users/{id}/attended-events:
  *   get:
  *     summary: Obtiene los eventos a los que el usuario ya ha asistido. Historial de eventos pasados asistidos 
  *     tags: [Users]
@@ -317,10 +317,10 @@ router.get('/:id/saved-events',
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/:id/attend-events', 
+router.get('/:id/attended-events', 
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser, 
-    userController.getAttendingItems);
+    userController.getAttendedItems);
 
 /**
  * @swagger

@@ -149,7 +149,7 @@ class UserController {
   /**
    * Obtiene los eventos a los que el usuario asiste
    */
-  async getAttendingItems(req, res) {
+  async getAttendedItems(req, res) {
     const { name, category, page, limit } = req.query;
     const userId = req.params.id;
     const today = new Date();
