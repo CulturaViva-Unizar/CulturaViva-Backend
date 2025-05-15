@@ -161,6 +161,12 @@ router.get('/events/categories',
  *         description: ID del evento
  *         schema:
  *           type: string
+ *       - name: fields
+ *         in: query
+ *         required: false
+ *         description: Campos a incluir en la respuesta (separados por comas)
+ *         schema:
+ *          type: string
  *     responses:
  *       200:
  *         description: Evento obtenido exitosamente
@@ -613,6 +619,12 @@ router.get('/places/categories',
  *         description: ID del lugar
  *         schema:
  *           type: string
+ *       - name: fields
+ *         in: query
+ *         required: false
+ *         description: Campos a incluir en la respuesta (separados por comas)
+ *         schema:
+ *          type: string
  *     responses:
  *       200:
  *         description: Lugar obtenido exitosamente
