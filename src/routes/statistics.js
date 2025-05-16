@@ -333,6 +333,7 @@ router.get('/visits',
  *                     - id: "2025-04-01"
  *                       total: 0
  *                       name: "Lunes"
+ *                       number: 1
  *       403:
  *         description: Acceso denegado
  *       500:
