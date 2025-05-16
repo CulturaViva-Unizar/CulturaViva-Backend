@@ -24,4 +24,32 @@ const visitSchema = new mongoose.Schema({
 
 const Visit = mongoose.model('Visit', visitSchema);
 
-module.exports = { Visit };
+const disableUsersSchema = new mongoose.Schema({
+  date: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  count: {
+    type: Number,
+    default: 0
+  },
+  users: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }]
+}, {
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
+});
+
+const DisableUsers = mongoose.model('DisableUsers', disableUsersSchema);
+
+module.exports = { Visit, DisableUsers };

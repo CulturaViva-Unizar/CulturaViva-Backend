@@ -2,6 +2,7 @@ const { User } = require("../models/userModel");
 const { Item, Event } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel");
 const { createChatDTO } = require("../utils/chatUtils");
+const { DisableUsers } = require("../models/statisticsModel");
 
 const { 
   toObjectId,
@@ -95,7 +96,36 @@ class UserController {
       if (!updatedUser) {
           return createNotFoundResponse(res, "Usuario no encontrado");
       }
-  
+
+      // Se actualizan estadisticas de usuarios deshabilitados
+      const today = new Date().toISOString().split('T')[0];
+      if (active === false) {
+        await DisableUsers.findOneAndUpdate(
+          { date: today },
+          { 
+            $inc: { count: 1 },
+            $addToSet: { users: toObjectId(userId) }
+          },
+          { 
+            upsert: true,
+            new: true 
+          }
+        );
+      }
+      else if (active === true) {
+        await DisableUsers.findOneAndUpdate(
+          { date: today },
+          { 
+            $inc: { count: -1 },
+            $pull: { users: toObjectId(userId) }
+          },
+          {
+            new: true 
+          }
+        );
+      }
+
+      
       return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
 
@@ -186,7 +216,7 @@ class UserController {
   }
 
   /**
-   * Marca como asistiente a un evento
+   * Marca como asistente a un evento
    */
   async attendItem(req, res) {
     const userId = req.params.id;
@@ -298,6 +328,25 @@ class UserController {
     const orderCondition = { startDate: 1 };
     const events = await handlePagination(page, limit, finalQuery, Event, orderCondition);
     return createOkResponse(res, "Eventos proximos obtenidos exitosamente", events);
+  }
+
+  /**
+   * Promueve a un usuario a administrador
+   */
+  async makeAdmin(req, res) {
+    const userId = req.params.id;
+    
+    const updatedUser = await User.findByIdAndUpdate(
+        toObjectId(userId),
+        { admin: true },
+        { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
+    }
+
+    return createOkResponse(res, "Usuario promovido a administrador exitosamente", updatedUser);
   }
 }
 

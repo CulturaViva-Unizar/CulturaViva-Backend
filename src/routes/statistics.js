@@ -220,20 +220,20 @@ router.get('/events',
  * @swagger
  * /statistics/visits:
  *   get:
- *     summary: Devuelve la cantidad de visitas por mes
+ *     summary: Devuelve la cantidad de visitas a lo largo del tiempo
  *     tags: [Statistics]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: range
- *         description: Rango en meses. Posibles valores 1, 3, 6, 12
+ *         description: Rango en meses. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
  *         required: false
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Devuelve la cantidad de visitas por mes
+ *         description: Devuelve la cantidad de visitas a lo largo del tiempo
  *         content:
  *           application/json:
  *             schema:
@@ -244,29 +244,33 @@ router.get('/events',
  *                   example: true
  *                 message:
  *                   type: string
- *                   example: "Visitas obtenidas exitosamente"
+ *                   example: "Conteo de visitas obtenido exitosamente"
  *                 data:
- *                   type: object
- *                   properties:
- *                     months:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           total:
- *                             type: integer
- *                             minimum: 0
- *                           _id:
- *                             type: string
- *                             pattern: '^\d{4}-\d{2}$'
- *                             description: Fecha en formato YYYY-MM
- *                       example:
- *                         - _id: "2025-03"
- *                           total: 0
- *                         - _id: "2025-04"
- *                           total: 0
- *                         - _id: "2025-05"
- *                           total: 4
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       total:
+ *                         type: integer
+ *                         minimum: 0
+ *                       id:
+ *                         type: string
+ *                         pattern: '^\d{4}-\d{2}$'
+ *                         description: Fecha en formato YYYY-MM o en formato YYYY-MM-DD
+ *                       name:
+ *                         type: string
+ *                         description: Nombre del mes o nombre de la semana del dia
+ *                       number:
+ *                         type: integer
+ *                         description: Numero del mes
+ *                   example:
+ *                     - id: "2025-03"
+ *                       total: 0
+ *                       name: "Abril"    
+ *                     - id: "2025-04-01"
+ *                       total: 0
+ *                       name: "Lunes"
+ *                       number: 1
  *       403:
  *         description: Acceso denegado
  *       500:
@@ -276,6 +280,68 @@ router.get('/visits',
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     statisticsController.getVisits
+);
+
+/**
+ * @swagger
+ * /statistics/disable-users:
+ *   get:
+ *     summary: Devuelve la cantidad de usuarios deshabilitados a lo largo del tiempo
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: range
+ *         description: Rango en meses. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
+ *         required: false
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Devuelve la cantidad de usuarios deshabilitados a lo largo del tiempo
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Conteo de usuarios deshabilitados obtenido exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       total:
+ *                         type: integer
+ *                         minimum: 0
+ *                       id:
+ *                         type: string
+ *                         pattern: '^\d{4}-\d{2}$'
+ *                         description: Fecha en formato YYYY-MM o en formato YYYY-MM-DD
+ *                       name:
+ *                         type: string
+ *                         description: Nombre del mes o nombre del dia
+ *                   example:
+ *                     - id: "2025-03"
+ *                       total: 0
+ *                       name: "Abril"    
+ *                     - id: "2025-04-01"
+ *                       total: 0
+ *                       name: "Lunes"
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/disable-users',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin,
+    statisticsController.getDisableUsersCount
 );
 
 router.get('/visits/initialize', statisticsController.initializeVisits);
