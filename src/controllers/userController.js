@@ -2,6 +2,7 @@ const { User } = require("../models/userModel");
 const { Item, Event } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel");
 const { createChatDTO } = require("../utils/chatUtils");
+const { escapeRegExp } = require("../utils/utils");
 const { DisableUsers } = require("../models/statisticsModel");
 
 const { 
@@ -152,13 +153,27 @@ class UserController {
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-    const { name, date, category, page, limit } = req.query;
+    const { name, startDate, endDate, itemType, category, page, limit } = req.query;
     const userId = req.params.id;
 
     const filters = {};
-    if (name) filters.name = name;
-    if (date) filters.date = date;
+
+    if (name) {
+        const pattern = escapeRegExp(name.trim());
+        filters.title = { $regex: pattern, $options: 'i' };
+    }
+    
+    if (startDate) {
+      const start = new Date(startDate);
+      filters.startDate = { $gte: start };
+    } if (endDate) {
+      const end = new Date(endDate);;
+      filters.endDate = { $lte: end };
+    }
+
+
     if (category) filters.category = category;
+    if (itemType) filters.itemType = itemType;
 
     const user = await User.findById(toObjectId(userId));
     if (!user) {
@@ -215,6 +230,11 @@ class UserController {
     const { name, category, page, limit } = req.query;
     const userId = req.params.id;
     const today = new Date();
+
+    if (name) {
+        const pattern = escapeRegExp(name.trim());
+        filters.title = { $regex: pattern, $options: 'i' };
+    }
 
     let filters = {};
     if (category) {

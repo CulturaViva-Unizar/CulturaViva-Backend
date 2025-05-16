@@ -213,6 +213,11 @@ router.get('/:id',
  *           type: string
  *         description: Filtrar por categoría del evento
  *       - in: query
+ *         name: itemType
+ *         schema:
+ *          type: string
+ *         description: Filtrar por tipo de ítem (Event o Place)
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -279,11 +284,17 @@ router.get('/:id/saved-events',
  *           type: string
  *         description: Filtrar por nombre del evento
  *       - in: query
- *         name: date
+ *         name: startDate
  *         schema:
  *           type: string
  *           format: date
- *         description: Filtrar por fecha del evento
+ *         description: Obtiene eventos con fecha incial >= startDate (YYYY-MM-DD)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Obtiene eventos con fecha final <= endDate (YYYY-MM-DD)
  *       - in: query
  *         name: category
  *         schema:
