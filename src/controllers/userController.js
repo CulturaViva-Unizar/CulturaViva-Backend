@@ -98,13 +98,13 @@ class UserController {
       }
 
       // Se actualizan estadisticas de usuarios deshabilitados
-      if (active !== undefined) {
-        const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split('T')[0];
+      if (active === false) {
         await DisableUsers.findOneAndUpdate(
           { date: today },
           { 
-            $inc: { count: active ? -1 : 1 },
-            [active ? '$pull' : '$addToSet']: { users: toObjectId(userId) }
+            $inc: { count: 1 },
+            $addToSet: { users: toObjectId(userId) }
           },
           { 
             upsert: true,
@@ -112,7 +112,20 @@ class UserController {
           }
         );
       }
+      else if (active === true) {
+        await DisableUsers.findOneAndUpdate(
+          { users: toObjectId(userId) },
+          { 
+            $inc: { count: -1 },
+            $pull: { users: toObjectId(userId) }
+          },
+          {
+            new: true 
+          }
+        );
+      }
 
+      
       return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
 
