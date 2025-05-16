@@ -796,6 +796,51 @@ router.get(
 );
 
 
+/**
+ * @swagger
+ * /users/{id}/make-admin:
+ *   put:
+ *     summary: Promueve a un usuario a administrador
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a promover
+ *     responses:
+ *       200:
+ *         description: Usuario promovido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.put('/:id/make-admin',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin,
+    userController.makeAdmin
+);
+
+
 module.exports = router;
 /**
  * @swagger
