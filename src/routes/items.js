@@ -982,6 +982,9 @@ module.exports = router;
  *         place:
  *           type: string
  *           description: Nombre del lugar donde se realiza el evento
+ *         itemType: 
+ *          type: string
+ *          description: Tipo de ítem (Evento o Lugar)
  *       required:
  *         - title
  *         - category
@@ -1036,6 +1039,9 @@ module.exports = router;
  *         openingHours:
  *           type: string
  *           description: Horario de apertura del lugar, expresado en lenguaje natural
+ *         itemType: 
+ *          type: string
+ *          description: Tipo de ítem (Evento o Lugar)
  *       required:
  *         - title
  *         - category
