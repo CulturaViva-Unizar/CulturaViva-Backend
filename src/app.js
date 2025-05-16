@@ -18,6 +18,7 @@ const options = require('./config/swagger');
 const validateJson = require('./middlewares/validateJson');
 const cors = require('cors');
 const { createInternalServerErrorResponse } = require('./utils/utils.js');
+const logRequests = require('./logger/loggerMiddleware');
 
 const db = require('./config/db');
 require('./cron/tasks');
@@ -36,6 +37,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const swaggerSpec = swaggerJsdoc(options);
 
+app.use(logRequests); 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
