@@ -56,6 +56,11 @@ const router = express.Router();
  *        schema: 
  *          type: string
  *        description: Nombre del usuario
+ *      - in: query
+ *        name: order
+ *        schema: 
+ *          type: string
+ *        description: Ordenar por comentarios "asc" o "desc"
  *    responses:
  *     200:
  *      description: Lista de usuarios obtenida exitosamente

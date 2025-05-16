@@ -43,20 +43,38 @@ class UserController {
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-      const { page, limit, name } = req.query;
-      let filters = {};
-      if (req.query.userType) {
-        filters.active = req.query.userType == "Habilitados" ? true : false;
-      }
+    const { page, limit, name } = req.query;
+    const userType = (req.query.userType || '').toLowerCase();
+    const order = (req.query.order || 'desc').toLowerCase();
+    const filters = {};
 
-      if(name) filters.name = { $regex: name, $options: "i" };
+    // filtro por tipo de usuario (case‐insensitive)
+    if (userType) {
+      filters.active = userType === 'habilitados';
+    }
 
-      const finalQuery = { ...filters };
-      const selectCondition = { password: 0 };
-      const orderCondition = { name: 1 };
-      const users = await handlePagination(page, limit, finalQuery, User, orderCondition, selectCondition);
-      
-      return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
+    // búsqueda por nombre
+    if (name) {
+      const pattern = escapeRegExp(name.trim());
+      filters.title = { $regex: pattern, $options: 'i' };
+    }
+
+    // calcular orden y paginación
+    const sortOrder = order === 'asc' ? 1 : -1;
+    const skip = ((parseInt(page, 10) || 1) - 1) * (parseInt(limit, 10) || 10);
+    const limitNum = parseInt(limit, 10) || 10;
+
+    const pipeline = [
+      { $match: filters },
+      { $addFields: { commentCount: { $size: { $ifNull: ["$comments", []] } } } },
+      { $sort: { commentCount: sortOrder } },
+      { $project: { password: 0 } },
+      { $skip: skip },
+      { $limit: limitNum }
+    ];
+
+    const users = await User.aggregate(pipeline);
+    return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
   }
 
   /**
