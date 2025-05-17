@@ -4,7 +4,7 @@ const { Comment } = require("../models/commentModel");
 const { createChatDTO } = require("../utils/chatUtils");
 const { escapeRegExp } = require("../utils/utils");
 const { DisableUsers } = require("../models/statisticsModel");
-const { buildUserAggregationPipeline } = require("../utils/pipelineUtils");
+const { buildUserAggregationPipeline, buildAggregationPipeline } = require("../utils/pipelineUtils");
 
 const { 
   toObjectId,
@@ -159,39 +159,62 @@ class UserController {
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-    const { name, startDate, endDate, itemType, category, page, limit } = req.query;
+    const {
+      name,
+      startDate,
+      endDate,
+      itemType,
+      category,
+      sort = 'startDate',
+      order = 'asc',
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 16
+    } = req.query;
+
     const userId = req.params.id;
-
-    const filters = {};
-
-    if (name) {
-        const pattern = escapeRegExp(name.trim());
-        filters.title = { $regex: pattern, $options: 'i' };
-    }
-    
-    if (startDate) {
-      const start = new Date(startDate);
-      filters.startDate = { $gte: start };
-    } if (endDate) {
-      const end = new Date(endDate);;
-      filters.endDate = { $lte: end };
-    }
-
-
-    if (category) filters.category = category;
-    if (itemType) filters.itemType = itemType;
-
     const user = await User.findById(toObjectId(userId));
+
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
 
-    const additionalQuery = { _id: { $in: user.savedItems } };
-    const finalQuery = { ...filters, ...additionalQuery };
-    const sortCondition = { startDate: 1 };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Item, sortCondition);
-    return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
+    const filters = {
+      _id: { $in: user.savedItems.map(id => toObjectId(id)) }
+    };
+
+    if (name) {
+      const pattern = escapeRegExp(name.trim());
+      filters.title = { $regex: pattern, $options: 'i' };
+    }
+
+    if (startDate) {
+      filters.startDate = { ...filters.startDate, $gte: new Date(startDate) };
+    }
+
+    if (endDate) {
+      filters.endDate = { ...filters.endDate, $lte: new Date(endDate) };
+    }
+
+    if (category) filters.category = category;
+    if (itemType) filters.itemType = itemType;
+
+    const options = {
+      sort,
+      order,
+      minPrice,
+      maxPrice,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    };
+
+    const pipeline = buildAggregationPipeline(filters, options);
+    const items = await Item.aggregate(pipeline);
+
+    return createOkResponse(res, "Items obtenidos exitosamente", items);
   }
+
 
   /**
    * Obtiene todos los comentarios de un usuario
@@ -233,31 +256,54 @@ class UserController {
    * Obtiene los eventos a los que el usuario asiste
    */
   async getAttendedItems(req, res) {
-    const { name, category, page, limit } = req.query;
+    const {
+      name,
+      category,
+      sort = 'startDate',
+      order = 'asc',
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 10
+    } = req.query;
+
     const userId = req.params.id;
     const today = new Date();
-
-    if (name) {
-        const pattern = escapeRegExp(name.trim());
-        filters.title = { $regex: pattern, $options: 'i' };
-    }
-
-    let filters = {};
-    if (category) {
-      filters.category = category;
-    }
 
     const user = await User.findById(toObjectId(userId));
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-    const dateFilter = { endDate: { $lt: today } };
-    const asistFilter = { _id: { $in: user.asistsTo } };
-    const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
-    const orderCondition = { startDate: 1 };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Event, orderCondition);
-    return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
+
+    const filters = {
+      _id: { $in: user.asistsTo.map(id => toObjectId(id)) },
+      endDate: { $lt: today }
+    };
+
+    if (name) {
+      const pattern = escapeRegExp(name.trim());
+      filters.title = { $regex: pattern, $options: 'i' };
+    }
+
+    if (category) {
+      filters.category = category;
+    }
+
+    const options = {
+      sort,
+      order,
+      minPrice,
+      maxPrice,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    };
+
+    const pipeline = buildAggregationPipeline(filters, options);
+    const items = await Event.aggregate(pipeline);
+
+    return createOkResponse(res, "Items obtenidos exitosamente", items);
   }
+
 
   /**
    * Marca como asistente a un evento

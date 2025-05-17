@@ -218,6 +218,18 @@ router.get('/:id',
  *          type: string
  *         description: Filtrar por tipo de ítem (Event o Place)
  *       - in: query
+ *         name: sort 
+ *         schema:
+ *          type: string
+ *          description: Campo por el que se ordena (comments, date). Si es comments, se ordena por el número de comentarios.
+ *       - in: query
+ *         name: order
+ *         schema:
+ *          type: string
+ *          enum: [asc, desc]
+ *          description: Orden de la lista (asc o desc)
+ *          default: asc
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -300,6 +312,18 @@ router.get('/:id/saved-events',
  *         schema:
  *           type: string
  *         description: Filtrar por categoría del evento
+ *       - in: query
+ *         name: sort 
+ *         schema:
+ *          type: string
+ *          description: Campo por el que se ordena (comments, date). Si es comments, se ordena por el número de comentarios.
+ *       - in: query
+ *         name: order
+ *         schema:
+ *          type: string
+ *          enum: [asc, desc]
+ *          description: Orden de la lista (asc o desc)
+ *          default: asc
  *       - in: query
  *         name: page
  *         schema:
