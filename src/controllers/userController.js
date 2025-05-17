@@ -4,6 +4,7 @@ const { Comment } = require("../models/commentModel");
 const { createChatDTO } = require("../utils/chatUtils");
 const { escapeRegExp } = require("../utils/utils");
 const { DisableUsers } = require("../models/statisticsModel");
+const { buildUserAggregationPipeline } = require("../utils/pipelineUtils");
 
 const { 
   toObjectId,
@@ -44,38 +45,43 @@ class UserController {
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-    const { page, limit, name } = req.query;
-    const userType = (req.query.userType || '').toLowerCase();
-    const order = (req.query.order || 'desc').toLowerCase();
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      userType,
+      sort = 'comments',
+      order = 'desc'
+    } = req.query;
+  
     const filters = {};
-
-    // filtro por tipo de usuario (case‐insensitive)
     if (userType) {
-      filters.active = userType === 'habilitados';
+      filters.active = userType.toLowerCase() === 'habilitados';
     }
-
-    // búsqueda por nombre
     if (name) {
-      const pattern = escapeRegExp(name.trim());
-      filters.title = { $regex: pattern, $options: 'i' };
+      filters.name = { $regex: escapeRegExp(name.trim()), $options: 'i' };
     }
-
-    // calcular orden y paginación
-    const sortOrder = order === 'asc' ? 1 : -1;
-    const skip = ((parseInt(page, 10) || 1) - 1) * (parseInt(limit, 10) || 10);
-    const limitNum = parseInt(limit, 10) || 10;
-
-    const pipeline = [
-      { $match: filters },
-      { $addFields: { commentCount: { $size: { $ifNull: ["$comments", []] } } } },
-      { $sort: { commentCount: sortOrder } },
-      { $project: { password: 0 } },
-      { $skip: skip },
-      { $limit: limitNum }
-    ];
-
-    const users = await User.aggregate(pipeline);
-    return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
+  
+    const pipeline = buildUserAggregationPipeline(filters, {
+      sortField: sort === 'comments' ? 'commentCount' : sort,
+      order,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10)
+    });
+  
+    const [users, totalItems] = await Promise.all([
+      User.aggregate(pipeline),
+      User.countDocuments(filters)
+    ]);
+  
+    const totalPages = Math.ceil(totalItems / limit);
+  
+    return createOkResponse(res, "Usuarios obtenidos exitosamente", {
+      items: users,
+      currentPage: parseInt(page, 10),
+      totalPages,
+      totalItems
+    });
   }
 
   /**
