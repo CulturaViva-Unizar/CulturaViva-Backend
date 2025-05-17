@@ -1,6 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const validate = require('../middlewares/validateSchema');
+const { 
+  getSchema, 
+  createCommentSchema, 
+  deleteCommentSchema, 
+  createCommentResponseSchema,
+  getItemsSchema
+} = require('../schemas/itemsSchemas');
 
 const itemController = require('../controllers/itemController');
 
@@ -105,7 +113,8 @@ const itemController = require('../controllers/itemController');
  *       500:
  *         description: Error interno del servidor
  */
-router.get('/events', 
+router.get('/events',
+  validate(getItemsSchema),
   (req, res, next) => {
     req.query.type = 'Event';
     next();
@@ -189,6 +198,7 @@ router.get('/events/categories',
  *         description: Error interno del servidor
  */
 router.get('/events/:id', 
+  validate(getSchema),
   (req, res, next) => {
     req.query.type = 'Event';
     next();
@@ -234,6 +244,7 @@ router.get('/events/:id',
  *         description: Error interno del servidor
  */
 router.get('/events/:id/comments',
+  validate(getSchema),
   (req, res, next) => {
     req.query.type = 'Event';
     next();
@@ -297,6 +308,7 @@ router.get('/events/:id/comments',
  *         description: Error interno del servidor
  */
 router.post('/events/:id/comments',
+  validate(createCommentSchema),
   passport.authenticate('jwt', { session: false }), 
   (req, res, next) => {
     req.query.type = 'Event';
@@ -346,6 +358,7 @@ router.post('/events/:id/comments',
  *         description: Error interno del servidor
  */
 router.delete('/events/:id/comments/:commentId',
+  validate(deleteCommentSchema),
   passport.authenticate('jwt', { session: false }),
   itemController.deleteComment
 );
@@ -396,6 +409,7 @@ router.delete('/events/:id/comments/:commentId',
  *         description: Error interno del servidor
  */
 router.get('/events/:id/comments/:commentId/responses',
+  validate(deleteCommentSchema),
   (req, res, next) => {
     req.query.type = 'Event';
     next();
@@ -461,6 +475,7 @@ router.get('/events/:id/comments/:commentId/responses',
  *         description: Error interno del servidor
  */
 router.post('/events/:id/comments/:commentId/responses',
+  validate(createCommentResponseSchema),
   passport.authenticate('jwt', { session: false }), 
   (req, res, next) => {
     req.query.type = 'Event';
@@ -562,6 +577,7 @@ router.post('/events/:id/comments/:commentId/responses',
  *         description: Error interno del servidor
  */
 router.get('/places', 
+  validate(getItemsSchema),
   (req, res, next) => {
     req.query.type = 'Place';
     next();
@@ -644,6 +660,7 @@ router.get('/places/categories',
  *         description: Error interno del servidor
  */
 router.get('/places/:id', 
+  validate(getSchema),
   (req, res, next) => {
     req.query.type = 'Place';
     next();
@@ -689,6 +706,7 @@ router.get('/places/:id',
  *         description: Error interno del servidor
  */
 router.get('/places/:id/comments',
+  validate(getSchema),
   (req, res, next) => {
     req.query.type = 'Place';
     next();
@@ -752,6 +770,7 @@ router.get('/places/:id/comments',
  *         description: Error interno del servidor
  */
 router.post('/places/:id/comments',
+  validate(createCommentSchema),
   passport.authenticate('jwt', { session: false }), 
   (req, res, next) => {
     req.query.type = 'Place';
@@ -801,6 +820,7 @@ router.post('/places/:id/comments',
  *         description: Error interno del servidor
  */
 router.delete('/places/:id/comments/:commentId',
+  validate(deleteCommentSchema),
   passport.authenticate('jwt', { session: false }),
   itemController.deleteComment
 );
@@ -851,6 +871,7 @@ router.delete('/places/:id/comments/:commentId',
  *         description: Error interno del servidor
  */
 router.get('/places/:id/comments/:commentId/responses',
+  validate(deleteCommentSchema),
   (req, res, next) => {
     req.query.type = 'Place';
     next();
@@ -916,6 +937,7 @@ router.get('/places/:id/comments/:commentId/responses',
  *         description: Error interno del servidor
  */
 router.post('/places/:id/comments/:commentId/responses',
+  validate(createCommentResponseSchema),
   passport.authenticate('jwt', { session: false }), 
   (req, res, next) => {
     req.query.type = 'Place';

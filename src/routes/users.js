@@ -9,12 +9,12 @@ const validate = require('../middlewares/validateSchema');
 
 const 
    {  
-    getUserByIdSchema,
+    getSchema,
     getEventsSchema,
     updateUserSchema,
     saveEventSchema,
-    deleteEventSchema, 
-    getUserCommentsSchema 
+    deleteEventSchema,  
+    getRecommendedItemsSchema
    } = require('../schemas/userSchemas');
 
 const router = express.Router();
@@ -182,6 +182,7 @@ router.get('/popular-events',
  *         description: Error interno del servidor
  */
 router.get('/:id', 
+    validate(getSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser,
     userController.getUserById);
@@ -196,7 +197,7 @@ router.get('/:id',
  *     security:
  *       - bearerAuth: []
  *     parameters:
-*       - in: path
+ *       - in: path
  *         name: id
  *         required: true
  *         schema:
@@ -208,11 +209,17 @@ router.get('/:id',
  *           type: string
  *         description: Filtrar por nombre del evento
  *       - in: query
- *         name: date
+ *         name: startDate
  *         schema:
  *           type: string
  *           format: date
- *         description: Filtrar por fecha del evento
+ *         description: Filtrar por fecha inicial del evento
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Filtrar por fecha final del evento
  *       - in: query
  *         name: category
  *         schema:
@@ -276,6 +283,7 @@ router.get('/:id',
  *         description: Error interno del servidor
  */
 router.get('/:id/saved-events', 
+    validate(getEventsSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser,
     userController.getSavedItems);
@@ -369,6 +377,7 @@ router.get('/:id/saved-events',
  *         description: Error interno del servidor
  */
 router.get('/:id/attended-events', 
+    validate(getEventsSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser, 
     userController.getAttendedItems);
@@ -445,6 +454,7 @@ router.get('/:id/attended-events',
  *         description: Error interno del servidor
  */
 router.get('/:id/recommended-items',
+    validate(getRecommendedItemsSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser,
     userController.getRecommendedItems
@@ -733,6 +743,7 @@ router.post('/:id/attending-events',
  *         description: Error interno del servidor
  */
 router.delete('/:id/saved-events/:eventId', 
+    validate(deleteEventSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser,
     userController.removeSavedItem);
@@ -859,6 +870,7 @@ router.delete('/:id/attending-events/:eventId',
  *         description: Error interno del servidor
  */
 router.get('/:id/comments',
+    validate(getSchema),
     passport.authenticate('jwt', { session: false }), 
     userController.checkAdminOrUser, 
     userController.getUserComments);  

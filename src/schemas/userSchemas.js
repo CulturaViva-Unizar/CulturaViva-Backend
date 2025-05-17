@@ -1,4 +1,4 @@
-const getUserByIdSchema = {
+const getSchema = {
   type: 'object',
   properties: {
     params: {
@@ -46,8 +46,43 @@ const getEventsSchema = {
         page: { type: 'string', minimum: 1 },
         limit: { type: 'string', minimum: 1 },
         name: { type: 'string' },
-        date: { type: 'string', format: 'date' },
-        category: { type: 'string' }
+        startDate: { type: 'string', format: 'date' },
+        endDate: { type: 'string', format: 'date' },
+        itemType: { type: 'string' },
+        category: { type: 'string' },
+        sort: { type: 'string' },
+        order: { type: 'string', enum: ['asc', 'desc'] }
+      },
+      additionalProperties: false
+    }
+  },
+  required: ['params'],
+  additionalProperties: false
+};
+
+const getRecommendedItemsSchema = {
+  type: 'object',
+  properties: {
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      properties: {
+        page: { type: 'string', minimum: 1 },
+        limit: { type: 'string', minimum: 1 },
+        type: { type: 'string' },
+        sort: { type: 'string' },
+        order: { type: 'string', enum: ['asc', 'desc'] }
       },
       additionalProperties: false
     }
@@ -140,36 +175,11 @@ const deleteEventSchema = {
   additionalProperties: false
 };
 
-
-const getUserCommentsSchema = {
-  type: 'object',
-  properties: {
-    params: {
-      type: 'object',
-      properties: {
-        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' } // Validación de ObjectId
-      },
-      required: ['id'],
-      additionalProperties: false
-    },
-    body: {
-      type: 'object',
-      additionalProperties: false
-    },
-    query: {
-      type: 'object',
-      additionalProperties: false
-    }
-  },
-  required: ['params'],
-  additionalProperties: false
-};
-
 module.exports = {
-  getUserByIdSchema,
+  getSchema,
   getEventsSchema,
   updateUserSchema,
   saveEventSchema,
   deleteEventSchema,
-  getUserCommentsSchema
+  getRecommendedItemsSchema
 };
