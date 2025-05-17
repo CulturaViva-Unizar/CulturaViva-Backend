@@ -1,7 +1,10 @@
 const { User } = require("../models/userModel");
-const { Item, Event } = require("../models/eventModel");
+const { Item, Event, Place } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel");
 const { createChatDTO } = require("../utils/chatUtils");
+const { escapeRegExp } = require("../utils/utils");
+const { DisableUsers } = require("../models/statisticsModel");
+const { buildUserAggregationPipeline, buildAggregationPipeline } = require("../utils/pipelineUtils");
 
 const { 
   toObjectId,
@@ -42,20 +45,43 @@ class UserController {
    * Obtiene todos los usuarios
    */
   async getUsers(req, res) {
-      const { page, limit, name } = req.query;
-      let filters = {};
-      if (req.query.userType) {
-        filters.active = req.query.userType == "Habilitados" ? true : false;
-      }
-
-      if(name) filters.name = { $regex: name, $options: "i" };
-
-      const finalQuery = { ...filters };
-      const selectCondition = { password: 0 };
-      const orderCondition = { name: 1 };
-      const users = await handlePagination(page, limit, finalQuery, User, orderCondition, selectCondition);
-      
-      return createOkResponse(res, "Usuarios obtenidos exitosamente", users);
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      userType,
+      sort = 'comments',
+      order = 'desc'
+    } = req.query;
+  
+    const filters = {};
+    if (userType) {
+      filters.active = userType.toLowerCase() === 'habilitados';
+    }
+    if (name) {
+      filters.name = { $regex: escapeRegExp(name.trim()), $options: 'i' };
+    }
+  
+    const pipeline = buildUserAggregationPipeline(filters, {
+      sortField: sort === 'comments' ? 'commentCount' : sort,
+      order,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10)
+    });
+  
+    const [users, totalItems] = await Promise.all([
+      User.aggregate(pipeline),
+      User.countDocuments(filters)
+    ]);
+  
+    const totalPages = Math.ceil(totalItems / limit);
+  
+    return createOkResponse(res, "Usuarios obtenidos exitosamente", {
+      items: users,
+      currentPage: parseInt(page, 10),
+      totalPages,
+      totalItems
+    });
   }
 
   /**
@@ -95,7 +121,36 @@ class UserController {
       if (!updatedUser) {
           return createNotFoundResponse(res, "Usuario no encontrado");
       }
-  
+
+      // Se actualizan estadisticas de usuarios deshabilitados
+      const today = new Date().toISOString().split('T')[0];
+      if (active === false) {
+        await DisableUsers.findOneAndUpdate(
+          { date: today },
+          { 
+            $inc: { count: 1 },
+            $addToSet: { users: toObjectId(userId) }
+          },
+          { 
+            upsert: true,
+            new: true 
+          }
+        );
+      }
+      else if (active === true) {
+        await DisableUsers.findOneAndUpdate(
+          { users: toObjectId(userId) },
+          { 
+            $inc: { count: -1 },
+            $pull: { users: toObjectId(userId) }
+          },
+          {
+            new: true 
+          }
+        );
+      }
+
+      
       return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
 
@@ -104,25 +159,62 @@ class UserController {
    * Obtiene los items guardados por el usuario
    */
   async getSavedItems(req, res) {
-    const { name, date, category, page, limit } = req.query;
+    const {
+      name,
+      startDate,
+      endDate,
+      itemType,
+      category,
+      sort = 'startDate',
+      order = 'asc',
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 16
+    } = req.query;
+
     const userId = req.params.id;
-
-    const filters = {};
-    if (name) filters.name = name;
-    if (date) filters.date = date;
-    if (category) filters.category = category;
-
     const user = await User.findById(toObjectId(userId));
+
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
 
-    const additionalQuery = { _id: { $in: user.savedItems } };
-    const finalQuery = { ...filters, ...additionalQuery };
-    const sortCondition = { startDate: 1 };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Item, sortCondition);
-    return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
+    const filters = {
+      _id: { $in: user.savedItems.map(id => toObjectId(id)) }
+    };
+
+    if (name) {
+      const pattern = escapeRegExp(name.trim());
+      filters.title = { $regex: pattern, $options: 'i' };
+    }
+
+    if (startDate) {
+      filters.startDate = { ...filters.startDate, $gte: new Date(startDate) };
+    }
+
+    if (endDate) {
+      filters.endDate = { ...filters.endDate, $lte: new Date(endDate) };
+    }
+
+    if (category) filters.category = category;
+    if (itemType) filters.itemType = itemType;
+
+    const options = {
+      sort,
+      order,
+      minPrice,
+      maxPrice,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    };
+
+    const pipeline = buildAggregationPipeline(filters, options);
+    const items = await Item.aggregate(pipeline);
+
+    return createOkResponse(res, "Items obtenidos exitosamente", items);
   }
+
 
   /**
    * Obtiene todos los comentarios de un usuario
@@ -164,29 +256,57 @@ class UserController {
    * Obtiene los eventos a los que el usuario asiste
    */
   async getAttendedItems(req, res) {
-    const { name, category, page, limit } = req.query;
+    const {
+      name,
+      category,
+      sort = 'startDate',
+      order = 'asc',
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 10
+    } = req.query;
+
     const userId = req.params.id;
     const today = new Date();
-
-    let filters = {};
-    if (category) {
-      filters.category = category;
-    }
 
     const user = await User.findById(toObjectId(userId));
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
     }
-    const dateFilter = { endDate: { $lt: today } };
-    const asistFilter = { _id: { $in: user.asistsTo } };
-    const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
-    const orderCondition = { startDate: 1 };
-    const paginatedResults = await handlePagination(page, limit, finalQuery, Event, orderCondition);
-    return createOkResponse(res, "Items obtenidos exitosamente", paginatedResults);
+
+    const filters = {
+      _id: { $in: user.asistsTo.map(id => toObjectId(id)) },
+      endDate: { $lt: today }
+    };
+
+    if (name) {
+      const pattern = escapeRegExp(name.trim());
+      filters.title = { $regex: pattern, $options: 'i' };
+    }
+
+    if (category) {
+      filters.category = category;
+    }
+
+    const options = {
+      sort,
+      order,
+      minPrice,
+      maxPrice,
+      page: parseInt(page),
+      limit: parseInt(limit)
+    };
+
+    const pipeline = buildAggregationPipeline(filters, options);
+    const items = await Event.aggregate(pipeline);
+
+    return createOkResponse(res, "Items obtenidos exitosamente", items);
   }
 
+
   /**
-   * Marca como asistiente a un evento
+   * Marca como asistente a un evento
    */
   async attendItem(req, res) {
     const userId = req.params.id;
@@ -263,15 +383,19 @@ class UserController {
    * Devuelve los eventos mas populares
    */
   async getPopularEvents(req, res) {
-    const { page, limit, category } = req.query;
+    const { page, limit, category, itemType } = req.query;
+    const finalItemType = itemType || 'Event';
     let filters = {};
     if (category) {
       filters.category = category;
     }
-    
-    const finalQuery = { ...filters };
+    filters.itemType = finalItemType;
+    if (finalItemType == 'Event') {
+      filters.startDate = { $gte: new Date() };
+    }
+    const finalQuery = { ...filters};
     const sortCondition = { asistentes: -1 };
-    const events = await handlePagination(page, limit, finalQuery, Event, sortCondition);
+    const events = await handlePagination(page, limit, finalQuery, Item, sortCondition);
     return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
   }
 
@@ -298,6 +422,90 @@ class UserController {
     const events = await handlePagination(page, limit, finalQuery, Event, orderCondition);
     return createOkResponse(res, "Eventos proximos obtenidos exitosamente", events);
   }
+
+  /**
+   * Promueve a un usuario a administrador
+   */
+  async makeAdmin(req, res) {
+    const userId = req.params.id;
+    
+    const updatedUser = await User.findByIdAndUpdate(
+        toObjectId(userId),
+        { admin: true },
+        { new: true, runValidators: true }
+    ).select('-password');
+
+    if (!updatedUser) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
+    }
+
+    return createOkResponse(res, "Usuario promovido a administrador exitosamente", updatedUser);
+  }
+
+
+  /**
+   * Recomienda items a un usuario basado en los eventos a los que ha asistido
+   */
+  async getRecommendedItems(req, res) {
+      // Recomienda en base a las 3 categorías a las que más asiste el usuario
+      // y los eventos solo si son en el próximo mes
+      // se podría hacer todo lo complejo que queramos, incluso meter IA o sistemas de recomendación
+      // pero lo veo demasiado para un proyecto de unizar 
+
+      const userId = req.params.id;
+      const type = req.query.type || 'Event';
+      const user = await User.findById(toObjectId(userId));
+      if (!user) {
+        return createNotFoundResponse(res, "Usuario no encontrado");
+      }
+  
+      // 1. Obtener los eventos a los que ha asistido el usuario
+      const attendedEvents = await Event.find({ _id: { $in: user.asistsTo } }, 'category');
+  
+      // 2. Contar ocurrencias por categoría
+      const categoryCount = {};
+      attendedEvents.forEach(event => {
+        if (event.category) {
+          categoryCount[event.category] = (categoryCount[event.category] || 0) + 1;
+        }
+      });
+  
+      // 3. Ordenar y tomar las 3 categorías más frecuentes
+      const topCategories = Object.entries(categoryCount)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([category]) => category);
+
+      console.log("Categorías más frecuentes:", topCategories);
+  
+      // 4. Filtros
+      const now = new Date();
+      const nextMonth = new Date();
+      nextMonth.setMonth(now.getMonth() + 1);
+  
+      const filters = {
+        category: { $in: topCategories },
+        _id: { $nin: user.asistsTo },
+      };
+  
+      if (type === 'Event') {
+        filters.startDate = { $gte: now };
+        filters.endDate = { $lt: nextMonth };
+      }
+  
+      const options = {
+        sort: req.query.sort || 'startDate',
+        order: req.query.order || 'asc',
+        page: parseInt(req.query.page) || 1,
+        limit: parseInt(req.query.limit) || 16,
+      };
+  
+      const pipeline = buildAggregationPipeline(filters, options);
+      const items = await (type === 'Event' ? Event : Place).aggregate(pipeline);
+  
+      return createOkResponse(res, "Recomendaciones obtenidas exitosamente", items);
+  }
+
 }
 
 module.exports = new UserController();

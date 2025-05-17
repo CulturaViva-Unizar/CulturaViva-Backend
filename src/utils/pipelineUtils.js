@@ -79,4 +79,23 @@ function buildAggregationPipeline(filters, options) {
     return aggregationPipeline;
 }
 
-module.exports = { buildAggregationPipeline };
+/**
+ * Construye pipeline para paginar usuarios ordenando por cualquier campo,
+ * incluyendo un campo calculado commentCount.
+ */
+function buildUserAggregationPipeline(filters, { sortField, order = 'desc', page = 1, limit = 10 }) {
+    const skip = (page - 1) * limit;
+    const sortOrder = order.toLowerCase() === 'asc' ? 1 : -1;
+  
+    return [
+      { $match: filters },
+      { $addFields: { commentCount: { $size: { $ifNull: ["$comments", []] } } } },
+      { $sort: { [sortField]: sortOrder } },
+      { $skip: skip },
+      { $limit: limit },
+      { $project: { password: 0, __v: 0 } }
+    ];
+  }
+  
+
+module.exports = { buildAggregationPipeline, buildUserAggregationPipeline };

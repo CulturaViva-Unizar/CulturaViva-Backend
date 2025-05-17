@@ -111,7 +111,7 @@ async function handlePagination(_page, _limit, finalQuery = {}, Model, orderCond
     Model.aggregate(aggregationPipeline),
   ]);
 
-  const totalPages = Math.ceil(10 / limit);
+  const totalPages = Math.ceil(totalItems / limit);
   return {
     items,
     currentPage: page,

@@ -56,6 +56,11 @@ const router = express.Router();
  *        schema: 
  *          type: string
  *        description: Nombre del usuario
+ *      - in: query
+ *        name: order
+ *        schema: 
+ *          type: string
+ *        description: Ordenar por comentarios "asc" o "desc"
  *    responses:
  *     200:
  *      description: Lista de usuarios obtenida exitosamente
@@ -86,7 +91,7 @@ router.get('/',
  * @swagger
  * /users/popular-events:
  *   get:
- *     summary: Obtiene los eventos mas populares
+ *     summary: Obtiene los ítems mas populares
  *     tags: [Users]
  *     parameters:
  *       - in: query
@@ -94,6 +99,12 @@ router.get('/',
  *         schema:
  *           type: string
  *         description: Filtrar por categoría del evento
+ *       - in: query
+ *         name: itemType
+ *         schema:
+ *          type: string
+ *          enum: [Event, Place]
+ *          description: Filtrar por tipo de ítem (Event o Place)
  *       - in: query
  *         name: page
  *         schema:
@@ -208,6 +219,23 @@ router.get('/:id',
  *           type: string
  *         description: Filtrar por categoría del evento
  *       - in: query
+ *         name: itemType
+ *         schema:
+ *          type: string
+ *         description: Filtrar por tipo de ítem (Event o Place)
+ *       - in: query
+ *         name: sort 
+ *         schema:
+ *          type: string
+ *          description: Campo por el que se ordena (comments, date). Si es comments, se ordena por el número de comentarios.
+ *       - in: query
+ *         name: order
+ *         schema:
+ *          type: string
+ *          enum: [asc, desc]
+ *          description: Orden de la lista (asc o desc)
+ *          default: asc
+ *       - in: query
  *         name: page
  *         schema:
  *           type: integer
@@ -274,16 +302,34 @@ router.get('/:id/saved-events',
  *           type: string
  *         description: Filtrar por nombre del evento
  *       - in: query
- *         name: date
+ *         name: startDate
  *         schema:
  *           type: string
  *           format: date
- *         description: Filtrar por fecha del evento
+ *         description: Obtiene eventos con fecha incial >= startDate (YYYY-MM-DD)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Obtiene eventos con fecha final <= endDate (YYYY-MM-DD)
  *       - in: query
  *         name: category
  *         schema:
  *           type: string
  *         description: Filtrar por categoría del evento
+ *       - in: query
+ *         name: sort 
+ *         schema:
+ *          type: string
+ *          description: Campo por el que se ordena (comments, date). Si es comments, se ordena por el número de comentarios.
+ *       - in: query
+ *         name: order
+ *         schema:
+ *          type: string
+ *          enum: [asc, desc]
+ *          description: Orden de la lista (asc o desc)
+ *          default: asc
  *       - in: query
  *         name: page
  *         schema:
@@ -326,6 +372,83 @@ router.get('/:id/attended-events',
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser, 
     userController.getAttendedItems);
+
+
+/**
+ * @swagger
+ * /users/{id}/recommended-items:
+ *   get:
+ *     summary: Obtiene recomendaciones personalizadas para el usuario
+ *     description: |
+ *       Devuelve una lista de eventos o lugares recomendados para el usuario, basada en las 3 categorías a las que más ha asistido.
+ *       Si el tipo es 'Event', solo se devuelven eventos que ocurren en el próximo mes, y que todavía no han empezado. 
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [Event, Place]
+ *         description: Tipo de ítem a recomendar (por defecto, Event)
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *         description: Campo por el que ordenar los resultados (por defecto, startDate)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Orden ascendente o descendente (por defecto, asc)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página para paginación
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Lista de recomendaciones obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Recomendaciones obtenidas exitosamente
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado o sin recomendaciones
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/:id/recommended-items',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdminOrUser,
+    userController.getRecommendedItems
+);
 
 /**
  * @swagger
@@ -782,6 +905,51 @@ router.get(
   passport.authenticate('jwt', { session: false }),
   userController.checkAdminOrUser,
   userController.getUserChats
+);
+
+
+/**
+ * @swagger
+ * /users/{id}/make-admin:
+ *   put:
+ *     summary: Promueve a un usuario a administrador
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario a promover
+ *     responses:
+ *       200:
+ *         description: Usuario promovido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: No autorizado
+ *       403:
+ *         description: Acceso denegado
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.put('/:id/make-admin',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin,
+    userController.makeAdmin
 );
 
 

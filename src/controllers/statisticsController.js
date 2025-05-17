@@ -1,7 +1,9 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
-const { Visit } = require("../models/statisticsModel");
+const { Visit, DisableUsers } = require("../models/statisticsModel");
+
 const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
+const { filterDate } = require("../utils/statisticsUtils")
 
 class StatisticsController {
 
@@ -9,77 +11,27 @@ class StatisticsController {
    * Middleware para contar visitas
   */
   async countVisits(req, res, next) {
-      const today = new Date().toISOString().split('T')[0];
-      let visit = await Visit.findOne({ date: today });
-      if (!visit) {
-        visit = new Visit({ date: today, count: 1 });
-      } else {
-        visit.count++;
-      }
-      await visit.save();
-      next();
+    const today = new Date().toISOString().split('T')[0];
+    let visit = await Visit.findOne({ date: today });
+    if (!visit) {
+      visit = new Visit({ date: today, count: 1 });
+    } else {
+      visit.count++;
     }
-  
+    await visit.save();
+    next();
+  }
+
   /**
    * Obtiene las visitas por meses
   */
   async getVisits(req, res) {
-    const range = req.query.range || '12';
-    const today = new Date();
-    let startDate = new Date();
-
-    switch (range) {
-      case '1':
-        startDate.setMonth(today.getMonth() - 1);
-        break;
-      case '3':
-        startDate.setMonth(today.getMonth() - 3);
-        break;
-      case '6':
-        startDate.setMonth(today.getMonth() - 6);
-        break;
-      case '12':
-        startDate.setFullYear(today.getFullYear() - 1);
-        break;
-      default:
-        startDate.setFullYear(today.getFullYear() - 1);
-    }
-
-    const from = startDate.toISOString().split('T')[0];
-    const stats = await Visit.aggregate([
-      {
-        $match: {
-          date: { $gte: from }
-        }
-      },
-      {
-        $group: {
-          _id: {
-            year: { $substr: ['$date', 0, 4] },
-            month: { $substr: ['$date', 5, 2] }
-          },
-          total: { $sum: '$count' }
-        }
-      },
-      {
-        $sort: { 
-          "_id.year": 1,
-          "_id.month": 1 
-        }
-      },
-      {
-        $project: {
-          _id: 0,
-          id: {
-            $concat: ["$_id.year", "-", "$_id.month"]
-          },
-          total: 1
-        }
-      }
-    ]);
-
+    const range = req.query.range || '12m';
+    const pipeline = filterDate(range)
+    console.log(pipeline);
+    const stats = await Visit.aggregate(pipeline)
     return createOkResponse(res, "Visitas obtenidas exitosamente", {
-      months: stats
+      stats
     });
   }
 
@@ -110,32 +62,43 @@ class StatisticsController {
    * Obtiene el conteo de eventos
    */
   async eventCount(req, res) {
-    let count = 0;
-    let match = {};
+    const now = new Date();
+    const match = { startDate: { $gte: now } };
     if (req.query.category) {
-      match = { category: req.query.category };
+      match.category = req.query.category;
     }
-    count = await Item.countDocuments(match);
-    createOkResponse(res, "Conteo de eventos obtenido exitosamente", {
-      count: count,
+    const count = await Item.countDocuments(match);
+    return createOkResponse(res, "Conteo de eventos obtenido exitosamente", { count });
+  }
+
+  /**
+   * Obtiene el numero de usuarios deshabilitados a lo largo del tiempo
+   */
+  async getDisableUsersCount(req, res) {
+    const range = req.query.range || '12m';
+    const pipeline = filterDate(range)
+    const stats = await DisableUsers.aggregate(pipeline)
+    return createOkResponse(res, "Conteo de usuarios deshabilitados obtenido exitosamente", {
+      stats
     });
   }
+
 
   async initializeVisits(req, res) {
     try {
       const today = new Date();
-      const startDate = new Date(today.getFullYear() - 1, today.getMonth(), 1); // Empezar desde hace 1 año
-      const monthlyVisits = [];
+      const startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+      const dailyVisits = [];
 
-      for (let date = new Date(startDate); date <= today; date.setMonth(date.getMonth() + 1)) {
-        const formattedDate = date.toISOString().split('T')[0].substring(0, 7) + '-01'; // Format: YYYY-MM-01
-        monthlyVisits.push({
+      for (let date = new Date(startDate); date <= today; date.setDate(date.getDate() + 1)) {
+        const formattedDate = date.toISOString().split('T')[0];
+        dailyVisits.push({
           date: formattedDate,
           count: 0
         });
       }
 
-      const operations = monthlyVisits.map(visit => ({
+      const operations = dailyVisits.map(visit => ({
         updateOne: {
           filter: { date: visit.date },
           update: { $setOnInsert: { count: 0 } },
@@ -146,7 +109,7 @@ class StatisticsController {
       await Visit.bulkWrite(operations);
 
       return createOkResponse(res, "Visitas inicializadas exitosamente", {
-        monthsInitialized: monthlyVisits.length
+        daysInitialized: dailyVisits.length
       });
     } catch (error) {
       console.error('Error al inicializar visitas:', error);
@@ -156,10 +119,14 @@ class StatisticsController {
 
   async assistedEventsByCategory(req, res) {
     const userId = req.params.id;
+    const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
     const now = new Date();
     const pipeline = [
-      { $match: { asistentes: toObjectId(userId), endDate: { $lt: now } } },
-      { $group:   { _id: "$category", count: { $sum: 1 } } },
+      { $match: { _id: { $in: user.asistsTo }, endDate: { $lt: now } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
     const result = await Item.aggregate(pipeline);
@@ -167,7 +134,9 @@ class StatisticsController {
   }
 
   async eventsByCategory(req, res) {
+    const now = new Date();
     const pipeline = [
+      { $match: { startDate: { $gte: now } } },
       { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
@@ -177,10 +146,14 @@ class StatisticsController {
 
   async upcomingByCategory(req, res) {
     const userId = req.params.id;
+    const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
     const now = new Date();
     const pipeline = [
-      { $match: { asistentes: toObjectId(userId), startDate: { $gt: now } } },
-      { $group:   { _id: "$category", count: { $sum: 1 } } },
+      { $match: { _id: { $in: user.asistsTo }, startDate: { $gte: now } } },
+      { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
     const result = await Item.aggregate(pipeline);
