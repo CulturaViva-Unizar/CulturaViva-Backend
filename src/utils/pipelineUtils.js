@@ -12,7 +12,7 @@ function buildAggregationPipeline(filters, options) {
         { $match: filters }, // Aplica los filtros básicos
     ];
 
-    aggregationPipeline.push({ $addFields: { id: "$_id" } });   
+    aggregationPipeline.push({ $addFields: { id: "$_id" } });
 
     // Cálculo del número de comentarios si se ordena por 'comments'
     if (sort === 'comments') {
@@ -86,16 +86,51 @@ function buildAggregationPipeline(filters, options) {
 function buildUserAggregationPipeline(filters, { sortField, order = 'desc', page = 1, limit = 10 }) {
     const skip = (page - 1) * limit;
     const sortOrder = order.toLowerCase() === 'asc' ? 1 : -1;
-  
+
     return [
-      { $match: filters },
-      { $addFields: { commentCount: { $size: { $ifNull: ["$comments", []] } } } },
-      { $sort: { [sortField]: sortOrder } },
-      { $skip: skip },
-      { $limit: limit },
-      { $project: { password: 0, __v: 0 } }
+        { $match: filters },
+
+        {
+            $lookup: {
+                from: 'comments',
+                localField: 'comments',
+                foreignField: '_id',
+                as: 'commentDocs'
+            }
+        },
+
+        {
+            $addFields: {
+                id: "$_id",
+                commentCount: { $size: '$comments' },
+                commentCountEnabled: {
+                    $size: {
+                        $filter: {
+                            input: '$commentDocs',
+                            as: 'c',
+                            cond: { $eq: ['$$c.deleted', false] }
+                        }
+                    }
+                },
+                commentCountDisabled: {
+                    $size: {
+                        $filter: {
+                            input: '$commentDocs',
+                            as: 'c',
+                            cond: { $eq: ['$$c.deleted', true] }
+                        }
+                    }
+                }
+            }
+        },
+
+        { $sort: { [sortField]: sortOrder } },
+        { $skip: skip },
+        { $limit: limit },
+
+        { $project: { password: 0, __v: 0, commentDocs: 0, _id: 0, comments: 0 } }
     ];
-  }
-  
+}
+
 
 module.exports = { buildAggregationPipeline, buildUserAggregationPipeline };

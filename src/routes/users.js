@@ -856,32 +856,32 @@ module.exports = router;
  *       properties:
  *         id:
  *           type: string
- *           description: ID único del usuario
- *           pattern: "^[0-9a-fA-F]{24}$"
+ *           pattern: '^[0-9a-fA-F]{24}$'
  *         name:
  *           type: string
- *           description: Nombre del usuario
  *         email:
  *           type: string
- *           description: Correo electrónico del usuario
  *         phone:
  *           type: string
- *           description: Teléfono del usuario
  *         createdAt:
  *           type: string
  *           format: date-time
- *           description: Fecha de creación del usuario
- *         active: 
+ *         active:
  *           type: boolean
- *           description: Indica si el usuario está activo
  *         admin:
  *           type: boolean
- *           description: Indica si el usuario es administrador
  *         userType:
- *           type: String
- *           description: Indica el tipo de usuario (password, facebook, google)
- *           
- *       required: 
+ *           type: string
+ *         commentCount:
+ *           type: integer
+ *           description: Número total de comentarios
+ *         commentCountEnabled:
+ *           type: integer
+ *           description: Número de comentarios habilitados
+ *         commentCountDisabled:
+ *           type: integer
+ *           description: Número de comentarios deshabilitados
+ *       required:
  *         - id
  *         - name
  *         - email
@@ -889,6 +889,10 @@ module.exports = router;
  *         - createdAt
  *         - active
  *         - admin
+ *         - userType
+ *         - commentCount
+ *         - commentCountEnabled
+ *         - commentCountDisabled
  */
 /**
  * @swagger

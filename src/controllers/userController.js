@@ -77,7 +77,7 @@ class UserController {
     const totalPages = Math.ceil(totalItems / limit);
   
     return createOkResponse(res, "Usuarios obtenidos exitosamente", {
-      items: users,
+      items: users.map(mapUserDTO),
       currentPage: parseInt(page, 10),
       totalPages,
       totalItems
@@ -392,6 +392,22 @@ class UserController {
 
     return createOkResponse(res, "Usuario promovido a administrador exitosamente", updatedUser);
   }
+}
+
+function mapUserDTO(u) {
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    phone: u.phone,
+    createdAt: u.createdAt,
+    active: u.active,
+    admin: u.admin,
+    userType: u.userType,
+    commentCount: u.commentCount,
+    commentCountEnabled: u.commentCountEnabled,
+    commentCountDisabled: u.commentCountDisabled
+  };
 }
 
 module.exports = new UserController();
