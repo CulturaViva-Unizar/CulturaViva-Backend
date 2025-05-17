@@ -1,5 +1,6 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
+const { Comment } = require("../models/commentModel")
 const { Visit, DisableUsers } = require("../models/statisticsModel");
 
 const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
@@ -158,6 +159,73 @@ class StatisticsController {
     ];
     const result = await Item.aggregate(pipeline);
     return createOkResponse(res, "Conteo de próximos eventos por categoría obtenido exitosamente", result);
+  }
+
+  async getCommentsStatistics(req, res) {
+    const range = req.query.range || '12m';
+
+    let startDate = new Date();
+    let showDays = false;
+    const today = new Date();
+
+    switch (range) {
+      case '1w':
+        startDate.setDate(today.getDate() - 7);
+        showDays = true;
+         break;
+      case '1m':
+        startDate.setMonth(today.getMonth() - 1);
+        showDays = true;
+        break;
+      case '3m':
+        startDate.setMonth(today.getMonth() - 3);
+        break;
+      case '6m':
+        startDate.setMonth(today.getMonth() - 6);
+        break;
+      case '9m':
+        startDate.setMonth(today.getMonth() - 9);
+        break;
+      case '12m':
+        startDate.setFullYear(today.getFullYear() - 1);
+        break;
+      default:
+        startDate.setFullYear(today.getFullYear() - 1);
+    }
+      
+
+      const pipeline = [
+        {
+          $match: {
+            $or: [
+              { date:     { $gte: startDate } },
+              { deleteAt: { $gte: startDate } }
+            ]
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalEliminated: {
+              $sum: { $cond: [{ $eq: [ "$deleted", true ] }, 1, 0 ] }
+            },
+            totalAdded: {
+              $sum: { $cond: [{ $eq: [ "$deleted", false ] }, 1, 0 ] }
+            }
+          }
+        },
+        {
+          $project: { _id: 0, totalEliminated: 1, totalAdded: 1 }
+        }
+      ];
+
+
+      const result = await Comment.aggregate(pipeline);
+
+      console.log(result)
+      console.log(await Comment.find());
+
+      return createOkResponse(res, "Estadísticas de comentarios obtenidas exitosamente", result);
   }
 }
 

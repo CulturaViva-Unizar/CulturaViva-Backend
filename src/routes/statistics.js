@@ -345,6 +345,16 @@ router.get('/disable-users',
     statisticsController.getDisableUsersCount
 );
 
-router.get('/visits/initialize', statisticsController.initializeVisits);
+router.get('/comments',
+    //passport.authenticate('jwt', { session: false }),
+    //userController.checkAdmin,
+    statisticsController.getCommentsStatistics
+);
+
+router.get('/visits/initialize', 
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin,
+    statisticsController.initializeVisits
+);
 
 module.exports = router;
