@@ -89,7 +89,6 @@ class UserController {
    */
   async getUserById(req, res) {
     const userId = req.params.id;
-    console.log("User ID:", userId);
     const user = await User.findById(toObjectId(userId)).select("-password");
     if (!user) {
         return createNotFoundResponse(res, "Usuario no encontrado");
@@ -366,7 +365,6 @@ class UserController {
    */
   async getUserChats(req, res) {
     const userId = req.params.id;
-    console.log("User ID:", userId);
     const user = await User.findById(userId).populate('chats');
     if (!user) {
       return createNotFoundResponse(res, "Usuario no encontrado");
@@ -475,8 +473,6 @@ class UserController {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map(([category]) => category);
-
-      console.log("Categorías más frecuentes:", topCategories);
   
       // 4. Filtros
       const now = new Date();

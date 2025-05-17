@@ -77,10 +77,6 @@ class ItemController {
         ? req.query.fields.split(',').join(' ')
         : null;
 
-        console.log('Tipo de evento:', type);
-        console.log('ID del evento:', eventId);
-        if (fields) console.log('Campos solicitados:', fields);
-
         const query = Item.findOne({ _id: eventId, itemType: type });
         if (fields) query.select(fields);
 
@@ -122,8 +118,6 @@ class ItemController {
         const type = req.query.type || 'Event';
         const eventId = toObjectId(req.params.id);
         const userName = req.query.userName;
-        console.log('ID del evento:', eventId);
-        console.log('Tipo de evento:', type);
         const event = await Item.findOne({ _id: eventId, itemType: type })
         .populate({
             path: 'comments',
@@ -250,7 +244,6 @@ class ItemController {
     }
 
     async getCategories(req, res) {
-        console.log("getCategories");
         const type = req.query.type || 'Event';
         const categories = await Item.distinct('category', { itemType: type });
         return createOkResponse(res, "Categorías obtenidas exitosamente", categories);

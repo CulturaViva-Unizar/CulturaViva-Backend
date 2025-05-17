@@ -33,8 +33,6 @@ class ChatController {
   async createChat(req, res) {
     const user1 = req.userId;
     const user2 = req.body.user;
-    console.log("user1", user1);
-    console.log("user2", user2);
 
     const existingChat = await Chat.findOne({
         $or: [
@@ -65,7 +63,6 @@ class ChatController {
 
   async getChatMessages(req, res) {
     const chatId = req.params.chatId;
-    console.log("chatId", chatId);
     const chat = await Chat.findById(chatId).populate('mensajes');
 
     if (!chat) {

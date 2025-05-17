@@ -2,6 +2,7 @@ const passport = require('passport');
 const env = require('./env.js');
 const { UserFacebook } = require('../models/userModel.js');
 const FacebookStrategy = require('passport-facebook').Strategy;
+const logger = require('../logger/logger.js');
 
 const options = {
     clientID: env.FACEBOOK_APP_ID,
@@ -30,7 +31,10 @@ passport.use(new FacebookStrategy(options, async (accessToken, refreshToken, pro
             return done(null, user);
         }
     } catch (error) {
-        console.error("Error en la estrategia de Facebook:", error);
+        logger.error("Error en la estrategia de Facebook:", error, {
+            message: error.message,
+            stack: error.stack,
+        });
         return done(error, null, { success: false, message: 'Error en la estrategia de Facebook' });
     }
 }));

@@ -1,4 +1,5 @@
 const axios = require('axios');
+const logger = require('../logger/logger.js');
 
 /**
  * Realiza una petición a una URL y devuelve la respuesta JSON tal cual.
@@ -21,9 +22,18 @@ async function fetchJsonFromUrl(url) {
 
     const results = hits.map(hit => hit._source || hit);
 
+    logger.info(`Petición POST exitosa a ${url}`, {
+      totalHits: hits.length,
+    });
+
     return results;
   } catch (error) {
-    console.error(`Error al realizar la petición a ${url}:`, error.message);
+    logger.error(`Error al realizar la petición a ${url}`, {
+      message: error.message,
+      code: error.code,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+    });
     throw new Error('No se pudo obtener la respuesta JSON');
   }
 }

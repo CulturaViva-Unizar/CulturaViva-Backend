@@ -4,6 +4,7 @@ const { Visit, DisableUsers } = require("../models/statisticsModel");
 
 const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
 const { filterDate } = require("../utils/statisticsUtils")
+const logger = require("../logger/logger.js");
 
 class StatisticsController {
 
@@ -28,7 +29,6 @@ class StatisticsController {
   async getVisits(req, res) {
     const range = req.query.range || '12m';
     const pipeline = filterDate(range)
-    console.log(pipeline);
     const stats = await Visit.aggregate(pipeline)
     return createOkResponse(res, "Visitas obtenidas exitosamente", {
       stats
@@ -112,7 +112,10 @@ class StatisticsController {
         daysInitialized: dailyVisits.length
       });
     } catch (error) {
-      console.error('Error al inicializar visitas:', error);
+      logger.error('Error al inicializar visitas', {
+        message: error.message,
+        stack: error.stack,
+      });
       return createInternalServerErrorResponse(res, "Error al inicializar las visitas");
     }
   }

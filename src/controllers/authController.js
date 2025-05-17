@@ -9,6 +9,7 @@ const {
   createOkResponse,
   createResponse,
 } = require("../utils/utils");
+const logger = require("../logger/logger.js");
 
 class AuthController {
   /**
@@ -54,15 +55,27 @@ class AuthController {
 
     const userExists = await UserPassword.findOne({ email: email });
     if (!userExists) {
+      logger.warn('Intento fallido de login: usuario no encontrado', {
+        email,
+        ip: req.ip
+      });
       return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
 
     if (!userExists.active) {
+      logger.warn('Intento fallido de login: usuario inactivo', {
+        email,
+        ip: req.ip
+      });
       return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
 
     const isPasswordValid = await bcrypt.compare(password, userExists.password);
     if (!isPasswordValid) {
+      logger.warn('Intento fallido de login: contraseña incorrecta', {
+        email,
+        ip: req.ip
+      });
       return createUnauthorizedResponse(res, "Credenciales incorrectas");
     }
 

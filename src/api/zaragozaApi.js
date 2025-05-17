@@ -1,14 +1,22 @@
 const axios = require('axios');
+const logger = require('../logger/logger.js'); 
 
-// función genérica para interrogar a la api de zaragoza
 async function fetchFromAPI(url, params = {}) {
   try {
     const response = await axios.get(url, { params });
+    logger.info(`Llamada exitosa a API: ${url}`, { params });
     return response.data;
   } catch (error) {
-    console.error(`Error al llamar a ${url}:`, error.message);
+    logger.error(`Error al llamar a ${url}`, {
+      message: error.message,
+      code: error.code,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      params
+    });
     return null;
   }
 }
+
 
 module.exports = { fetchFromAPI };
