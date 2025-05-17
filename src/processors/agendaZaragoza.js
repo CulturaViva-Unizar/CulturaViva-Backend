@@ -1,6 +1,7 @@
 const { fetchFromAPI } = require('../api/zaragozaApi'); 
 const { Place } = require('../models/eventModel');
 const { cleanHtmltags } = require('../utils/utils');
+const logger = require('../logger/logger.js');
 
 // Swagger: https://www.zaragoza.es/docs-api_sede/#/Agenda%20Zaragoza/get_servicio_actividades_evento_list
 // la url al .env mejor
@@ -23,7 +24,11 @@ async function getCoordinates(evento) {
 
     return null;
   } catch (error) {
-    console.error(`Error buscando coordenadas para ${evento.location}:`, error.message);
+    logger.error(`Error buscando coordenadas para ${evento.location}:`, error.message, {
+      message: error.message,
+      stack: error.stack,
+      evento,
+    });
     return null;
   }
 }
@@ -53,7 +58,6 @@ async function getEventosCulturales() {
       //console.log(`Response from API: ${JSON.stringify(response)}`);
 
       if (!response || !response.result || response.result.length === 0) {
-        console.log(`No more features found. Stopping at start=${start}`);
         break;
       }
 
@@ -83,16 +87,19 @@ async function getEventosCulturales() {
       );
 
       eventos.push(...processedEvents);
-      console.log(`Fetched ${processedEvents.length} eventos from start=${start}`);
 
       start += rows;
     } catch (error) {
-      console.error(`Error fetching data from start=${start}:`, error.message);
+      logger.error(`Error fetching data from start=${start}:`, error.message, {
+        message: error.message,
+        stack: error.stack,
+        start,
+        rows,
+      });
       break;
     }
   }
 
-  console.log(`Total eventos fetched: ${eventos.length}`);
   return eventos;
 }
 

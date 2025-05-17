@@ -598,7 +598,6 @@ router.get('/places',
  */
 router.get('/places/categories',
   (req, res, next) => {
-    console.log('Fetching categories for places');
     req.query.type = 'Place';
     next();
   }, 

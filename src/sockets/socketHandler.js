@@ -1,34 +1,45 @@
 const Message = require('../models/messageModel');
 const Chat = require('../models/chatModel');
 const { isUserInChat, checkIsWhoHeSays } = require('../utils/chatUtils');
+const logger = require('../logger/logger.js');
 
 
 module.exports = (io) => {
 
   io.on('connection', (socket) => {
-    console.log('Nuevo cliente conectado');
+    logger.info('Nuevo cliente conectado', {
+      socketId: socket.id,
+      userId: socket.user.id
+    });
 
     // El usuario se une a la sala del chat 'chatId'
     socket.on('joinChat', async (chatId) => {
       const userId = socket.user.id; // el user id se obtiene del JWT, middleware anterior
 
-      console.log(`Usuario ${userId} se unió al chat ${chatId}`);
-
       const allowed = await isUserInChat(userId, chatId);
 
       if (!allowed) {
-        console.log(`Usuario no autorizado para unirse al chat ${chatId}`);
+        logger.error(`Usuario no autorizado para unirse al chat ${chatId}`, {
+          socketId: socket.id,
+          userId: userId
+        });
         socket.emit('errorMessage', { error: 'No tienes acceso a este chat' });
         return;
       }
       socket.join(chatId);
-      console.log(`Usuario se unió al chat ${chatId}`);
+      logger.info(`Usuario ${userId} se unió al chat ${chatId}`, {
+        socketId: socket.id,
+        chatId: chatId
+      });
     });
 
     // El usuario abandona la sala del chat 'chatId'
     socket.on('leaveChat', (chatId) => {
       socket.leave(chatId);
-      console.log(`Usuario salió de la sala ${chatId}`);
+      logger.info(`Usuario ${socket.user.id} abandonó el chat ${chatId}`, {
+        socketId: socket.id,
+        chatId: chatId
+      });
     });
 
     // El usuario 'userId' envía el mensaje 'text' al chat 'chatId'
@@ -43,7 +54,11 @@ module.exports = (io) => {
         
         const allowed = isInChat && isWhoHeSays;
         if (!allowed) {
-          console.log(`Usuario no autorizado para unirse al chat ${chatId}`);
+          logger.error(`Usuario no autorizado para enviar mensaje al chat ${chatId}`, {
+            socketId: socket.id,
+            userId: socket.user.id,
+            chatId: chatId
+          });
           socket.emit('errorMessage', { error: 'No tienes acceso a este chat' });
           return;
         }
@@ -71,14 +86,22 @@ module.exports = (io) => {
         });
 
       } catch (error) {
-        console.error('Error enviando mensaje:', error);
+        logger.error('Error al enviar el mensaje', {
+          message: error.message,
+          stack: error.stack,
+          socketId: socket.id,
+          userId: socket.user.id
+        });
         socket.emit('errorMessage', { error: 'No se pudo enviar el mensaje' }); // si falla emito error, frontned debe suscribirse a este topic
       }
     });
 
     // Sin más el usuario se desconecta
     socket.on('disconnect', () => {
-      console.log('Cliente desconectado');
+      logger.info('Cliente desconectado', {
+        socketId: socket.id,
+        userId: socket.user.id
+      });
     });
   });
 };

@@ -1,9 +1,11 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
+const { Comment } = require("../models/commentModel")
 const { Visit, DisableUsers } = require("../models/statisticsModel");
 
 const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
 const { filterDate } = require("../utils/statisticsUtils")
+const logger = require("../logger/logger.js");
 
 class StatisticsController {
 
@@ -28,7 +30,6 @@ class StatisticsController {
   async getVisits(req, res) {
     const range = req.query.range || '12m';
     const pipeline = filterDate(range)
-    console.log(pipeline);
     const stats = await Visit.aggregate(pipeline)
     return createOkResponse(res, "Visitas obtenidas exitosamente", {
       stats
@@ -112,7 +113,10 @@ class StatisticsController {
         daysInitialized: dailyVisits.length
       });
     } catch (error) {
-      console.error('Error al inicializar visitas:', error);
+      logger.error('Error al inicializar visitas', {
+        message: error.message,
+        stack: error.stack,
+      });
       return createInternalServerErrorResponse(res, "Error al inicializar las visitas");
     }
   }
@@ -158,6 +162,68 @@ class StatisticsController {
     ];
     const result = await Item.aggregate(pipeline);
     return createOkResponse(res, "Conteo de próximos eventos por categoría obtenido exitosamente", result);
+  }
+
+  async getCommentsStatistics(req, res) {
+    const range = req.query.range || '12m';
+
+    let startDate = new Date();
+    const today = new Date();
+
+    switch (range) {
+      case '1w':
+        startDate.setDate(today.getDate() - 7);
+         break;
+      case '1m':
+        startDate.setMonth(today.getMonth() - 1);
+        break;
+      case '3m':
+        startDate.setMonth(today.getMonth() - 3);
+        break;
+      case '6m':
+        startDate.setMonth(today.getMonth() - 6);
+        break;
+      case '9m':
+        startDate.setMonth(today.getMonth() - 9);
+        break;
+      case '12m':
+        startDate.setFullYear(today.getFullYear() - 1);
+        break;
+      default:
+        startDate.setFullYear(today.getFullYear() - 1);
+    } 
+
+      const pipeline = [
+        {
+          $match: {
+            $or: [
+              { date:     { $gte: startDate } },
+              { deleteAt: { $gte: startDate } }
+            ]
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalEliminated: {
+              $sum: { $cond: [{ $eq: [ "$deleted", true ] }, 1, 0 ] }
+            },
+            totalAdded: {
+              $sum: { $cond: [{ $eq: [ "$deleted", false ] }, 1, 0 ] }
+            }
+          }
+        },
+        {
+          $project: { _id: 0, totalEliminated: 1, totalAdded: 1 }
+        }
+      ];
+
+
+      const result = await Comment.aggregate(pipeline);
+
+      console.log(result)
+
+      return createOkResponse(res, "Estadísticas de comentarios obtenidas exitosamente", result);
   }
 }
 

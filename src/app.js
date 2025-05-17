@@ -3,7 +3,7 @@ require('express-async-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var logger = require('./logger/logger');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -18,6 +18,7 @@ const options = require('./config/swagger');
 const validateJson = require('./middlewares/validateJson');
 const cors = require('cors');
 const { createInternalServerErrorResponse } = require('./utils/utils.js');
+const logRequests = require('./logger/loggerMiddleware');
 
 const db = require('./config/db');
 require('./cron/tasks');
@@ -29,13 +30,13 @@ db.connectDB();
 app.use(cors());
 
 //app.use(validateJson);
-app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 const swaggerSpec = swaggerJsdoc(options);
 
+app.use(logRequests); 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/auth', authRouter);
@@ -46,18 +47,28 @@ app.use('/statistics', statisticsRouter)
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    if (res.headersSent) {
-        return next(err)
-    };
-    return createInternalServerErrorResponse(res, 'Error interno del servidor');
+  logger.error('Unhandled error', {
+    message: err.message,
+    stack: err.stack,
+    method: req.method,
+    url: req.originalUrl,
+    userId: req.user?.id || 'anonymous',
+    ip: req.ip,
+  });
+
+  if (res.headersSent) {
+    return next(err);
+  }
+
+  return createInternalServerErrorResponse(res, 'Error interno del servidor');
 });
 
+/*
 const ItemController = require('./controllers/itemController');
 const { getEventosCulturales } = require('./processors/agendaZaragoza');
 const { getPlaces } = require('./processors/lugares');
 
-/* 
+
 (async () => {
     try {
         const eventos = await getEventosCulturales();

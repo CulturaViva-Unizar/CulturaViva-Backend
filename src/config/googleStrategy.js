@@ -2,6 +2,7 @@ const passport = require('passport');
 const env = require('./env.js');
 const { UserGoogle } = require('../models/userModel.js');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
+const logger = require('../logger/logger.js');
 
 const options = {
     clientID: env.GOOGLE_CLIENT_ID,
@@ -30,7 +31,10 @@ passport.use(new GoogleStrategy(options, async (accessToken, refreshToken, profi
             return done(null, user);
         }
     } catch (error) {
-        console.error("Error en la estrategia de Google:", error);
+        logger.error("Error en la estrategia de Google:", error, {
+            message: error.message,
+            stack: error.stack,
+        });
         return done(error, null, { success: false, message: 'Error en la estrategia de Google' });
     }
 }));
