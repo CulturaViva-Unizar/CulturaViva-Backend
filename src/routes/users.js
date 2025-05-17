@@ -91,7 +91,7 @@ router.get('/',
  * @swagger
  * /users/popular-events:
  *   get:
- *     summary: Obtiene los eventos mas populares
+ *     summary: Obtiene los ítems mas populares
  *     tags: [Users]
  *     parameters:
  *       - in: query
@@ -99,6 +99,12 @@ router.get('/',
  *         schema:
  *           type: string
  *         description: Filtrar por categoría del evento
+ *       - in: query
+ *         name: itemType
+ *         schema:
+ *          type: string
+ *          enum: [Event, Place]
+ *          description: Filtrar por tipo de ítem (Event o Place)
  *       - in: query
  *         name: page
  *         schema:
@@ -366,6 +372,83 @@ router.get('/:id/attended-events',
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser, 
     userController.getAttendedItems);
+
+
+/**
+ * @swagger
+ * /users/{id}/recommended-items:
+ *   get:
+ *     summary: Obtiene recomendaciones personalizadas para el usuario
+ *     description: |
+ *       Devuelve una lista de eventos o lugares recomendados para el usuario, basada en las 3 categorías a las que más ha asistido.
+ *       Si el tipo es 'Event', solo se devuelven eventos que ocurren en el próximo mes, y que todavía no han empezado. 
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID del usuario
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [Event, Place]
+ *         description: Tipo de ítem a recomendar (por defecto, Event)
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *         description: Campo por el que ordenar los resultados (por defecto, startDate)
+ *       - in: query
+ *         name: order
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Orden ascendente o descendente (por defecto, asc)
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página para paginación
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Límite de resultados por página
+ *     responses:
+ *       200:
+ *         description: Lista de recomendaciones obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Recomendaciones obtenidas exitosamente
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Event'
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado o sin recomendaciones
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get('/:id/recommended-items',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdminOrUser,
+    userController.getRecommendedItems
+);
 
 /**
  * @swagger
