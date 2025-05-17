@@ -345,9 +345,57 @@ router.get('/disable-users',
     statisticsController.getDisableUsersCount
 );
 
+/**
+ * @swagger
+ * /statistics/comments:
+ *   get:
+ *     summary: Devuelve el numero de comentarios añadidos vs borrados
+ *     tags: [Statistics]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: range
+ *         description: Rango en meses. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
+ *         required: false
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Devuelve el numero de comentarios añadidos vs borrados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Estadísticas de comentarios obtenidas exitosamente"
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       totalEliminated:
+ *                         type: integer
+ *                         minimum: 0
+ *                       totalAdded:
+ *                         type: integer
+ *                         minimum: 0
+ *                   example:
+ *                     - totalEliminated: 4 
+ *                       totalAdded: 3
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ */
 router.get('/comments',
-    //passport.authenticate('jwt', { session: false }),
-    //userController.checkAdmin,
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin,
     statisticsController.getCommentsStatistics
 );
 

@@ -165,17 +165,14 @@ class StatisticsController {
     const range = req.query.range || '12m';
 
     let startDate = new Date();
-    let showDays = false;
     const today = new Date();
 
     switch (range) {
       case '1w':
         startDate.setDate(today.getDate() - 7);
-        showDays = true;
          break;
       case '1m':
         startDate.setMonth(today.getMonth() - 1);
-        showDays = true;
         break;
       case '3m':
         startDate.setMonth(today.getMonth() - 3);
@@ -191,8 +188,7 @@ class StatisticsController {
         break;
       default:
         startDate.setFullYear(today.getFullYear() - 1);
-    }
-      
+    } 
 
       const pipeline = [
         {
@@ -223,7 +219,6 @@ class StatisticsController {
       const result = await Comment.aggregate(pipeline);
 
       console.log(result)
-      console.log(await Comment.find());
 
       return createOkResponse(res, "Estadísticas de comentarios obtenidas exitosamente", result);
   }
