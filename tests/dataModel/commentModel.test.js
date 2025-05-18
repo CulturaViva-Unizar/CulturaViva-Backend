@@ -151,4 +151,79 @@ describe('Response Model Tests', () => {
 
     await expect(response.save()).rejects.toThrow(mongoose.Error.ValidationError);
   });
+
+  it('debería asignar valores por defecto correctamente', async () => {
+    const comment = new Comment({
+      text: 'Test default values',
+      user: userId,
+      event: eventId
+    });
+
+    const saved = await comment.save();
+
+    expect(saved.date).toBeInstanceOf(Date);
+    expect(saved.deleted).toBe(false);
+    expect(saved.deleteAt).toBeNull();
+  });
+
+  it('debería transformar el documento eliminando _id y agregando id', async () => {
+    const comment = new Comment({
+      text: 'JSON transform test',
+      user: userId,
+      event: eventId
+    });
+
+    const saved = await comment.save();
+    const json = saved.toJSON();
+
+    expect(json.id).toBeDefined();
+    expect(json._id).toBeUndefined();
+    expect(json.__v).toBeUndefined();
+  });
+
+  it('debería permitir crear una valoración sin texto', async () => {
+    const valoration = new Valoration({
+      user: userId,
+      value: 4,
+      event: eventId
+    });
+
+    const saved = await valoration.save();
+    expect(saved).toBeDefined();
+    expect(saved.text).toBeUndefined();
+    expect(saved.value).toBe(4);
+  });
+
+  it('debería establecer commentType automáticamente en valoraciones y respuestas', async () => {
+    const val = new Valoration({
+      text: 'valoration type test',
+      value: 3,
+      user: userId,
+      event: eventId
+    });
+
+    const resp = new Response({
+      text: 'response type test',
+      responseTo: commentId,
+      user: userId,
+      event: eventId
+    });
+
+    const savedVal = await val.save();
+    const savedResp = await resp.save();
+
+    expect(savedVal.commentType).toBe('Valoration');
+    expect(savedResp.commentType).toBe('Response');
+  });
+
+
+  it('no debería permitir una valoración con un valor no numérico', async () => {
+    const valoration = new Valoration({
+      value: 'cinco',
+      user: userId,
+      event: eventId
+    });
+
+    await expect(valoration.save()).rejects.toThrow(mongoose.Error.ValidationError);
+  });
 });

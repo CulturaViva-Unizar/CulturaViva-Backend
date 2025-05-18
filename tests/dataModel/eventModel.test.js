@@ -104,4 +104,94 @@ describe('Event Model Tests', () => {
     expect(updatedEvent.asistentes).toContainEqual(user1);
     expect(updatedEvent.asistentes).toContainEqual(user2);
   });
+
+  it('debería guardar correctamente un item con precios', async () => {
+    const item = new Item({
+      title: 'Test Item con precios',
+      category: 'Food',
+      price: [
+        { grupo: 'Adultos', precio: 15 },
+        { grupo: 'Niños', precio: 10 }
+      ]
+    });
+
+    const savedItem = await item.save();
+
+    expect(savedItem.price).toHaveLength(2);
+    expect(savedItem.price[0].grupo).toBe('Adultos');
+    expect(savedItem.price[1].precio).toBe(10);
+  });
+
+  it('debería permitir guardar un item sin coordenadas', async () => {
+    const item = new Item({
+      title: 'Test sin coords',
+      category: 'General'
+    });
+
+    const saved = await item.save();
+
+    expect(saved.coordinates).toBeUndefined();
+  });
+
+  it('debería establecer itemType correctamente en eventos y lugares', async () => {
+    const place = new Place({
+      title: 'Type test Place',
+      category: 'Cultural'
+    });
+
+    const event = new Event({
+      title: 'Type test Event',
+      category: 'Theater'
+    });
+
+    const savedPlace = await place.save();
+    const savedEvent = await event.save();
+
+    expect(savedPlace.itemType).toBe('Place');
+    expect(savedEvent.itemType).toBe('Event');
+  });
+
+  it('debería transformar el documento eliminando _id y agregando id', async () => {
+    const place = new Place({
+      title: 'Transform Place',
+      category: 'Gallery'
+    });
+
+    const saved = await place.save();
+    const json = saved.toJSON();
+
+    expect(json.id).toBeDefined();
+    expect(json._id).toBeUndefined();
+    expect(json.__v).toBeUndefined();
+  });
+
+  it('no debería permitir guardar un item sin título', async () => {
+    const item = new Item({
+      category: 'Test'
+    });
+
+    await expect(item.save()).rejects.toThrow(mongoose.Error.ValidationError);
+  });
+
+  it('no debería permitir guardar un item sin categoría', async () => {
+    const item = new Item({
+      title: 'Sin categoría'
+    });
+
+    await expect(item.save()).rejects.toThrow(mongoose.Error.ValidationError);
+  });
+
+  it('debería permitir asociar comentarios a un item', async () => {
+    const commentId = new mongoose.Types.ObjectId();
+    const item = new Item({
+      title: 'Item con comentario',
+      category: 'Review',
+      comments: [commentId]
+    });
+
+    const saved = await item.save();
+
+    expect(saved.comments).toContainEqual(commentId);
+  });
+
 });
