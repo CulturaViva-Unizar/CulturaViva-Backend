@@ -1,5 +1,5 @@
 const { User } = require("../models/userModel");
-const { Item } = require("../models/eventModel");
+const { Item, Place, Event } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel")
 const { Visit, DisableUsers, SavedItemsStats } = require("../models/statisticsModel");
 
@@ -130,19 +130,30 @@ class StatisticsController {
       { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
-    const result = await Item.aggregate(pipeline);
+    const result = await Event.aggregate(pipeline);
     return createOkResponse(res, "Conteo de eventos asistidos por categoría obtenido exitosamente", result);
   }
 
-  async eventsByCategory(req, res) {
+  async popularByCategory(req, res) {
     const now = new Date();
-    const pipeline = [
-      { $match: { startDate: { $gte: now } } },
-      { $group: { _id: "$category", count: { $sum: 1 } } },
-      { $project: { _id: 0, category: "$_id", count: 1 } }
-    ];
-    const result = await Item.aggregate(pipeline);
-    return createOkResponse(res, "Conteo de eventos por categoría obtenido exitosamente", result);
+    const finalItemType = req.query.itemType || 'Event';
+    const Model = finalItemType === 'Event' ? Event : Place;
+  
+    const pipeline = [];
+    if (finalItemType === 'Event') {
+      pipeline.push({ $match: { startDate: { $gte: now } } });
+    }
+  
+    pipeline.push(
+      { $group:   { _id: '$category', count: { $sum: 1 } } },
+      { $project: { _id: 0, category: '$_id', count: 1 } }
+    );
+  
+    const result = await Model.aggregate(pipeline);
+    return createOkResponse(res,
+      "Conteo de eventos por categoría obtenido exitosamente",
+      result
+    );
   }
 
   async upcomingByCategory(req, res) {
@@ -157,7 +168,7 @@ class StatisticsController {
       { $group: { _id: "$category", count: { $sum: 1 } } },
       { $project: { _id: 0, category: "$_id", count: 1 } }
     ];
-    const result = await Item.aggregate(pipeline);
+    const result = await Event.aggregate(pipeline);
     return createOkResponse(res, "Conteo de próximos eventos por categoría obtenido exitosamente", result);
   }
 

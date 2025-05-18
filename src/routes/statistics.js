@@ -109,6 +109,13 @@ router.get(
  *     summary: Obtiene el conteo de eventos populares por categoría para un usuario
  *     tags:
  *       - Statistics
+ *     parameters:
+ *       - in: query
+ *         name: itemType
+ *         schema:
+ *          type: string
+ *          enum: [Event, Place]
+ *          description: Filtrar por tipo de ítem (Event o Place)
  *     responses:
  *       200:
  *         description: Conteo de eventos populares por categoría obtenido exitosamente
@@ -137,7 +144,7 @@ router.get(
  */
 router.get(
     '/popular-by-category',
-    statisticsController.eventsByCategory
+    statisticsController.popularByCategory
 );
 
 /** @swagger

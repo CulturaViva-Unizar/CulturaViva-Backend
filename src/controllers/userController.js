@@ -210,8 +210,8 @@ class UserController {
 
     const pipeline = buildAggregationPipeline(filters, options);
     
-    const totalItems = await Event.countDocuments(filters);
-    const items = await Event.aggregate(pipeline);
+    const totalItems = await Item.countDocuments(filters);
+    const items = await Item.aggregate(pipeline);
     
     return createOkResponse(res, "Items obtenidos exitosamente", {
       items,
