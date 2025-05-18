@@ -52,7 +52,6 @@ function filterDate(range){
                 _id: {
                   year: { $substr: ['$date', 0, 4] },
                   month: { $substr: ['$date', 5, 2] },
-                  day: { $substr: ['$date', 8, 2] }
                 },
                 total: { $sum: '$count' }
         }
@@ -80,8 +79,9 @@ function filterDate(range){
     }
 
     if (showDays){
+        groupCondition.$group._id.day = { $substr: ['$date', 8, 2] }
         projectCondition.$project.id.$concat = ["$_id.year", "-", "$_id.month", "-", "$_id.day"]
-        projectCondition.$project.name.$arrayElemAt = [days, { $mod: [{ $subtract: [{ $toInt: "$_id.day" }, 1] }, 7] }]
+        projectCondition.$project.name.$arrayElemAt = [days, { $subtract: [ { $isoDayOfWeek: '$_date' }, 1] } ]
         projectCondition.$project.number = { $toInt: "$_id.day" }
     }
 

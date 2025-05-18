@@ -1,9 +1,9 @@
 const { User } = require("../models/userModel");
 const { Item } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel")
-const { Visit, DisableUsers } = require("../models/statisticsModel");
+const { Visit, DisableUsers, SavedItemsStats } = require("../models/statisticsModel");
 
-const { toObjectId, createOkResponse, createInternalServerErrorResponse } = require("../utils/utils");
+const { toObjectId, createOkResponse, createInternalServerErrorResponse, createNotFoundResponse } = require("../utils/utils");
 const { filterDate } = require("../utils/statisticsUtils")
 const logger = require("../logger/logger.js");
 
@@ -162,6 +162,15 @@ class StatisticsController {
     ];
     const result = await Item.aggregate(pipeline);
     return createOkResponse(res, "Conteo de próximos eventos por categoría obtenido exitosamente", result);
+  }
+
+  async getSavedEventCount(req, res){
+    const range = req.query.range || '12m';
+    const pipeline = filterDate(range)
+    const stats = await SavedItemsStats.aggregate(pipeline)
+    return createOkResponse(res, "Coneto de eventos obtenido exitosamente", {
+      stats
+    });
   }
 
   async getCommentsStatistics(req, res) {

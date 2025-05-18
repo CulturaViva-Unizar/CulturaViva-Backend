@@ -52,4 +52,37 @@ const disableUsersSchema = new mongoose.Schema({
 
 const DisableUsers = mongoose.model('DisableUsers', disableUsersSchema);
 
-module.exports = { Visit, DisableUsers };
+const savedItemsStatsSchema = new mongoose.Schema({
+    date: {
+    type: String,
+    unique: true,
+    required: true
+  },
+  count: {
+    type: Number,
+    default: 0
+  },
+  users: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    default: []
+  }],
+  items: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Item',
+    default: []
+  }]
+}, {
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
+    },
+    versionKey: false
+  },
+});
+
+const SavedItemsStats = mongoose.model('SavedItemsStats', savedItemsStatsSchema)
+
+module.exports = { Visit, DisableUsers, SavedItemsStats };

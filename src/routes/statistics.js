@@ -221,19 +221,20 @@ router.get('/events',
  * /statistics/visits:
  *   get:
  *     summary: Devuelve la cantidad de visitas a lo largo del tiempo
- *     tags: [Statistics]
+ *     tags:
+ *       - Statistics
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: range
- *         description: Rango en meses. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
+ *         description: Rango de tiempo. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
  *         required: false
  *         schema:
  *           type: string
  *     responses:
  *       200:
- *         description: Devuelve la cantidad de visitas a lo largo del tiempo
+ *         description: Conteo de visitas obtenido exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -246,31 +247,22 @@ router.get('/events',
  *                   type: string
  *                   example: "Conteo de visitas obtenido exitosamente"
  *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       total:
- *                         type: integer
- *                         minimum: 0
- *                       id:
- *                         type: string
- *                         pattern: '^\d{4}-\d{2}$'
- *                         description: Fecha en formato YYYY-MM o en formato YYYY-MM-DD
- *                       name:
- *                         type: string
- *                         description: Nombre del mes o nombre de la semana del dia
- *                       number:
- *                         type: integer
- *                         description: Numero del mes
+ *                   type: object
+ *                   properties:
+ *                     stats:
+ *                       type: array
+ *                       items:
+ *                         $ref: "#/components/schemas/TimeStat"
  *                   example:
- *                     - id: "2025-03"
- *                       total: 0
- *                       name: "Abril"    
- *                     - id: "2025-04-01"
- *                       total: 0
- *                       name: "Lunes"
- *                       number: 1
+ *                     stats:
+ *                       - total: 0
+ *                         id: "2025-05-16"
+ *                         name: null
+ *                         number: 16
+ *                       - total: 0
+ *                         id: "2025-05-18"
+ *                         name: null
+ *                         number: 18
  *       403:
  *         description: Acceso denegado
  *       500:
@@ -287,19 +279,27 @@ router.get('/visits',
  * /statistics/disable-users:
  *   get:
  *     summary: Devuelve la cantidad de usuarios deshabilitados a lo largo del tiempo
- *     tags: [Statistics]
+ *     tags:
+ *       - Statistics
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: range
- *         description: Rango en meses. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
+ *         description: Rango de tiempo. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
  *         required: false
  *         schema:
  *           type: string
+ *           enum:
+ *             - 1w
+ *             - 1m
+ *             - 3m
+ *             - 6m
+ *             - 9m
+ *             - 12m
  *     responses:
  *       200:
- *         description: Devuelve la cantidad de usuarios deshabilitados a lo largo del tiempo
+ *         description: Conteo de usuarios deshabilitados obtenido exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -312,28 +312,22 @@ router.get('/visits',
  *                   type: string
  *                   example: "Conteo de usuarios deshabilitados obtenido exitosamente"
  *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       total:
- *                         type: integer
- *                         minimum: 0
- *                       id:
- *                         type: string
- *                         pattern: '^\d{4}-\d{2}$'
- *                         description: Fecha en formato YYYY-MM o en formato YYYY-MM-DD
- *                       name:
- *                         type: string
- *                         description: Nombre del mes o nombre del dia
+ *                   type: object
+ *                   properties:
+ *                     stats:
+ *                       type: array
+ *                       items:
+ *                         $ref: "#/components/schemas/TimeStat"
  *                   example:
- *                     - id: "2025-03"
- *                       total: 0
- *                       name: "Abril"    
- *                     - id: "2025-04-01"
- *                       total: 0
- *                       name: "Lunes"
- *                       number: 1
+ *                     stats:
+ *                       - total: 0
+ *                         id: "2025-05-16"
+ *                         name: null
+ *                         number: 16
+ *                       - total: 0
+ *                         id: "2025-05-18"
+ *                         name: null
+ *                         number: 18
  *       403:
  *         description: Acceso denegado
  *       500:
@@ -399,6 +393,98 @@ router.get('/comments',
     statisticsController.getCommentsStatistics
 );
 
+/**
+ * @swagger
+ * /statistics/saved-events:
+ *   get:
+ *     summary: Devuelve el número de items guardados a lo largo del tiempo
+ *     tags:
+ *       - Statistics
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: range
+ *         description: Rango de tiempo. Posibles valores 1w, 1m, 3m, 6m, 9m, 12m
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum:
+ *             - 1w
+ *             - 1m
+ *             - 3m
+ *             - 6m
+ *             - 9m
+ *             - 12m
+ *     responses:
+ *       200:
+ *         description: Conjunto de items guardados obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Conjunto de items guardados obtenido exitosamente"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     stats:
+ *                       type: array
+ *                       items:
+ *                         $ref: "#/components/schemas/TimeStat"
+ *                   example:
+ *                     stats:
+ *                       - total: 0
+ *                         id: "2025-05-16"
+ *                         name: null
+ *                         number: 16
+ *                       - total: 0
+ *                         id: "2025-05-18"
+ *                         name: null
+ *                         number: 18
+ *       403:
+ *         description: Acceso denegado
+ *       500:
+ *         description: Error interno del servidor
+ *
+ * components:
+ *   schemas:
+ *     Stat:
+ *       type: object
+ *       properties:
+ *         total:
+ *           type: integer
+ *           minimum: 0
+ *           description: Conteo de eventos en ese periodo
+ *         id:
+ *           type: string
+ *           pattern: '^\d{4}-\d{2}(-\d{2})?$'
+ *           description: Fecha en formato YYYY-MM (mensual) o YYYY-MM-DD (diario)
+ *         name:
+ *           type: string
+ *           nullable: true
+ *           description: Nombre del mes o del día de la semana
+ *         number:
+ *           type: integer
+ *           nullable: true
+ *           description: Día del mes (solo en agrupación diaria)
+ *       example:
+ *         total: 0
+ *         id: "2025-05-18"
+ *         name: "Domingo"
+ *         number: 18
+ */
+router.get('/saved-events',
+    passport.authenticate('jwt', { session: false }),
+    userController.checkAdmin,
+    statisticsController.getSavedEventCount
+);
+
 router.get('/visits/initialize', 
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
@@ -406,3 +492,32 @@ router.get('/visits/initialize',
 );
 
 module.exports = router;
+
+/**
+ * * components:
+ *   schemas:
+ *     TimeStat:
+ *       type: object
+ *       properties:
+ *         total:
+ *           type: integer
+ *           minimum: 0
+ *           description: Conteo de eventos en ese periodo
+ *         id:
+ *           type: string
+ *           pattern: '^\d{4}-\d{2}(-\d{2})?$'
+ *           description: Fecha en formato YYYY-MM (mensual) o YYYY-MM-DD (diario)
+ *         name:
+ *           type: string
+ *           nullable: true
+ *           description: Nombre del mes (cuando es agrupación mensual) o nombre del día (cuando es agrupación diaria)
+ *         number:
+ *           type: integer
+ *           nullable: true
+ *           description: Día del mes (solo presente en agrupación diaria)
+ *       example:
+ *         total: 0
+ *         id: "2025-05-18"
+ *         name: "Domingo"
+ *         number: 18
+ */

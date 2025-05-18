@@ -3,7 +3,7 @@ const { Item, Event, Place } = require("../models/eventModel");
 const { Comment } = require("../models/commentModel");
 const { createChatDTO } = require("../utils/chatUtils");
 const { escapeRegExp } = require("../utils/utils");
-const { DisableUsers } = require("../models/statisticsModel");
+const { DisableUsers, SavedItemsStats } = require("../models/statisticsModel");
 const { buildUserAggregationPipeline, buildAggregationPipeline } = require("../utils/pipelineUtils");
 
 const { 
@@ -244,8 +244,23 @@ class UserController {
 
     if (!exists) {
       user.savedItems.push(toObjectId(eventId));
-      await user.save();
     }
+
+    const today = new Date().toISOString().split('T')[0];
+    Promise.all([
+      SavedItemsStats.findOneAndUpdate(
+          { date: today },
+          { 
+            $inc: { count: 1 },
+            $addToSet: { users: toObjectId(userId), items: toObjectId(eventId) }
+          },
+          { 
+            upsert: true,
+            new: true 
+          }
+      ),
+      user.save()
+    ])
 
     return createOkResponse(res, "Evento guardado exitosamente", user.savedItems);
 
@@ -341,8 +356,23 @@ class UserController {
     const user = await User.findById(toObjectId(userId));
 
     user.savedItems = user.savedItems.filter(item => item.toString() !== eventId);
-    await user.save();
 
+    const today = new Date().toISOString().split('T')[0];
+    Promise.all([
+      SavedItemsStats.findOneAndUpdate(
+          { users: toObjectId(userId), items: toObjectId(eventId)
+           },
+          { 
+            $inc: { count: -1 },
+            $pull: { users: toObjectId(userId), items: toObjectId(eventId) }
+          },
+          { 
+            new: true 
+          }
+      ),
+      user.save()
+    ])
+    
     return createOkResponse(res, "Item eliminado de los guardados exitosamente", user.savedItems);
   }
 
@@ -381,7 +411,12 @@ class UserController {
    * Devuelve los eventos mas populares
    */
   async getPopularEvents(req, res) {
-    const { page, limit, category, itemType } = req.query;
+    const { page = 1, 
+      limit = 10, 
+      category, 
+      itemType 
+    } = req.query;
+
     const finalItemType = itemType || 'Event';
     let filters = {};
     if (category) {
@@ -391,17 +426,37 @@ class UserController {
     if (finalItemType == 'Event') {
       filters.startDate = { $gte: new Date() };
     }
+
     const finalQuery = { ...filters};
     const sortCondition = { asistentes: -1 };
-    const events = await handlePagination(page, limit, finalQuery, Item, sortCondition);
-    return createOkResponse(res, "Eventos populares obtenidos exitosamente", events);
+    const aggregationPipeline = handlePagination(page, limit, finalQuery, sortCondition);
+
+    const [totalItems, items] = await Promise.all([
+      Item.countDocuments(finalQuery),
+      Item.aggregate(aggregationPipeline),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    console.log(page)
+
+    return createOkResponse(res, "Eventos populares obtenidos exitosamente", {
+      items, 
+      currentPage: page,
+      totalPages: totalPages,
+      totalItems
+    });
   }
 
   /**
    * Devuelve los eventos proximos
    */
   async getUpcomingEvents(req, res) {
-    const { page, limit, category } = req.query;
+    const { page = 1, 
+      limit = 10, 
+      category,  
+    } = req.query;
+
     const userId = req.params.id;
     const user = await User.findById(toObjectId(userId));
     let filters = {};
@@ -416,9 +471,22 @@ class UserController {
     const dateFilter = { endDate: { $gte: today } };
     const asistFilter = { _id: { $in: user.asistsTo } };
     const finalQuery = { ...filters, ...asistFilter, ...dateFilter };
-    const orderCondition = { startDate: 1 };
-    const events = await handlePagination(page, limit, finalQuery, Event, orderCondition);
-    return createOkResponse(res, "Eventos proximos obtenidos exitosamente", events);
+    const sortCondition = { startDate: 1 };
+    const aggregationPipeline = handlePagination(page, limit, finalQuery, sortCondition);
+
+    const [totalItems, items] = await Promise.all([
+      Event.countDocuments(finalQuery),
+      Event.aggregate(aggregationPipeline),
+    ]);
+
+    const totalPages = Math.ceil(totalItems / limit);
+
+    return createOkResponse(res, "Eventos proximos obtenidos exitosamente", {
+      items, 
+      currentPage: page,
+      totalPages: totalPages,
+      totalItems
+    });
   }
 
   /**
