@@ -5,6 +5,7 @@ const { createChatDTO } = require("../utils/chatUtils");
 const { escapeRegExp } = require("../utils/utils");
 const { DisableUsers, SavedItemsStats } = require("../models/statisticsModel");
 const { buildUserAggregationPipeline, buildAggregationPipeline } = require("../utils/pipelineUtils");
+const { sendNotification } = require("../mailer/mailer");
 
 const { 
   toObjectId,
@@ -102,6 +103,8 @@ class UserController {
   async updateProfile(req, res) {
       const { name, email, phone, active, password } = req.body;
       const userId = req.params.id;
+      let motivo = req.query.motivo;
+      if (!motivo) motivo = "No se ha especificado un motivo"; 
   
       // Construir solo los campos que vienen en el body
       const updateFields = {};
@@ -147,6 +150,30 @@ class UserController {
             new: true 
           }
         );
+      }
+
+      // Si se ha deshabilitado el usuario, le enviamos un email
+      if(active === false) {
+        await sendNotification({
+          to: updatedUser.email,
+          subject: "Desactivación de cuenta",
+          text: `Hola ${updatedUser.name},\n\nTu cuenta ha sido desactivada.
+                \nSi crees que esto es un error, por favor contacta con el soporte.
+                \n\nMotivo: ${motivo}
+                \n\nGracias,
+                \nEl equipo de CulturaViva`
+        });
+      }
+      if(active === true) {
+        await sendNotification({
+          to: updatedUser.email,
+          subject: "Activación de cuenta",
+          text: `Hola ${updatedUser.name},\n\nTu cuenta ha sido activada.
+                \nSi crees que esto es un error, por favor contacta con el soporte.
+                \n\nMotivo: ${motivo}
+                \n\nGracias,
+                \nEl equipo de CulturaViva`
+        });
       }
 
       
