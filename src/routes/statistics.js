@@ -499,7 +499,7 @@ router.get('/saved-events',
     statisticsController.getSavedEventCount
 );
 
-router.get('/visits/initialize', 
+router.get('/initialize', 
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     statisticsController.initializeVisits

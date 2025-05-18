@@ -85,8 +85,10 @@ class StatisticsController {
   }
 
 
+  /**
+   * Inicializa las estadisticas temporales
+   */
   async initializeVisits(req, res) {
-    try {
       const today = new Date();
       const startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
       const dailyVisits = [];
@@ -107,18 +109,13 @@ class StatisticsController {
         }
       }));
 
-      await Visit.bulkWrite(operations);
+      //await DisableUsers.bulkWrite(operations);
+      //await Visit.bulkWrite(operations);
+      //await SavedItemsStats.bulkWrite(operations);
 
       return createOkResponse(res, "Visitas inicializadas exitosamente", {
         daysInitialized: dailyVisits.length
       });
-    } catch (error) {
-      logger.error('Error al inicializar visitas', {
-        message: error.message,
-        stack: error.stack,
-      });
-      return createInternalServerErrorResponse(res, "Error al inicializar las visitas");
-    }
   }
 
   async assistedEventsByCategory(req, res) {
