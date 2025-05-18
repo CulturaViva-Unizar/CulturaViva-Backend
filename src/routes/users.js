@@ -14,7 +14,9 @@ const
     updateUserSchema,
     saveEventSchema,
     deleteEventSchema,  
-    getRecommendedItemsSchema
+    getRecommendedItemsSchema,
+    getUpcomingEventsSchema,
+    deleteAttendingEventSchema
    } = require('../schemas/userSchemas');
 
 const router = express.Router();
@@ -519,6 +521,7 @@ router.get('/:id/recommended-items',
  *         description: Error interno del servidor
  */
 router.get('/:id/upcoming-events',
+    validate(getUpcomingEventsSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser, 
     userController.getUpcomingEvents
@@ -793,6 +796,7 @@ router.delete('/:id/saved-events/:eventId',
  *         description: Error interno del servidor
  */
 router.delete('/:id/attending-events/:eventId', 
+    validate(deleteAttendingEventSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser,
     userController.removeAttendingItem);
@@ -914,6 +918,7 @@ router.get('/:id/comments',
  */
 router.get(
   '/:id/chats',
+  validate(getSchema),
   passport.authenticate('jwt', { session: false }),
   userController.checkAdminOrUser,
   userController.getUserChats
@@ -959,6 +964,7 @@ router.get(
  *         description: Error interno del servidor
  */
 router.put('/:id/make-admin',
+    validate(getSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     userController.makeAdmin

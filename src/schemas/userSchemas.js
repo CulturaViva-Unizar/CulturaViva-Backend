@@ -175,11 +175,67 @@ const deleteEventSchema = {
   additionalProperties: false
 };
 
+const getUpcomingEventsSchema = {
+  type: 'object',
+  properties: {
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }
+      },
+      required: ['id'],
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      properties: {
+        category: { type: 'string' },
+        page: { type: 'integer', minimum: 1, default: 1 },
+        limit: { type: 'integer', minimum: 1, default: 16 }
+      },
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    }
+  },
+  required: ['params'],
+  additionalProperties: false
+};
+
+const deleteAttendingEventSchema = {
+  type: 'object',
+  properties: {
+    params: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' },
+        eventId: { type: 'string', pattern: '^[a-fA-F0-9]{24}$' }
+      },
+      required: ['id', 'eventId'],
+      additionalProperties: false
+    },
+    query: {
+      type: 'object',
+      additionalProperties: false
+    },
+    body: {
+      type: 'object',
+      additionalProperties: false
+    }
+  },
+  required: ['params'],
+  additionalProperties: false
+};
+
 module.exports = {
   getSchema,
   getEventsSchema,
   updateUserSchema,
   saveEventSchema,
   deleteEventSchema,
-  getRecommendedItemsSchema
+  getRecommendedItemsSchema,
+  getUpcomingEventsSchema,
+  deleteAttendingEventSchema
 };
