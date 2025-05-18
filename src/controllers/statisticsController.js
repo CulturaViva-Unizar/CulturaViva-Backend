@@ -139,19 +139,24 @@ class StatisticsController {
 
   async popularByCategory(req, res) {
     const now = new Date();
-    const pipeline = [
-      { $match: { startDate: { $gte: now } } },
-      { $group: { _id: "$category", count: { $sum: 1 } } },
-      { $project: { _id: 0, category: "$_id", count: 1 } }
-    ];
-    let result = [];
     const finalItemType = req.query.itemType || 'Event';
-    if (finalItemType == 'Event') {
-      result = await Event.aggregate(pipeline);
-    } else  {
-      result = await Place.aggregate(pipeline);
+    const Model = finalItemType === 'Event' ? Event : Place;
+  
+    const pipeline = [];
+    if (finalItemType === 'Event') {
+      pipeline.push({ $match: { startDate: { $gte: now } } });
     }
-    return createOkResponse(res, "Conteo de eventos por categoría obtenido exitosamente", result);
+  
+    pipeline.push(
+      { $group:   { _id: '$category', count: { $sum: 1 } } },
+      { $project: { _id: 0, category: '$_id', count: 1 } }
+    );
+  
+    const result = await Model.aggregate(pipeline);
+    return createOkResponse(res,
+      "Conteo de eventos por categoría obtenido exitosamente",
+      result
+    );
   }
 
   async upcomingByCategory(req, res) {
