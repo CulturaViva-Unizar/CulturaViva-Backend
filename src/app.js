@@ -21,13 +21,18 @@ const { createInternalServerErrorResponse } = require('./utils/utils.js');
 const logRequests = require('./logger/loggerMiddleware');
 
 const db = require('./config/db');
+const env = require('./config/env')
+
 require('./cron/tasks');
 
 var app = express();
 
 db.connectDB();
 
-app.use(cors());
+app.use(cors({
+  origin: env.BACKEND_URL,
+  Credential: true
+}));
 
 //app.use(validateJson);
 app.use(express.json());
