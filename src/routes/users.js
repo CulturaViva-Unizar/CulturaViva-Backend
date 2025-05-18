@@ -445,9 +445,18 @@ router.get('/:id/attended-events',
  *                   type: string
  *                   example: Recomendaciones obtenidas exitosamente
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                   type: object
+ *                   properties:
+ *                     currentPage:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     totalItems:
+ *                       type: integer
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
  *       401:
  *         description: No autorizado
  *       404:
