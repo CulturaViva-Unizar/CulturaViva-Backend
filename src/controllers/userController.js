@@ -558,9 +558,11 @@ class UserController {
       // y los eventos solo si son en el próximo mes
       // se podría hacer todo lo complejo que queramos, incluso meter IA o sistemas de recomendación
       // pero lo veo demasiado para un proyecto de unizar 
-
       const userId = req.params.id;
       const type = req.query.type || 'Event';
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 16;
+
       const user = await User.findById(toObjectId(userId));
       if (!user) {
         return createNotFoundResponse(res, "Usuario no encontrado");
@@ -601,16 +603,25 @@ class UserController {
       const options = {
         sort: req.query.sort || 'startDate',
         order: req.query.order || 'asc',
-        page: parseInt(req.query.page) || 1,
-        limit: parseInt(req.query.limit) || 16,
+        page: page,
+        limit: limit,
       };
   
       const pipeline = buildAggregationPipeline(filters, options);
-      const items = await (type === 'Event' ? Event : Place).aggregate(pipeline);
-  
-      return createOkResponse(res, "Recomendaciones obtenidas exitosamente", items);
-  }
+      const [items, totalItems] = await Promise.all([
+        (type === 'Event' ? Event : Place).aggregate(pipeline),
+        (type === 'Event' ? Event : Place).countDocuments(filters)
+      ]);
 
+      const totalPages = Math.ceil(totalItems / limit);
+  
+      return createOkResponse(res, "Recomendaciones obtenidas exitosamente", {
+        items: items,
+        currentPage: parseInt(page, 10),
+        totalPages,
+        totalItems
+      });
+  }
 }
 
 function mapUserDTO(u) {
