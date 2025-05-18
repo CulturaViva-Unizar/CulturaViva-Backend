@@ -31,7 +31,7 @@ var app = express();
 db.connectDB();
 
 app.use(cors({
-  origin: env.BACKEND_URL,
+  origin: "https://culturaviva-frontend.onrender.com",
   Credential: true
 }));
 
