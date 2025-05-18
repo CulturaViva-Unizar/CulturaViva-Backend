@@ -7,7 +7,7 @@ const logger = require('../logger/logger.js');
 const options = {
     clientID: env.FACEBOOK_APP_ID,
     clientSecret: env.FACEBOOK_APP_SECRET,
-    callbackURL: "http://localhost:3000/auth/facebook/callback",
+    callbackURL: env.BACKEND_URL+"/auth/facebook/callback",
     profileFields: ['id', 'displayName', 'email']
 };
 

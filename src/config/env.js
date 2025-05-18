@@ -11,6 +11,7 @@ const config = {
     GOOGLE_CLIENT_SECRET: env.GOOGLE_CLIENT_SECRET,
     FACEBOOK_APP_ID: env.FACEBOOK_APP_ID,
     FACEBOOK_APP_SECRET: env.FACEBOOK_APP_SECRET,
+    BACKEND_URL: env.BACKEND_URL || "http://localhost:3000"
 };
 
 module.exports = config;

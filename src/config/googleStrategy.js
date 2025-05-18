@@ -7,7 +7,7 @@ const logger = require('../logger/logger.js');
 const options = {
     clientID: env.GOOGLE_CLIENT_ID,
     clientSecret: env.GOOGLE_CLIENT_SECRET,
-    callbackURL: "http://localhost:3000/auth/google/callback"
+    callbackURL: env.BACKEND_URL+"/auth/google/callback"
 };
 
 
