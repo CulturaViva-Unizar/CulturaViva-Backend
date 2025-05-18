@@ -4,6 +4,14 @@ const statisticsController = require('../controllers/statisticsController');
 const userController = require('../controllers/userController');
 const router = express.Router();
 const passport = require('passport');
+const validate = require('../middlewares/validateSchema');
+
+const { 
+    getSchema, 
+    getUsersSchema, 
+    getEventsCategorySchema, 
+    getVisitsSchema 
+} = require('../schemas/statisticsSchema');
 
 /**
  * @swagger
@@ -36,6 +44,7 @@ const passport = require('passport');
  *         description: Error interno del servidor
  */
 router.get('/users',
+    validate(getUsersSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     statisticsController.userCount
@@ -87,6 +96,7 @@ router.get('/users',
  */
 router.get(
     '/users/:id/attended-by-category',
+    validate(getSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser,
     statisticsController.assistedEventsByCategory
@@ -175,6 +185,7 @@ router.get(
  */
 router.get(
     '/users/:id/upcoming-by-category',
+    validate(getSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdminOrUser,
     statisticsController.upcomingByCategory
@@ -211,6 +222,7 @@ router.get(
  *         description: Error interno del servidor
  */
 router.get('/events',
+    validate(getEventsCategorySchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     statisticsController.eventCount
@@ -269,6 +281,7 @@ router.get('/events',
  *         description: Error interno del servidor
  */
 router.get('/visits',
+    validate(getVisitsSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     statisticsController.getVisits
@@ -334,6 +347,7 @@ router.get('/visits',
  *         description: Error interno del servidor
  */
 router.get('/disable-users',
+    validate(getVisitsSchema),
     passport.authenticate('jwt', { session: false }),
     userController.checkAdmin,
     statisticsController.getDisableUsersCount

@@ -1,6 +1,8 @@
 const express = require('express');
 const passport = require('passport');
 require('../config/jwtStrategy');
+const validate = require('../middlewares/validateSchema');
+const { createChatSchema, getChatMessagesSchema } = require('../schemas/chatSchemas');
 
 const chatController = require('../controllers/chatController');
 const router = express.Router();
@@ -50,6 +52,7 @@ const router = express.Router();
  */
 router.post(
   '/',
+  validate(createChatSchema),
   passport.authenticate('jwt', { session: false }),
   chatController.createChat
 );
@@ -97,6 +100,7 @@ router.post(
  */
 router.get(
   '/:chatId/messages',
+  validate(getChatMessagesSchema),
   passport.authenticate('jwt', { session: false }),
   chatController.getChatMessages
 );
