@@ -30,7 +30,6 @@ const getUsersSchema = {
   properties: {
     params: {
       type: 'object',
-      required: ['id'],
       additionalProperties: false
     },
     body: {
