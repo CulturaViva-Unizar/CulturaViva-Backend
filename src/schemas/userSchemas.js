@@ -43,8 +43,8 @@ const getEventsSchema = {
     query: {
       type: 'object',
       properties: {
-        page: { type: 'string', minimum: 1 },
-        limit: { type: 'string', minimum: 1 },
+        page: { type: 'string'},
+        limit: { type: 'string' },
         name: { type: 'string' },
         startDate: { type: 'string', format: 'date' },
         endDate: { type: 'string', format: 'date' },
@@ -78,8 +78,8 @@ const getRecommendedItemsSchema = {
     query: {
       type: 'object',
       properties: {
-        page: { type: 'string', minimum: 1 },
-        limit: { type: 'string', minimum: 1 },
+        page: { type: 'string' },
+        limit: { type: 'string'},
         type: { type: 'string' },
         sort: { type: 'string' },
         order: { type: 'string', enum: ['asc', 'desc'] }
@@ -190,8 +190,8 @@ const getUpcomingEventsSchema = {
       type: 'object',
       properties: {
         category: { type: 'string' },
-        page: { type: 'integer', minimum: 1, default: 1 },
-        limit: { type: 'integer', minimum: 1, default: 16 }
+        page: { type: 'string' },
+        limit: { type: 'string'}
       },
       additionalProperties: false
     },

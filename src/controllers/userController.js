@@ -209,9 +209,16 @@ class UserController {
     };
 
     const pipeline = buildAggregationPipeline(filters, options);
-    const items = await Item.aggregate(pipeline);
-
-    return createOkResponse(res, "Items obtenidos exitosamente", items);
+    
+    const totalItems = await Event.countDocuments(filters);
+    const items = await Event.aggregate(pipeline);
+    
+    return createOkResponse(res, "Items obtenidos exitosamente", {
+      items,
+      currentPage: page,
+      totalPages: Math.ceil(totalItems / limit),
+      totalItems
+    });
   }
 
 
@@ -313,9 +320,16 @@ class UserController {
     };
 
     const pipeline = buildAggregationPipeline(filters, options);
-    const items = await Event.aggregate(pipeline);
 
-    return createOkResponse(res, "Items obtenidos exitosamente", items);
+    const totalItems = await Event.countDocuments(filters);
+    const items = await Event.aggregate(pipeline);
+    
+    return createOkResponse(res, "Items obtenidos exitosamente", {
+      items,
+      currentPage: page,
+      totalPages: Math.ceil(totalItems / limit),
+      totalItems
+    });
   }
 
 
