@@ -75,6 +75,9 @@ const deleteCommentSchema = {
     },
     query: {
       type: 'object',
+      properties: {
+        motivo: { type: 'string' },
+      },
       additionalProperties: false
     }
   },

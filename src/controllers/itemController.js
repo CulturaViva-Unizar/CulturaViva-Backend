@@ -12,6 +12,7 @@ const { toObjectId,
 const { User } = require('../models/userModel');
 const { buildAggregationPipeline } = require('../utils/pipelineUtils');
 const { escapeRegExp } = require('../utils/utils');
+const { sendNotification } = require('../mailer/mailer');
 
 class ItemController {
 
@@ -189,9 +190,11 @@ class ItemController {
 
     async deleteComment(req, res) {
         const { id, commentId } = req.params;
+        let { motivo } = req.query;
+        if (!motivo) motivo = "No se ha especificado un motivo de eliminación";
 
         // Verifica si el comentario existe
-        const comment = await Comment.findById(commentId);
+        const comment = await Comment.findById(commentId).populate('user', 'name email -userType');
         if (!comment) {
             return createNotFoundResponse(res, "Comentario no encontrado");
         }
@@ -238,7 +241,19 @@ class ItemController {
                 } 
             }
         );
-
+    
+    // Envia un correo al usuario que hizo el comentario
+    await sendNotification({
+        to: comment.user.email,
+        subject: "Comentario eliminado",
+        text: `Hola ${comment.user.name}.
+               \nTu comentario en "${event.title}" ha sido eliminado.
+               \n Texto del comentario: ${comment.text}
+               \n Motivo de eliminación: ${motivo}
+               \nSi tienes alguna pregunta, no dudes en contactarnos.
+               \nGracias por tu comprensión.
+               \n Equipo de Cultura Viva`
+    });
 
     return createOkResponse(res, "Comentario eliminado exitosamente");
     }

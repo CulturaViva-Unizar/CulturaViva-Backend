@@ -19,6 +19,7 @@ const validateJson = require('./middlewares/validateJson');
 const cors = require('cors');
 const { createInternalServerErrorResponse } = require('./utils/utils.js');
 const logRequests = require('./logger/loggerMiddleware');
+const { sendNotification } = require('./mailer/mailer');
 
 const db = require('./config/db');
 const env = require('./config/env')
@@ -67,6 +68,20 @@ app.use((err, req, res, next) => {
 
   return createInternalServerErrorResponse(res, 'Error interno del servidor');
 });
+
+/*
+(async () => {
+    try {
+      await sendNotification({
+                  to: "almodovar.juan7@gmail.com",
+                  subject: "Test de notificación",
+                  text: "Este es un test de notificación"
+                });
+        console.log('Notification sent successfully');
+    } catch (error) {
+        console.error('Error sending notification:', error);
+    } 
+})();*/
 
 /*
 const ItemController = require('./controllers/itemController');
