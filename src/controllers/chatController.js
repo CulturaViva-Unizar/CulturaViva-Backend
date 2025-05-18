@@ -34,6 +34,10 @@ class ChatController {
     const user1 = req.userId;
     const user2 = req.body.user;
 
+    if (user1.toString() === user2.toString()) {
+        return createBadRequestResponse(res, "No puedes crear un chat contigo mismo");
+    }
+
     const existingChat = await Chat.findOne({
         $or: [
         { user1, user2 },
@@ -43,10 +47,6 @@ class ChatController {
 
     if (existingChat) {
         return createConflictResponse(res, "Ya existe un chat entre estos usuarios");
-    }
-
-    if (user1.toString() === user2.toString()) {
-        return createBadRequestResponse(res, "No puedes crear un chat contigo mismo");
     }
 
     const newChat = new Chat({ user1, user2 });
