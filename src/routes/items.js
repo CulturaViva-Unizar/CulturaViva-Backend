@@ -338,6 +338,12 @@ router.post('/events/:id/comments',
  *         description: ID del comentario
  *         schema:
  *           type: string
+ *       - name: motivo
+ *         in: query
+ *         required: false
+ *         description: Motivo de la eliminación
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Comentario eliminado exitosamente
@@ -799,6 +805,12 @@ router.post('/places/:id/comments',
  *         required: true
  *         description: ID del comentario
  *         schema:
+ *           type: string
+ *       - name: motivo
+ *         in: query
+ *         required: false
+ *         description: Motivo de la eliminación
+ *         schema: 
  *           type: string
  *     responses:
  *       200:

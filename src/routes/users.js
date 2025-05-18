@@ -543,6 +543,12 @@ router.get('/:id/upcoming-events',
  *         schema:
  *           type: string
  *         description: ID del usuario
+ *       - in: query
+ *         name: motivo 
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Motivo de la actualización
  *     requestBody:
  *       required: true
  *       content:

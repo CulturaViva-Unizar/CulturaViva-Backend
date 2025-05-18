@@ -116,6 +116,9 @@ const updateUserSchema = {
     },
     query: {
       type: 'object',
+      properties: {
+        motivo: { type: 'string' },
+      },
       additionalProperties: false
     }
   },
