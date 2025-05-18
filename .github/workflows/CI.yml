@@ -47,7 +47,7 @@ jobs:
   deploy-aws:
     needs: test
     runs-on: ubuntu-latest
-    if: ${{ contains(github.ref, 'refs/tags/') }}
+    if: contains(github.ref, 'refs/tags/')
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -74,10 +74,9 @@ jobs:
       - name: Tag and push docker image
         env:
           REGISTRY: ${{ secrets.ID_AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-          REPOSITORY: culturaviva
+          REPOSITORY: culturaviva/backend
           IMAGE_TAG: latest
         run: |
           docker rmi $REGISTRY/$REPOSITORY:$IMAGE_TAG || true
           docker tag backend:latest $REGISTRY/$REPOSITORY:$IMAGE_TAG
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
-
