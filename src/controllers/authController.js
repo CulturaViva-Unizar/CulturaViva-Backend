@@ -1,7 +1,6 @@
 const { UserPassword } = require("../models/userModel.js");
-const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
-const env = require("../config/env.js");
+
 const {
   createBadRequestResponse,
   createConflictResponse,
@@ -10,7 +9,7 @@ const {
   createResponse,
 } = require("../utils/utils");
 const logger = require("../logger/logger.js");
-const { createUserDto } = require("../utils/userUtils.js");
+const { createUserDto, signJwt } = require("../utils/authUtils.js");
 
 class AuthController {
   /**
@@ -102,20 +101,9 @@ class AuthController {
     createOkResponse(res, "Contraseña cambiada exitosamente");
   }
 
-  /**
-   * Firma y devuelve un JWT para el usuario recibido.
-   * @param {Object} user - Documento/módelo de usuario de Mongoose
-   * @returns {String} token JWT
-   */
-  static signJwt(user) {
-    return jwt.sign(createUserDto(user), env.JWT_SECRET, {
-      expiresIn: env.JWT_EXPIRES,
-    });
-  }
-
   async generateToken(req, res) {
     const user = req.user;
-    const token = AuthController.signJwt(user);
+    const token = signJwt(user);
 
     const status = res.statusCode !== 200 ? res.statusCode : 200;
 

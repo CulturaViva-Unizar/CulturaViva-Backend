@@ -9,7 +9,7 @@ const router = express.Router();
 const passport = require('passport');
 const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/authSchemas');
 const validate = require('../middlewares/validateSchema');
-const { createUserDto } = require('../utils/userUtils');
+const { createUserDto, signJwt } = require('../utils/authUtils');
 
 
 
@@ -171,7 +171,7 @@ router.get(
             }
         })();
 
-        const token = authController.signJwt(req.user);
+        const token = signJwt(req.user);
         const userDto = createUserDto(req.user);
 
         const userEncoded = Buffer
