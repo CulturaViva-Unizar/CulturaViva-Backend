@@ -13,6 +13,11 @@ const options = {
 
 passport.use(new TwitterStrategy(options, async (accessToken, refreshToken, profile, done) => {
     try {
+        logger.info('Info', {
+            accessToken,
+            refreshToken,
+            profile
+        });
         const emailObj = profile.emails?.[0];
         if (!emailObj || !profile._json?.email_verified) {
             return done(new Error('Email no verificado'), null);
@@ -28,8 +33,6 @@ passport.use(new TwitterStrategy(options, async (accessToken, refreshToken, prof
             if (existingUser) {
                 return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
             }
-            console.log(profile)
-            console.log("No existe el usuario en Twitter, creando uno nuevo");
             const newUser = new UserTwitter({
                 twitterId: profile.id,
                 name: profile.displayName,

@@ -11,6 +11,7 @@ const passport = require('passport');
 const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/authSchemas');
 const validate = require('../middlewares/validateSchema');
 const { createUserDto, signJwt } = require('../utils/authUtils');
+const logger = require('../logger/logger');
 
 
 
@@ -213,15 +214,15 @@ router.get('/google/callback', (req, res, next) => {
 *       500:
 *         description: Error interno del servidor
 */
-// router.get('/facebook', (req, res, next) => {
-//     const redirect = req.query.origin || env.FRONTEND_URL;
-//     const state = Buffer.from(redirect).toString('base64url');
+router.get('/facebook', (req, res, next) => {
+    const redirect = req.query.origin || env.FRONTEND_URL;
+    const state = Buffer.from(redirect).toString('base64url');
 
-//     passport.authenticate('facebook', {
-//         scope: ['public_profile', 'email'],
-//         state,
-//     })(req, res, next);
-// });
+    passport.authenticate('facebook', {
+        scope: ['public_profile', 'email'],
+        state,
+    })(req, res, next);
+});
 
 router.get('/facebook/callback', (req, res, next) => {
     passport.authenticate('facebook', { session: false }, (err, user, info) => {
@@ -255,12 +256,12 @@ router.get('/facebook/callback', (req, res, next) => {
     })(req, res, next);
 });
 
-router.get('/facebook', (req, res, next) => {
+router.get('/twitter', (req, res, next) => {
     const redirect = req.query.origin || env.FRONTEND_URL;
     const state = Buffer.from(redirect).toString('base64url');
 
     passport.authenticate('twitter', {
-        scope: ['tweet.read', 'users.read', 'offline.access'],
+        scope: ['tweet.read', 'users.read', 'offline.access', 'users.email'],
         state,
     })(req, res, next);
 });
