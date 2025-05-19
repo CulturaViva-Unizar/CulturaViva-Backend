@@ -80,4 +80,10 @@ const UserFacebookSchema = new Schema({
 
 const UserFacebook = User.discriminator("facebook", UserFacebookSchema);
 
-module.exports = { User, UserPassword, UserGoogle, UserFacebook };
+const UserTwitterSchema = new Schema({
+  twitterId: { type: String, required: true, unique: true }
+});
+
+const UserTwitter = User.discriminator("twitter", UserTwitterSchema);
+
+module.exports = { User, UserPassword, UserGoogle, UserFacebook, UserTwitter };
