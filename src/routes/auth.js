@@ -46,7 +46,7 @@ const { createUserDto, signJwt } = require('../utils/authUtils');
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/register', 
+router.post('/register',
     validate(registerSchema),
     authController.register,
     authController.generateToken
@@ -76,7 +76,7 @@ router.post('/register',
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/login', 
+router.post('/login',
     validate(loginSchema),
     authController.login,
     authController.generateToken
@@ -124,9 +124,9 @@ router.post('/login',
  *       500:
  *         description: Error interno del servidor
  */
-router.post('/change-password', 
+router.post('/change-password',
     validate(changePasswordSchema),
-    passport.authenticate('jwt', { session: false }), 
+    passport.authenticate('jwt', { session: false }),
     authController.changePassword
 );
 
@@ -159,11 +159,18 @@ router.get('/google', (req, res, next) => {
     })(req, res, next);
 });
 
-router.get(
-    '/google/callback',
-    passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
-    (req, res) => {
-        const redirect = (() => {
+router.get('/google/callback', (req, res, next) => {
+    passport.authenticate('google', { session: false }, (err, user) => {
+        if (err && err.status === 409) {
+            return res.status(409).json({
+                success: false,
+                message: 'Este email ya está registrado con otro método de acceso.',
+            });
+        }
+
+        if (err) return next(err);
+
+        const redirectBase = (() => {
             try {
                 return Buffer.from(req.query.state, 'base64url').toString();
             } catch {
@@ -171,18 +178,21 @@ router.get(
             }
         })();
 
-        const token = signJwt(req.user);
-        const userDto = createUserDto(req.user);
 
-        const userEncoded = Buffer
-            .from(JSON.stringify(userDto))
+        if (!user) {
+            return res.redirect(`${redirectBase}/login`);
+        }
+
+        const token = signJwt(user);
+        const userB64 = Buffer
+            .from(JSON.stringify(createUserDto(user)))
             .toString('base64url');
 
-        res.redirect(
-            `${redirect}/login/success?token=${token}&user=${userEncoded}`,
+        return res.redirect(
+            `${redirectBase}/login/success?token=${token}&user=${userB64}`,
         );
-    }
-);
+    })(req, res, next);
+});
 
 /**
 * @swagger
@@ -202,14 +212,47 @@ router.get(
 *       500:
 *         description: Error interno del servidor
 */
-router.get('/facebook', 
-    passport.authenticate('facebook')
-);
+router.get('/facebook', (req, res, next) => {
+    const redirect = req.query.origin || env.FRONTEND_URL;
+    const state = Buffer.from(redirect).toString('base64url');
 
-router.get('/facebook/callback',
-    passport.authenticate('facebook', { session: false, failureRedirect: '/auth/login' }),
-    authController.generateToken
-);
+    passport.authenticate('facebook', {
+        scope: ['public_profile', 'email'],
+        state,
+    })(req, res, next);
+});
+
+router.get('/facebook/callback', (req, res, next) => {
+    passport.authenticate('facebook', { session: false }, (err, user, info) => {
+        if (err) {
+            if (err.status === 409) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'Este email ya está registrado con otro método de acceso.',
+                });
+            }
+
+            return next(err);
+        }
+
+        const redirectBase = (() => {
+            try {
+                return Buffer.from(req.query.state, 'base64url').toString();
+            } catch {
+                return env.FRONTEND_URL;
+            }
+        })();
+
+        if (!user) {
+            return res.redirect(`${redirectBase}/login`);
+        }
+
+        const token = signJwt(user);
+        const userB64 = Buffer.from(JSON.stringify(createUserDto(user))).toString('base64url');
+
+        return res.redirect(`${redirectBase}/login/success?token=${token}&user=${userB64}`);
+    })(req, res, next);
+});
 
 module.exports = router;
 

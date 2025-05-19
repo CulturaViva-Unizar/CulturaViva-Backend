@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserGoogle } = require('../models/userModel.js');
+const { UserGoogle, UserPassword } = require('../models/userModel.js');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const logger = require('../logger/logger.js');
 
@@ -22,6 +22,11 @@ passport.use(new GoogleStrategy(options, async (accessToken, refreshToken, profi
         if (user) {
             return done(null, user);
         } else {
+            const existingUser = await UserPassword.findOne({ email: email });
+            if (existingUser) {
+                return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
+            }
+
             const newUser = new UserGoogle({
                 googleId: profile.id,
                 name: profile.displayName,
