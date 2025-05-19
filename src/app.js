@@ -4,6 +4,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('./logger/logger');
+const session = require('express-session');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -27,6 +28,15 @@ const env = require('./config/env')
 require('./cron/tasks');
 
 var app = express();
+
+app.use(session({
+  secret: env.JWT_SECRET || 'tu_secreto_aqui',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    maxAge: 1 * 60 * 1000
+  }
+}));
 
 db.connectDB();
 
