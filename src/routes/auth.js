@@ -149,7 +149,7 @@ router.post('/change-password',
 *         description: Error interno del servidor
 */
 router.get('/google', (req, res, next) => {
-    const redirect = req.query.origin || env.FRONTEND_URL + '/auth/google/callback';
+    const redirect = req.query.origin || env.FRONTEND_URL;
     const state = Buffer.from(redirect).toString('base64url');
 
     passport.authenticate('google', {
@@ -167,7 +167,7 @@ router.get(
             try {
                 return Buffer.from(req.query.state, 'base64url').toString();
             } catch {
-                return env.FRONTEND_URL + '/auth/google/callback';
+                return env.FRONTEND_URL;
             }
         })();
 
