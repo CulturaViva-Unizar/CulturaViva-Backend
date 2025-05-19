@@ -9,6 +9,7 @@ const router = express.Router();
 const passport = require('passport');
 const { registerSchema, loginSchema, changePasswordSchema } = require('../schemas/authSchemas');
 const validate = require('../middlewares/validateSchema');
+const { createUserDto } = require('../utils/userUtils');
 
 
 
@@ -162,15 +163,24 @@ router.get(
     '/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
     (req, res) => {
-        let redirect;
-        try {
-            redirect = Buffer.from(req.query.state, 'base64url').toString();
-        } catch {
-            redirect = env.FRONTEND_URL + '/auth/google/callback';
-        }
+        const redirect = (() => {
+            try {
+                return Buffer.from(req.query.state, 'base64url').toString();
+            } catch {
+                return env.FRONTEND_URL + '/auth/google/callback';
+            }
+        })();
 
         const token = authController.signJwt(req.user);
-        res.redirect(`${redirect}/login/success?token=${token}`);
+        const userDto = createUserDto(req.user);
+
+        const userEncoded = Buffer
+            .from(JSON.stringify(userDto))
+            .toString('base64url');
+
+        res.redirect(
+            `${redirect}/login/success?token=${token}&user=${userEncoded}`,
+        );
     }
 );
 
