@@ -21,6 +21,7 @@ passport.use(new TwitterStrategy(options, async (accessToken, refreshToken, prof
 
         let user = await UserTwitter.findOne({ twitterId: profile.id });
         if (user) {
+            console.log(profile)
             return done(null, user);
         } else {
             const existingUser = await UserPassword.findOne({ email: email });
