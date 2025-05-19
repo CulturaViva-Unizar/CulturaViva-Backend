@@ -3,6 +3,7 @@ require('../config/jwtStrategy');
 require('../config/googleStrategy');
 require('../config/facebookStrategy');
 
+const env = require('../config/env');
 const authController = require('../controllers/authController');
 const router = express.Router();
 const passport = require('passport');
@@ -146,13 +147,31 @@ router.post('/change-password',
 *       500:
 *         description: Error interno del servidor
 */
-router.get('/google', 
-    passport.authenticate('google', { scope: ['profile', 'email'] })
-);
+router.get('/google', (req, res, next) => {
+    const redirect = req.query.origin || env.FRONTEND_URL + '/auth/google/callback';
+    const state = Buffer.from(redirect).toString('base64url');
 
-router.get('/google/callback',
+    passport.authenticate('google', {
+        scope: ['profile', 'email'],
+        prompt: 'select_account',
+        state,
+    })(req, res, next);
+});
+
+router.get(
+    '/google/callback',
     passport.authenticate('google', { session: false, failureRedirect: '/auth/login' }),
-    authController.generateToken
+    (req, res) => {
+        let redirect;
+        try {
+            redirect = Buffer.from(req.query.state, 'base64url').toString();
+        } catch {
+            redirect = env.FRONTEND_URL + '/auth/google/callback';
+        }
+
+        const token = authController.signJwt(req.user);
+        res.redirect(`${redirect}/login/success?token=${token}`);
+    }
 );
 
 /**
