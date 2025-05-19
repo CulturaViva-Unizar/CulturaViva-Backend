@@ -1,0 +1,49 @@
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-aws:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+  
+      - name: Build Docker image
+        run: |
+          docker build \
+          --build-arg DB_CONNECTION="${{ secrets.DB_CONNECTION }}" \
+          --build-arg JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+          --build-arg GOOGLE_CLIENT_ID="${{ secrets.GOOGLE_CLIENT_ID }}" \
+          --build-arg GOOGLE_CLIENT_SECRET="${{ secrets.GOOGLE_CLIENT_SECRET }}" \
+          --build-arg FACEBOOK_APP_ID="${{ secrets.FACEBOOK_APP_ID }}" \
+          --build-arg FACEBOOK_APP_SECRET="${{ secrets.FACEBOOK_APP_SECRET }}" \
+          --build-arg AGENDA_URL="${{ secrets.AGENDA_URL }}" \
+          --build-arg BIBLIOTECAS_URL="${{ secrets.BIBLIOTECAS_URL }}" \
+          --build-arg CENTROS_TIEMPO_LIBRE_URL="${{ secrets.CENTROS_TIEMPO_LIBRE_URL }}" \
+          --build-arg GALERIAS_ARTE_URL="${{ secrets.GALERIAS_ARTE_URL }}" \
+          --build-arg MUSEOS_URL="${{ secrets.MUSEOS_URL }}" \
+          --build-arg SALAS_EXPOSICIONES_URL="${{ secrets.SALAS_EXPOSICIONES_URL }}" \
+          --build-arg SALAS_MUSICA_URL="${{ secrets.SALAS_MUSICA_URL }}" \
+          --build-arg TEATROS_URL="${{ secrets.TEATROS_URL }}" \
+          --build-arg ZONAS_JOVEN_URL="${{ secrets.ZONAS_JOVEN_URL }}" \
+          -t backend .
+  
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.CI_DEAMON_ID }}
+          aws-secret-access-key: ${{ secrets.CI_DEAMON_SECRET }}
+          aws-region: ${{ secrets.AWS_REGION }}
+  
+      - name: Login to Amazon ECR
+        run: aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ID_AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+  
+      - name: Tag and push docker image
+        env:
+          REGISTRY: ${{ secrets.ID_AWS_ACCOUNT }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
+          REPOSITORY: culturaviva/backend
+          IMAGE_TAG: latest
+        run: |
+          docker rmi $REGISTRY/$REPOSITORY:$IMAGE_TAG || true
+          docker tag backend:latest $REGISTRY/$REPOSITORY:$IMAGE_TAG
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
