@@ -218,7 +218,7 @@ router.get('/facebook', (req, res, next) => {
     const state = Buffer.from(redirect).toString('base64url');
 
     passport.authenticate('facebook', {
-        scope: ['email'],
+        scope: ['public_profile', 'email'],
         state,
     })(req, res, next);
 });
