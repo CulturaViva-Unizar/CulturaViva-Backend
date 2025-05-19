@@ -8,6 +8,7 @@
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\""
   },
   "dependencies": {
+    "@superfaceai/passport-twitter-oauth2": "^1.2.4",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "axios": "^1.8.4",
