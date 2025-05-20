@@ -256,6 +256,24 @@ router.get('/facebook/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+* @swagger
+* /auth/facebook:
+*   get:
+*     summary: Redirige a Twitter para auth
+*     tags: [Auth]
+*     responses:
+*       200:
+*         description: Login exitoso con token
+*         content:
+*           application/json:
+*             schema:
+*               $ref: '#/components/schemas/AuthResponse'
+*       401:
+*         description: Credenciales incorrectas
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/twitter', (req, res, next) => {
     const redirect = req.query.origin || env.FRONTEND_URL;
     const state = Buffer.from(redirect).toString('base64url');
