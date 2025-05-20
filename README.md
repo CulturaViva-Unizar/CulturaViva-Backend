@@ -1,4 +1,5 @@
 # CulturaViva-Backend
+![CI](https://github.com/CulturaViva-Unizar/CulturaViva-Backend/actions/workflows/CI.yml/badge.svg)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=CulturaViva-Unizar_CulturaViva-Backend&metric=alert_status&token=fdd6b8a0994720a35146197b56fa06d5a64302b4)](https://sonarcloud.io/summary/new_code?id=CulturaViva-Unizar_CulturaViva-Backend)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=CulturaViva-Unizar_CulturaViva-Backend&metric=bugs&token=fdd6b8a0994720a35146197b56fa06d5a64302b4)](https://sonarcloud.io/summary/new_code?id=CulturaViva-Unizar_CulturaViva-Backend)
 [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=CulturaViva-Unizar_CulturaViva-Backend&metric=code_smells&token=fdd6b8a0994720a35146197b56fa06d5a64302b4)](https://sonarcloud.io/summary/new_code?id=CulturaViva-Unizar_CulturaViva-Backend)
