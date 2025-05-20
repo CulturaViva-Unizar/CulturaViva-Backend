@@ -83,9 +83,12 @@ describe('Chat Model Test', () => {
 
     try {
       await chat.save();
+      // Si no lanza error, el test debe fallar
+      throw new Error('Chat should not be saved when user1 and user2 are the same');
     } catch (err) {
       expect(err).toBeDefined();
       expect(err.errors.user2).toBeDefined();
+      expect(err.errors.user2.message).toBe('user1 y user2 deben ser distintos');
     }
   });
 
@@ -94,6 +97,8 @@ describe('Chat Model Test', () => {
       user1: user1._id,
       user2: user2._id
     });
+
+    await chat.save();
 
     const message = new Message({
       text: 'Hello User2!',
@@ -104,7 +109,6 @@ describe('Chat Model Test', () => {
     await message.save();
 
     chat.mensajes.push(message._id);
-
     await chat.save();
 
     const foundChat = await Chat.findById(chat._id).populate({
@@ -117,4 +121,46 @@ describe('Chat Model Test', () => {
     expect(foundChat.mensajes[0].text).toBe('Hello User2!');
     expect(foundChat.mensajes[0].user.name).toBe('User1');
   });
+
+  it('should allow empty mensajes array', async () => {
+    const chat = new Chat({
+      user1: user1._id,
+      user2: user2._id
+    });
+
+    await chat.save();
+
+    const foundChat = await Chat.findById(chat._id);
+    expect(foundChat.mensajes).toBeDefined();
+    expect(foundChat.mensajes.length).toBe(0);
+  });
+
+  it('should set createdAt and updatedAt automatically', async () => {
+    const now = new Date();
+    const chat = new Chat({
+      user1: user1._id,
+      user2: user2._id
+    });
+
+    await chat.save();
+    expect(chat.createdAt).toBeInstanceOf(Date);
+    expect(chat.updatedAt).toBeInstanceOf(Date);
+    expect(chat.createdAt.getTime()).toBeLessThanOrEqual(Date.now());
+    expect(chat.updatedAt.getTime()).toBeLessThanOrEqual(Date.now());
+  });
+
+  it('should transform to JSON without _id and with id instead', async () => {
+    const chat = new Chat({
+      user1: user1._id,
+      user2: user2._id
+    });
+
+    await chat.save();
+    const json = chat.toJSON();
+
+    expect(json.id).toBeDefined();
+    expect(json._id).toBeUndefined();
+    expect(json.__v).toBeUndefined();
+  });
 });
+
