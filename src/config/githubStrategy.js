@@ -46,7 +46,8 @@ passport.use(new GitHubStrategy({
           email: email,
           name: profile.displayName || profile.username,
           admin: false,
-          active: true
+          active: true,
+          phone: '00' // github no proporciona un número de teléfono
         });
         user = await newUser.save();
         return done(null, user);
