@@ -1,5 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
+const { UserGithub, UserPassword } = require('../models/userModel.js');
 const GitHubStrategy = require('passport-github2').Strategy;
 
 passport.use(new GitHubStrategy({
@@ -10,21 +11,34 @@ passport.use(new GitHubStrategy({
   async (accessToken, refreshToken, profile, done) => {
     try {
       console.log("Profile de GitHub", profile);
-      // Aquí haces tu lógica de usuario: buscar o crear en la BD
-      const email = profile.emails?.[0]?.value?.toLowerCase();
-      
-      let user = await User.findOne({ githubId: profile.id });
-      if (!user) {
-        user = await User.create({
-          githubId: profile.id,
-          email,
-          name: profile.displayName || profile.username,
-          // otros campos que quieras guardar
-        });
+
+      const emailObj = profile.emails?.[0];
+      if (!emailObj) {
+        return done(new Error('No se pudo obtener el email de GitHub'), null);
       }
-      return done(null, user);
+      const email = emailObj.value.toLowerCase();
+
+      let user = await UserGithub.findOne({ githubId: profile.id });
+      if (user) {
+        return done(null, user);
+      } else {
+        // Comprobar conflicto de email con UserPassword
+        const existingUser = await UserPassword.findOne({ email: email });
+        if (existingUser) {
+          return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
+        }
+        const newUser = new UserGithub({
+          githubId: profile.id,
+          email: email,
+          name: profile.displayName || profile.username,
+          admin: false,
+          active: true
+        });
+        user = await newUser.save();
+        return done(null, user);
+      }
     } catch (error) {
-      return done(error);
+      return done(error, null, { success: false, message: 'Error en la estrategia de GitHub' });
     }
   }
 ));
