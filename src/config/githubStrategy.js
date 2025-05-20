@@ -2,6 +2,7 @@ const passport = require('passport');
 const env = require('./env.js');
 const { UserGithub, UserPassword } = require('../models/userModel.js');
 const GitHubStrategy = require('passport-github2').Strategy;
+const axios = require('axios');
 
 passport.use(new GitHubStrategy({
     clientID: env.GITHUB_CLIENT_ID,
@@ -12,7 +13,20 @@ passport.use(new GitHubStrategy({
     try {
       console.log("Profile de GitHub", profile);
 
-      const emailObj = profile.emails?.[0];
+      let emailObj = profile.emails?.[0];
+
+      // Si no hay email en el perfil, pedirlo a la API de GitHub
+      if (!emailObj) {
+        const emailsRes = await axios.get('https://api.github.com/user/emails', {
+          headers: { Authorization: `token ${accessToken}` }
+        });
+        // Busca el email principal y verificado
+        const primaryEmail = emailsRes.data.find(e => e.primary && e.verified);
+        if (primaryEmail) {
+          emailObj = { value: primaryEmail.email };
+        }
+      }
+
       if (!emailObj) {
         return done(new Error('No se pudo obtener el email de GitHub'), null);
       }
