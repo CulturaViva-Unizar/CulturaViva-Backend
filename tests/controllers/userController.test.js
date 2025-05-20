@@ -1,11 +1,12 @@
 //TODO: fix this test
 
-/*const UserController = require('../../src/controllers/userController');
+const UserController = require('../../src/controllers/userController');
 const { User } = require('../../src/models/userModel');
 const { Event, Item, Place } = require('../../src/models/eventModel');
 const { Comment } = require('../../src/models/commentModel');
 const { DisableUsers, SavedItemsStats } = require('../../src/models/statisticsModel');
 const { toObjectId } = require('../../src/utils/utils');
+const { createOkResponse, createNotFoundResponse, createBadRequestResponse, createCreatedResponse, createForbiddenResponse, createInternalServerErrorResponse } = require('../../src/utils/utils');
 
 jest.mock('../../src/models/userModel');
 jest.mock('../../src/models/eventModel');
@@ -38,12 +39,26 @@ describe('UserController', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    it('returns 403 if user not admin', async () => {
-      User.findById.mockResolvedValue({ admin: false });
-      await UserController.checkAdmin(req, res, next);
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
-    });
+  it('returns 403 if user not admin and ids don’t match', async () => {
+    req.userId = '789';
+    req.params.id = '123';
+    res.status = jest.fn().mockReturnThis();
+    res.json = jest.fn();
+    next = jest.fn();
+
+    User.findById.mockResolvedValue({ admin: false, _id: '789' });
+
+    // Simula createForbiddenResponse devolviendo una respuesta 403
+    createForbiddenResponse.mockImplementation((res, msg) => res.status(403).json({ msg }));
+
+    await UserController.checkAdminOrUser(req, res, next);
+
+    expect(createForbiddenResponse).toHaveBeenCalledWith(res, "Acceso no autorizado al recurso.");
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(res.json).toHaveBeenCalledWith({ msg: "Acceso no autorizado al recurso." });
+    expect(next).not.toHaveBeenCalled();
+  });
+
   });
 
   describe('checkAdminOrUser', () => {
@@ -60,35 +75,74 @@ describe('UserController', () => {
       expect(next).toHaveBeenCalled();
     });
 
-    it('returns 403 if user is not admin and ids dont match', async () => {
+    it('returns 403 if user is not admin and ids don’t match', async () => {
+      req.userId = '789';
       req.params.id = 'otherId';
-      User.findById.mockResolvedValue({ admin: false });
-      await UserController.checkAdminOrUser(req, res, next);
-      expect(res.status).toHaveBeenCalledWith(403);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
-    });
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+      next = jest.fn();
 
-    it('returns 500 if user not found', async () => {
-      req.params.id = 'otherId';
-      User.findById.mockResolvedValue(null);
+      User.findById.mockResolvedValue({ admin: false, _id: '789' });
+
+      createForbiddenResponse.mockImplementation((res, msg) => res.status(403).json({ msg }));
+
       await UserController.checkAdminOrUser(req, res, next);
+
+      expect(createForbiddenResponse).toHaveBeenCalledWith(res, "Acceso no autorizado al recurso.");
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ msg: "Acceso no autorizado al recurso." });
+      expect(next).not.toHaveBeenCalled();
+    });
+    it('returns 500 if user not found', async () => {
+      req.userId = '789';
+      req.params.id = 'otherId';
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+      next = jest.fn();
+
+      User.findById.mockResolvedValue(null);
+
+      createInternalServerErrorResponse.mockImplementation((res, msg) => res.status(500).json({ msg }));
+
+      await UserController.checkAdminOrUser(req, res, next);
+
+      expect(createInternalServerErrorResponse).toHaveBeenCalledWith(res, "Error interno del servidor.");
       expect(res.status).toHaveBeenCalledWith(500);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
+      expect(res.json).toHaveBeenCalledWith({ msg: "Error interno del servidor." });
+      expect(next).not.toHaveBeenCalled();
     });
   });
 
   describe('getUsers', () => {
-    it('returns paginated users', async () => {
+    it('returns paginated users with createOKResponse', async () => {
       req.query = { page: '1', limit: '2', sort: 'comments', order: 'desc' };
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+      next = jest.fn();
+
       const mockUsers = [{ id: '1' }, { id: '2' }];
       User.aggregate.mockResolvedValue(mockUsers);
       User.countDocuments.mockResolvedValue(2);
 
+      createOkResponse.mockImplementation((res, msg, data) => 
+        res.status(200).json({ msg, data })
+      );
+
       await UserController.getUsers(req, res);
 
+      expect(createOkResponse).toHaveBeenCalledWith(
+        res,
+        expect.any(String),
+        expect.objectContaining({
+          items: expect.any(Array),
+          currentPage: expect.any(Number),
+          totalPages: expect.any(Number),
+          totalItems: expect.any(Number),
+        })
+      );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.any(String),
+        msg: expect.any(String),
         data: expect.objectContaining({
           items: expect.any(Array),
           currentPage: 1,
@@ -96,31 +150,62 @@ describe('UserController', () => {
           totalItems: 2
         })
       }));
+      expect(next).not.toHaveBeenCalled();
     });
+
   });
 
   describe('getUserById', () => {
     it('returns user if found', async () => {
       req.params.id = 'user123';
-      User.findById.mockResolvedValue({ id: 'user123', name: 'Test User' });
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
+      // Mock de la cadena findById().select()
+      const mockQuery = {
+        select: jest.fn().mockResolvedValue({ id: 'user123', name: 'Test User' })
+      };
+      User.findById.mockReturnValue(mockQuery);
+
+      createOkResponse.mockImplementation((res, msg, data) =>
+        res.status(200).json({ msg, data })
+      );
 
       await UserController.getUserById(req, res);
 
+      expect(createOkResponse).toHaveBeenCalledWith(
+        res,
+        expect.any(String),
+        expect.objectContaining({ id: 'user123' })
+      );
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-        message: expect.any(String),
-        data: expect.objectContaining({ id: 'user123' })
+        msg: expect.any(String),
+        data: expect.objectContaining({ id: 'user123' }),
       }));
     });
 
     it('returns 404 if user not found', async () => {
       req.params.id = 'user123';
-      User.findById.mockResolvedValue(null);
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
+      // Mock para findById().select() que resuelve null (usuario no encontrado)
+      const mockQuery = {
+        select: jest.fn().mockResolvedValue(null),
+      };
+      User.findById.mockReturnValue(mockQuery);
+
+      createNotFoundResponse.mockImplementation((res, msg) => res.status(404).json({ msg }));
 
       await UserController.getUserById(req, res);
 
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Usuario no encontrado');
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
     });
+
+
   });
 
   describe('updateProfile', () => {
@@ -135,17 +220,26 @@ describe('UserController', () => {
       expect(User.findByIdAndUpdate).toHaveBeenCalled();
       expect(DisableUsers.findOneAndUpdate).toHaveBeenCalled();
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: expect.any(String) }));
+      expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ msg: expect.any(String) }));
     });
+
 
     it('returns 404 if user not found', async () => {
       req.params.id = 'user123';
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
       User.findByIdAndUpdate.mockResolvedValue(null);
+
+      createNotFoundResponse.mockImplementation((res, msg) => res.status(404).json({ msg }));
 
       await UserController.updateProfile(req, res);
 
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Usuario no encontrado');
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
     });
+
   });
 
   describe('getSavedItems', () => {
@@ -162,12 +256,20 @@ describe('UserController', () => {
 
     it('returns 404 if user not found', async () => {
       req.params.id = 'user123';
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
       User.findById.mockResolvedValue(null);
+
+      createNotFoundResponse.mockImplementation((res, msg) => res.status(404).json({ msg }));
 
       await UserController.getSavedItems(req, res);
 
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Usuario no encontrado');
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
     });
+
   });
 
   describe('getUserComments', () => {
@@ -190,12 +292,20 @@ describe('UserController', () => {
 
     it('returns 404 if user not found', async () => {
       req.params.id = 'user123';
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
       User.findById.mockResolvedValue(null);
+
+      createNotFoundResponse.mockImplementation((res, msg) => res.status(404).json({ msg }));
 
       await UserController.getUserComments(req, res);
 
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Usuario no encontrado');
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
     });
+
   });
 
   describe('saveItem', () => {
@@ -235,17 +345,32 @@ describe('UserController', () => {
     it('returns 404 if user or event not found', async () => {
       req.params.id = 'user123';
       req.body = { eventId: 'event1' };
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
+      // Mock de createNotFoundResponse
+      createNotFoundResponse.mockImplementation((res, msg) => res.status(404).json({ msg }));
+
+      // Caso: usuario no encontrado
       User.findById.mockResolvedValue(null);
 
       await UserController.attendItem(req, res);
-      expect(res.status).toHaveBeenCalledWith(404);
 
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Usuario no encontrado');
+      expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
+
+      // Caso: evento no encontrado
       User.findById.mockResolvedValue({ asistsTo: [], save: jest.fn() });
       Event.findById.mockResolvedValue(null);
 
       await UserController.attendItem(req, res);
+
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Evento no encontrado');
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Evento no encontrado' });
     });
+
   });
 
   describe('removeSavedItem', () => {
@@ -290,19 +415,29 @@ describe('UserController', () => {
   });
 
   // As the getUserChats uses createChatDTO from utils, you need to mock it accordingly.
-  describe('getUserChats', () => {
     it('returns chats DTOs', async () => {
       req.params.id = 'user123';
-      const chats = [{ id: 'chat1' }, { id: 'chat2' }];
-      User.findById.mockResolvedValue({ chats });
 
-      // Mock createChatDTO to just return a simple DTO
-      jest.mock('../utils/chatUtils', () => ({
-        createChatDTO: jest.fn(chat => Promise.resolve({ chatId: chat.id }))
-      }));
+      const chats = [
+        { id: 'chat1', user1: 'user123', user2: 'user456' },
+        { id: 'chat2', user1: 'user789', user2: 'user123' }
+      ];
 
-      const { createChatDTO } = require('../utils/chatUtils');
-      createChatDTO.mockImplementation(chat => Promise.resolve({ chatId: chat.id }));
+      // Mock para createChatDTO
+      const chatUtils = require('../../src/utils/chatUtils');
+      jest.spyOn(chatUtils, 'createChatDTO').mockImplementation(chat => Promise.resolve({ chatId: chat.id }));
+
+      User.findById = jest.fn((id) => {
+        if (id === req.params.id) {
+          return {
+            populate: jest.fn().mockResolvedValue({ chats }),
+          };
+        } else {
+          return {
+            select: jest.fn().mockResolvedValue({ name: 'Other User' }),
+          };
+        }
+      });
 
       await UserController.getUserChats(req, res);
 
@@ -312,15 +447,25 @@ describe('UserController', () => {
       }));
     });
 
+
+
     it('returns 404 if user not found', async () => {
       req.params.id = 'user123';
-      User.findById.mockResolvedValue(null);
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+
+      // Simular el encadenamiento findById().populate()
+      const mockQuery = {
+        populate: jest.fn().mockResolvedValue(null),
+      };
+      User.findById.mockReturnValue(mockQuery);
+
+      createNotFoundResponse.mockImplementation((res, msg) => res.status(404).json({ msg }));
 
       await UserController.getUserChats(req, res);
 
+      expect(createNotFoundResponse).toHaveBeenCalledWith(res, 'Usuario no encontrado');
       expect(res.status).toHaveBeenCalledWith(404);
+      expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
     });
   });
-
-});
-*/
