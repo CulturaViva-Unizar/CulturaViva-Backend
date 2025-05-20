@@ -15,6 +15,8 @@ const config = {
     TWITTER_CLIENT_SECRET: env.TWITTER_CLIENT_SECRET,
     BACKEND_URL: env.BACKEND_URL || "http://localhost:3000",
     FRONTEND_URL: env.FRONTEND_URL || "https://culturaviva-frontend.onrender.com",
+    GITHUB_CLIENT_ID: env.GITHUB_CLIENT_ID,
+    GITHUB_CLIENT_SECRET: env.GITHUB_CLIENT_SECRET,
 };
 
 module.exports = config;

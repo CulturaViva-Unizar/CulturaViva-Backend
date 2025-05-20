@@ -4,6 +4,7 @@ const { UserTwitter, UserPassword } = require('../models/userModel.js');
 const TwitterStrategy = require('@superfaceai/passport-twitter-oauth2').Strategy;
 const logger = require('../logger/logger.js');
 
+
 const options = {
     clientType: 'confidential',
     clientID: env.TWITTER_CLIENT_ID,
@@ -11,7 +12,10 @@ const options = {
     callbackURL: env.BACKEND_URL + "/auth/twitter/callback"
 };
 
+console.log(options);
+
 passport.use(new TwitterStrategy(options, async (accessToken, refreshToken, profile, done) => {
+    console.log("Profile de Twitter", profile);
     try {
         logger.info('Info', {
             accessToken,
@@ -52,3 +56,5 @@ passport.use(new TwitterStrategy(options, async (accessToken, refreshToken, prof
         return done(error, null, { success: false, message: 'Error en la estrategia de Google' });
     }
 }));
+
+console.log("Estrategias registradas en Passport:", Object.keys(passport._strategies));

@@ -3,6 +3,7 @@ require('../config/jwtStrategy');
 require('../config/googleStrategy');
 require('../config/facebookStrategy');
 require('../config/twitterStrategy');
+require('../config/githubStrategy');
 
 const env = require('../config/env');
 const authController = require('../controllers/authController');
@@ -285,6 +286,8 @@ router.get('/twitter', (req, res, next) => {
 });
 
 router.get('/twitter/callback', (req, res, next) => {
+    console.log('🚨 Callback recibido de Twitter');
+    console.log('🔍 Query recibida:', req.query);
     passport.authenticate('twitter', { session: false }, (err, user, info) => {
         if (err) {
             if (err.status === 409) {
@@ -315,6 +318,43 @@ router.get('/twitter/callback', (req, res, next) => {
         return res.redirect(`${redirectBase}/login/success?token=${token}&user=${userB64}`);
     })(req, res, next);
 });
+
+router.get('/github', (req, res, next) => {
+  const redirect = req.query.origin || env.FRONTEND_URL;
+  const state = Buffer.from(redirect).toString('base64url');
+
+  passport.authenticate('github', {
+    scope: ['user:email'],
+    state,
+  })(req, res, next);
+});
+
+router.get('/github/callback', (req, res, next) => {
+  console.log('🚨 Callback recibido de GitHub');
+  console.log('🔍 Query recibida:', req.query);
+
+  passport.authenticate('github', { session: false }, (err, user, info) => {
+    if (err) return next(err);
+
+    const redirectBase = (() => {
+      try {
+        return Buffer.from(req.query.state, 'base64url').toString();
+      } catch {
+        return env.FRONTEND_URL;
+      }
+    })();
+
+    if (!user) {
+      return res.redirect(`${redirectBase}/login`);
+    }
+
+    const token = signJwt(user);
+    const userB64 = Buffer.from(JSON.stringify(createUserDto(user))).toString('base64url');
+
+    return res.redirect(`${redirectBase}/login/success?token=${token}&user=${userB64}`);
+  })(req, res, next);
+});
+
 
 module.exports = router;
 
