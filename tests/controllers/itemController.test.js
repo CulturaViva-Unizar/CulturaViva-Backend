@@ -1,3 +1,9 @@
+// Al inicio del fichero, junto a los otros imports
+const emailUtils = require('../../src/mailer/mailer');
+
+// Mock global para sendNotification, que resuelve sin hacer nada
+jest.spyOn(emailUtils, 'sendNotification').mockImplementation(() => Promise.resolve());
+
 const ItemController = require('../../src/controllers/itemController');
 const { Item, Event, Place } = require('../../src/models/eventModel');
 const { Comment, Valoration, Response } = require('../../src/models/commentModel');
@@ -176,7 +182,9 @@ describe('ItemController', () => {
       const comment = { user: 'u1', save: jest.fn() };
       const user = { _id: 'u1', admin: false };
 
-      Comment.findById.mockResolvedValue(comment);
+      Comment.findById.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(comment)
+      });
       User.findById.mockResolvedValue(user);
       Item.findById.mockResolvedValue({});
 
@@ -197,7 +205,9 @@ describe('ItemController', () => {
       const comment = { user: 'u2' };
       const user = { _id: 'u1', admin: false };
 
-      Comment.findById.mockResolvedValue(comment);
+      Comment.findById.mockReturnValue({
+        populate: jest.fn().mockResolvedValue(comment)
+      });
       User.findById.mockResolvedValue(user);
 
       createForbiddenResponse.mockImplementation((res, msg) => res.json({ msg }));
@@ -206,6 +216,7 @@ describe('ItemController', () => {
 
       expect(res.json).toHaveBeenCalledWith({ msg: 'No tienes permiso para eliminar este comentario' });
     });
+
   });
 
   describe('getCategories', () => {

@@ -1,4 +1,8 @@
-//TODO: fix this test
+// Al inicio del fichero, junto a los otros imports
+const emailUtils = require('../../src/mailer/mailer');
+
+// Mock global para sendNotification, que resuelve sin hacer nada
+jest.spyOn(emailUtils, 'sendNotification').mockImplementation(() => Promise.resolve());
 
 const UserController = require('../../src/controllers/userController');
 const { User } = require('../../src/models/userModel');
@@ -205,14 +209,15 @@ describe('UserController', () => {
       expect(res.json).toHaveBeenCalledWith({ msg: 'Usuario no encontrado' });
     });
 
-
   });
 
   describe('updateProfile', () => {
-    it('updates user and updates statistics', async () => {
+  it('updates user and updates statistics', async () => {
       req.params.id = 'user123';
       req.body = { active: false };
-      User.findByIdAndUpdate.mockResolvedValue({ id: 'user123' });
+
+      // Asegúrate que estos métodos también están mockeados
+      User.findByIdAndUpdate = jest.fn().mockResolvedValue({ id: 'user123' });
       DisableUsers.findOneAndUpdate = jest.fn().mockResolvedValue(true);
 
       await UserController.updateProfile(req, res);
@@ -222,7 +227,6 @@ describe('UserController', () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ msg: expect.any(String) }));
     });
-
 
     it('returns 404 if user not found', async () => {
       req.params.id = 'user123';
