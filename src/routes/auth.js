@@ -258,7 +258,7 @@ router.get('/facebook/callback', (req, res, next) => {
 
 /**
 * @swagger
-* /auth/facebook:
+* /auth/twitter:
 *   get:
 *     summary: Redirige a Twitter para auth
 *     tags: [Auth]
