@@ -80,10 +80,15 @@ function handlePagination(_page, _limit, finalQuery = {}, orderCondition = {}, s
 
   const aggregationPipeline = [
     { $match: finalQuery },
-  ]
+  ];
 
-  if (orderCondition) {
-    aggregationPipeline.push({ $sort: orderCondition });
+  let finalSort = {};
+  if (orderCondition && Object.keys(orderCondition).length > 0) {
+    finalSort = { ...orderCondition };
+    if (!('_id' in finalSort)) {
+      finalSort._id = 1;
+    }
+    aggregationPipeline.push({ $sort: finalSort });
   }
 
   aggregationPipeline.push(
@@ -93,7 +98,7 @@ function handlePagination(_page, _limit, finalQuery = {}, orderCondition = {}, s
 
   aggregationPipeline.push(
     { $addFields: { id: "$_id" } },
-  )
+  );
 
   aggregationPipeline.push(
     { $project: {
@@ -106,7 +111,7 @@ function handlePagination(_page, _limit, finalQuery = {}, orderCondition = {}, s
     );
   }
 
-  return aggregationPipeline
+  return aggregationPipeline;
 }
 
 module.exports = {

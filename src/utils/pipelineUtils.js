@@ -104,6 +104,11 @@ function buildUserAggregationPipeline(filters, { sortField, order = 'desc', page
     const skip = (page - 1) * limit;
     const sortOrder = order.toLowerCase() === 'asc' ? 1 : -1;
 
+    const sortObj = { [sortField]: sortOrder };
+    if (!('_id' in sortObj)) {
+        sortObj._id = 1;
+    }
+
     return [
         { $match: filters },
 
@@ -141,7 +146,7 @@ function buildUserAggregationPipeline(filters, { sortField, order = 'desc', page
             }
         },
 
-        { $sort: { [sortField]: sortOrder } },
+        { $sort: sortObj },
         { $skip: skip },
         { $limit: limit },
 

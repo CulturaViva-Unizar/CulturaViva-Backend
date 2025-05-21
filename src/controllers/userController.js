@@ -452,11 +452,13 @@ class UserController {
    * Devuelve los eventos mas populares
    */
   async getPopularEvents(req, res) {
-    const { page = 1, 
-      limit = 10, 
+    const { page, 
+      limit, 
       category, 
       itemType 
     } = req.query;
+
+    if(!page) page = 1; if (!limit) limit = 10;
 
     const finalItemType = itemType || 'Event';
     let filters = {};
@@ -469,7 +471,7 @@ class UserController {
     }
 
     const finalQuery = { ...filters};
-    const sortCondition = { asistentes: -1 };
+    const sortCondition = { asistentes: -1};
     const aggregationPipeline = handlePagination(page, limit, finalQuery, sortCondition);
 
     const [totalItems, items] = await Promise.all([
