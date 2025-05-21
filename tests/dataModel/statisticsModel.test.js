@@ -37,6 +37,22 @@ describe('Visit Model Tests', () => {
 
     expect(saved.count).toBe(0);
   });
+
+  it('debería transformar correctamente el documento a JSON', async () => {
+    const visit = new Visit({
+      date: 'test-2025-05-20',
+      count: 5
+    });
+    
+    const savedVisit = await visit.save();
+    const json = savedVisit.toJSON();
+    
+    expect(json.id).toBeDefined();
+    expect(json._id).toBeUndefined();
+    expect(json.__v).toBeUndefined();
+    expect(json.date).toBe('test-2025-05-20');
+    expect(json.count).toBe(5);
+  });
 });
 
 describe('DisableUsers Model Tests', () => {
@@ -86,6 +102,25 @@ describe('DisableUsers Model Tests', () => {
 
     await expect(disable.save()).rejects.toThrow(mongoose.Error.ValidationError);
   });
+
+  it('debería transformar correctamente el documento a JSON', async () => {
+    const disableUsers = new DisableUsers({
+      date: 'test-2025-05-21',
+      count: 3,
+      users: [userId1]
+    });
+    
+    const saved = await disableUsers.save();
+    const json = saved.toJSON();
+    
+    expect(json.id).toBeDefined();
+    expect(json._id).toBeUndefined();
+    expect(json.__v).toBeUndefined();
+    expect(json.date).toBe('test-2025-05-21');
+    expect(json.count).toBe(3);
+    expect(json.users.length).toBe(1);
+    expect(json.users[0].toString()).toBe(userId1.toString());
+  });
 });
 
 describe('SavedItemsStats Model Tests', () => {
@@ -133,5 +168,27 @@ describe('SavedItemsStats Model Tests', () => {
     const stat = new SavedItemsStats({ count: 3 });
 
     await expect(stat.save()).rejects.toThrow(mongoose.Error.ValidationError);
+  });
+
+  it('debería transformar correctamente el documento a JSON', async () => {
+    const stat = new SavedItemsStats({
+      date: 'test-2025-05-22',
+      count: 2,
+      users: [userId],
+      items: [itemId]
+    });
+    
+    const saved = await stat.save();
+    const json = saved.toJSON();
+    
+    expect(json.id).toBeDefined();
+    expect(json._id).toBeUndefined();
+    expect(json.__v).toBeUndefined();
+    expect(json.date).toBe('test-2025-05-22');
+    expect(json.count).toBe(2);
+    expect(json.users.length).toBe(1);
+    expect(json.users[0].toString()).toBe(userId.toString());
+    expect(json.items.length).toBe(1);
+    expect(json.items[0].toString()).toBe(itemId.toString());
   });
 });
