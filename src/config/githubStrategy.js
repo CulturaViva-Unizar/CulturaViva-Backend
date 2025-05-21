@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserGithub, UserPassword } = require('../models/userModel.js');
+const { UserGithub, UserPassword, User } = require('../models/userModel.js');
 const GitHubStrategy = require('passport-github2').Strategy;
 const axios = require('axios');
 
@@ -36,8 +36,8 @@ passport.use(new GitHubStrategy({
       if (user) {
         return done(null, user);
       } else {
-        // Comprobar conflicto de email con UserPassword
-        const existingUser = await UserPassword.findOne({ email: email });
+        // Comprobar conflicto de email con User
+        const existingUser = await User.findOne({ email: email });
         if (existingUser) {
           return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
         }

@@ -22,7 +22,7 @@ passport.use(new GoogleStrategy(options, async (accessToken, refreshToken, profi
         if (user) {
             return done(null, user);
         } else {
-            const existingUser = await UserPassword.findOne({ email: email });
+            const existingUser = await User.findOne({ email: email });
             if (existingUser) {
                 return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
             }
