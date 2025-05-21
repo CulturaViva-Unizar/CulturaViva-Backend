@@ -162,6 +162,33 @@ router.get('/google', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+* @swagger
+* /auth/google/callback:
+*   get:
+*     summary: Callback para procesar respuesta de autenticación de Google
+*     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: code
+*         schema:
+*           type: string
+*         description: Código de autorización proporcionado por GitHub
+*       - in: query
+*         name: state
+*         schema:
+*           type: string
+*         description: Estado codificado en base64url con la URL de origen
+*     responses:
+*       302:
+*         description: Redirección al frontend con parámetros de autenticación. Ejemplo url_front/login/success?token=<token>&user=<user>
+*       401:
+*         description: Autenticación fallida
+*       409:
+*         description: Email ya registrado con otro método de acceso
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/google/callback', (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user) => {
         if (err && err.status === 409) {
@@ -225,6 +252,33 @@ router.get('/facebook', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+* @swagger
+* /auth/facebook/callback:
+*   get:
+*     summary: Callback para procesar respuesta de autenticación de GitHub
+*     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: code
+*         schema:
+*           type: string
+*         description: Código de autorización proporcionado por Facebook
+*       - in: query
+*         name: state
+*         schema:
+*           type: string
+*         description: Estado codificado en base64url con la URL de origen
+*     responses:
+*       302:
+*         description: Redirección al frontend con parámetros de autenticación. Ejemplo url_front/login/success?token=<token>&user=<user>
+*       401:
+*         description: Autenticación fallida
+*       409:
+*         description: Email ya registrado con otro método de acceso
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/facebook/callback', (req, res, next) => {
     passport.authenticate('facebook', { session: false }, (err, user, info) => {
         if (err) {
@@ -285,6 +339,33 @@ router.get('/twitter', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+* @swagger
+* /auth/twitter/callback:
+*   get:
+*     summary: Callback para procesar respuesta de autenticación de Twitter
+*     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: code
+*         schema:
+*           type: string
+*         description: Código de autorización proporcionado por GitHub
+*       - in: query
+*         name: state
+*         schema:
+*           type: string
+*         description: Estado codificado en base64url con la URL de origen
+*     responses:
+*       302:
+*         description: Redirección al frontend con parámetros de autenticación. Ejemplo url_front/login/success?token=<token>&user=<user>
+*       401:
+*         description: Autenticación fallida
+*       409:
+*         description: Email ya registrado con otro método de acceso
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/twitter/callback', (req, res, next) => {
     console.log('🚨 Callback recibido de Twitter');
     console.log('🔍 Query recibida:', req.query);
@@ -366,9 +447,11 @@ router.get('/github', (req, res, next) => {
 *         description: Estado codificado en base64url con la URL de origen
 *     responses:
 *       302:
-*         description: Redirección al frontend con token de autenticación y datos de usuario
+*         description: Redirección al frontend con parámetros de autenticación. Ejemplo url_front/login/success?token=<token>&user=<user>
 *       401:
 *         description: Autenticación fallida
+*       409:
+*         description: Email ya registrado con otro método de acceso
 *       500:
 *         description: Error interno del servidor
 */
