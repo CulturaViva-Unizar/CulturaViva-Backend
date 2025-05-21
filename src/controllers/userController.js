@@ -216,11 +216,11 @@ class UserController {
     }
 
     if (startDate) {
-      filters.startDate = { ...filters.startDate, $gte: new Date(startDate) };
+      filters.startDate = { $gte: new Date(startDate) };
     }
 
     if (endDate) {
-      filters.endDate = { ...filters.endDate, $lte: new Date(endDate) };
+      filters.endDate = { $lte: new Date(endDate) };
     }
 
     if (category) filters.category = category;
