@@ -1,0 +1,163 @@
+{
+  "info": {
+    "name": "Flujo E2E Usuario - Items/Events",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "e2e-items-events-"
+  },
+  "item": [
+    {
+      "name": "Login de usuario",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"usuariopostman@example.com\", \"password\": \"test1234\"}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "tests",
+          "script": {
+            "exec": [
+              "// Guarda/actualiza token tras login",
+              "var jsonData = pm.response.json();",
+              "console.log(jsonData);",
+              "pm.environment.set('token', jsonData.data.accessToken);",
+              "console.log('Token guardado:', jsonData.data.accessToken);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Buscar todos los eventos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/items/events",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "items",
+            "events"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Buscar un evento concreto",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/items/events/{{eventId}}",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "items",
+            "events",
+            "{{eventId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Comentar en un evento",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"text\": \"Este evento fue incre\\u00edble\", \"value\": 5}"
+        },
+        "url": {
+          "raw": "{{base_url}}/items/events/{{eventId}}/comments",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "items",
+            "events",
+            "{{eventId}}",
+            "comments"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Obtener comentarios de un evento (opcional)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{base_url}}/items/events/{{eventId}}/comments",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "items",
+            "events",
+            "{{eventId}}",
+            "comments"
+          ]
+        }
+      }
+    }
+  ]
+}
