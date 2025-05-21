@@ -137,17 +137,17 @@ router.post('/change-password',
 * @swagger
 * /auth/google:
 *   get:
-*     summary: Redirige a Google para auth o retorna token
+*     summary: Redirige a Google para autenticación
 *     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: origin
+*         schema:
+*           type: string
+*         description: URL de origen para redireccionar después de la autenticación
 *     responses:
-*       200:
-*         description: Login exitoso con token
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/AuthResponse'
-*       401:
-*         description: Credenciales incorrectas
+*       302:
+*         description: Redirección a Google para autenticación y posteriormente a la url /auth/google/callback
 *       500:
 *         description: Error interno del servidor
 */
@@ -201,17 +201,17 @@ router.get('/google/callback', (req, res, next) => {
 * @swagger
 * /auth/facebook:
 *   get:
-*     summary: Redirige a Facebook para auth
+*     summary: Redirige a Facebook para autenticación
 *     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: origin
+*         schema:
+*           type: string
+*         description: URL de origen para redireccionar después de la autenticación
 *     responses:
-*       200:
-*         description: Login exitoso con token
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/AuthResponse'
-*       401:
-*         description: Credenciales incorrectas
+*       302:
+*         description: Redirección a Facebook para autenticación y posteriormente a la url /auth/facebook/callback
 *       500:
 *         description: Error interno del servidor
 */
@@ -261,17 +261,17 @@ router.get('/facebook/callback', (req, res, next) => {
 * @swagger
 * /auth/twitter:
 *   get:
-*     summary: Redirige a Twitter para auth
+*     summary: Redirige a Twitter para autenticación
 *     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: origin
+*         schema:
+*           type: string
+*         description: URL de origen para redireccionar después de la autenticación y posteriormente a la url /auth/twitter/callback
 *     responses:
-*       200:
-*         description: Login exitoso con token
-*         content:
-*           application/json:
-*             schema:
-*               $ref: '#/components/schemas/AuthResponse'
-*       401:
-*         description: Credenciales incorrectas
+*       302:
+*         description: Redirección a Twitter para autenticación
 *       500:
 *         description: Error interno del servidor
 */
@@ -319,6 +319,24 @@ router.get('/twitter/callback', (req, res, next) => {
     })(req, res, next);
 });
 
+/**
+* @swagger
+* /auth/github:
+*   get:
+*     summary: Redirige a GitHub para autenticación
+*     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: origin
+*         schema:
+*           type: string
+*         description: URL de origen para redireccionar después de la autenticación
+*     responses:
+*       302:
+*         description: Redirección a GitHub para autenticación y posteriormente a la url /auth/github/callback
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/github', (req, res, next) => {
   const redirect = req.query.origin || env.FRONTEND_URL;
   const state = Buffer.from(redirect).toString('base64url');
@@ -329,6 +347,31 @@ router.get('/github', (req, res, next) => {
   })(req, res, next);
 });
 
+/**
+* @swagger
+* /auth/github/callback:
+*   get:
+*     summary: Callback para procesar respuesta de autenticación de GitHub
+*     tags: [Auth]
+*     parameters:
+*       - in: query
+*         name: code
+*         schema:
+*           type: string
+*         description: Código de autorización proporcionado por GitHub
+*       - in: query
+*         name: state
+*         schema:
+*           type: string
+*         description: Estado codificado en base64url con la URL de origen
+*     responses:
+*       302:
+*         description: Redirección al frontend con token de autenticación y datos de usuario
+*       401:
+*         description: Autenticación fallida
+*       500:
+*         description: Error interno del servidor
+*/
 router.get('/github/callback', (req, res, next) => {
   console.log('🚨 Callback recibido de GitHub');
   console.log('🔍 Query recibida:', req.query);
