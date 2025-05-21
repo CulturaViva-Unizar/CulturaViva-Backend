@@ -17,8 +17,25 @@ function buildAggregationPipeline(filters, options) {
     // Cálculo del número de comentarios si se ordena por 'comments'
     if (sort === 'comments') {
         aggregationPipeline.push({
+            $lookup: {
+                from: 'comments',
+                localField: 'comments',
+                foreignField: '_id',
+                as: 'commentDocs'
+            }
+        });
+        
+        aggregationPipeline.push({
             $addFields: {
-                commentCount: { $size: { $ifNull: ['$comments', []] } }
+                commentCount: {
+                    $size: {
+                        $filter: {
+                            input: '$commentDocs',
+                            as: 'comment',
+                            cond: { $eq: ['$$comment.deleted', false] }
+                        }
+                    }
+                }
             }
         });
     }
