@@ -2,12 +2,127 @@ const { UserPassword } = require('../../src/models/userModel.js');
 const authController = require('../../src/controllers/authController.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { createUserDto, signJwt } = require('../../src/utils/authUtils.js');
 
 jest.mock('../../src/models/userModel.js');
 jest.mock('bcrypt');
 jest.mock('jsonwebtoken');
+jest.mock('../../src/utils/authUtils.js');
+jest.mock('../../src/logger/logger.js');
 
 describe('AuthController', () => {
+  describe('register', () => {
+    it('Debería registrar un usuario correctamente con datos válidos', async () => {
+      const req = {
+        body: {
+          email: 'nuevo@test.com',
+          password: 'password123',
+          name: 'Nuevo Usuario',
+          phone: '123456789'
+        }
+      };
+      
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+      };
+      
+      const next = jest.fn();
+      
+      const createdUser = {
+        _id: 'new-user-id',
+        email: 'nuevo@test.com',
+        password: 'hashedPassword',
+        name: 'Nuevo Usuario',
+        admin: false,
+        active: true,
+        phone: '123456789'
+      };
+      
+      UserPassword.findOne.mockResolvedValue(null);
+      bcrypt.hash.mockResolvedValue('hashedPassword');
+      UserPassword.create.mockResolvedValue(createdUser);
+      
+      await authController.register(req, res, next);
+      
+      expect(UserPassword.findOne).toHaveBeenCalledWith({ email: req.body.email.toLowerCase() });
+      expect(bcrypt.hash).toHaveBeenCalledWith(req.body.password, 10);
+      expect(UserPassword.create).toHaveBeenCalledWith({
+        email: req.body.email.toLowerCase(),
+        password: 'hashedPassword',
+        name: req.body.name,
+        phone: req.body.phone,
+        admin: false,
+        active: true
+      });
+      expect(req.user).toEqual(createdUser);
+      expect(res.status).toHaveBeenCalledWith(201);
+      expect(next).toHaveBeenCalled();
+    });
+    
+    it('Debería fallar si faltan campos requeridos', async () => {
+      const req = {
+        body: {
+          email: 'falta@test.com',
+          // Falta password
+          name: 'Usuario Incompleto'
+        }
+      };
+      
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+      };
+      
+      const next = jest.fn();
+      
+      await authController.register(req, res, next);
+      
+      expect(res.status).toHaveBeenCalledWith(400);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'Todos los campos son requeridos: email, password, name',
+        data: null
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+    
+    it('Debería fallar si el email ya está registrado', async () => {
+      const req = {
+        body: {
+          email: 'existente@test.com',
+          password: 'password123',
+          name: 'Usuario Existente',
+          phone: '123456789'
+        }
+      };
+      
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+      };
+      
+      const next = jest.fn();
+      
+      const existingUser = {
+        email: 'existente@test.com'
+      };
+      
+      UserPassword.findOne.mockResolvedValue(existingUser);
+      
+      await authController.register(req, res, next);
+      
+      expect(UserPassword.findOne).toHaveBeenCalledWith({ email: req.body.email.toLowerCase() });
+      expect(res.status).toHaveBeenCalledWith(409);
+      expect(res.json).toHaveBeenCalledWith({
+        success: false,
+        message: 'El email ya está registrado',
+        data: null
+      });
+      expect(next).not.toHaveBeenCalled();
+    });
+  });
+  
   describe('login', () => {
     it('Debería loguear correctamente con credenciales válidas', async () => {
       const req = {
@@ -200,48 +315,6 @@ describe('AuthController', () => {
         success: false,
         message: 'Contraseña incorrecta',
         data: null
-      });
-    });
-  });
-
-  describe('generateToken', () => {
-    it('Debería generar un token JWT válido', async () => {
-      const req = {
-        user: {
-          _id: '123',
-          email: 'test@test.com',
-          name: 'Test User',
-          admin: false,
-          userType: 'normal'
-        }
-      };
-
-      const res = {
-        statusCode: 200,
-        status: jest.fn().mockReturnThis(),
-        json: jest.fn()
-      };
-
-      const token = 'mocked-jwt-token';
-      jwt.sign.mockReturnValue(token);
-
-      await authController.generateToken(req, res);
-
-      expect(jwt.sign).toHaveBeenCalled();
-      expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith({
-        success: true,
-        message: 'Token generado exitosamente',
-        data: {
-          user: {
-            id: req.user._id,
-            email: req.user.email,
-            name: req.user.name,
-            admin: req.user.admin,
-            type: req.user.userType
-          },
-          accessToken: token
-        }
       });
     });
   });
