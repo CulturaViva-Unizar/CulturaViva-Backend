@@ -200,15 +200,11 @@ router.get('/google/callback', (req, res, next) => {
       }
     })();
 
-    if (err && err.status === 409) {
+    if ((err && err.status === 409) || !user) {
       return res.redirect(`${redirectBase}/login`);
     }
 
     if (err) return next(err);
-
-    if (!user) {
-      return res.redirect(`${redirectBase}/login`);
-    }
 
     const token = signJwt(user);
     const userB64 = Buffer
@@ -290,193 +286,16 @@ router.get('/github/callback', (req, res, next) => {
       }
     })();
 
-    if (err && err.status === 409) {
+    if ((err && err.status === 409) || !user) {
       return res.redirect(`${redirectBase}/login`);
     }
 
     if (err) return next(err);
-
-    if (!user) {
-      return res.redirect(`${redirectBase}/login`);
-    }
 
     const token = signJwt(user);
     const userB64 = Buffer.from(JSON.stringify(createUserDto(user))).toString('base64url');
 
     return res.redirect(`${redirectBase}/login/success?token=${token}&user=${userB64}`);
-  })(req, res, next);
-});
-
-/**
-* @swagger
-* /auth/facebook:
-*   get:
-*     summary: Redirige a Facebook para autenticación
-*     tags: [Auth]
-*     parameters:
-*       - in: query
-*         name: origin
-*         schema:
-*           type: string
-*         description: URL de origen para redireccionar después de la autenticación
-*     responses:
-*       302:
-*         description: Redirección a Facebook para autenticación y posteriormente a la url /auth/facebook/callback
-*       500:
-*         description: Error interno del servidor
-*/
-router.get('/facebook', (req, res, next) => {
-  const redirect = req.query.origin || env.FRONTEND_URL;
-  const state = Buffer.from(redirect).toString('base64url');
-
-  passport.authenticate('facebook', {
-    scope: ['email'],
-    state,
-  })(req, res, next);
-});
-
-/**
-* @swagger
-* /auth/facebook/callback:
-*   get:
-*     summary: Callback para procesar respuesta de autenticación de Facebook
-*     tags: [Auth]
-*     parameters:
-*       - in: query
-*         name: code
-*         schema:
-*           type: string
-*         description: Código de autorización proporcionado por Facebook
-*       - in: query
-*         name: state
-*         schema:
-*           type: string
-*         description: Estado codificado en base64url con la URL de origen
-*     responses:
-*       302:
-*         description: Redirección al frontend con parámetros de autenticación. Ejemplo url_front/login/success?token=<token>&user=<user>
-*       401:
-*         description: Autenticación fallida
-*       409:
-*         description: Email ya registrado con otro método de acceso
-*       500:
-*         description: Error interno del servidor
-*/
-router.get('/facebook/callback', (req, res, next) => {
-  passport.authenticate('facebook', { session: false }, (err, user) => {
-
-    const redirectBase = (() => {
-      try {
-        return Buffer.from(req.query.state, 'base64url').toString();
-      } catch {
-        return env.FRONTEND_URL;
-      }
-    })();
-
-    if (err && err.status === 409) {
-      return res.redirect(`${redirectBase}/login`);
-    }
-
-    if (err) return next(err);
-
-    if (!user) {
-      return res.redirect(`${redirectBase}/login`);
-    }
-
-    const token = signJwt(user);
-    const userB64 = Buffer
-      .from(JSON.stringify(createUserDto(user)))
-      .toString('base64url');
-
-    return res.redirect(
-      `${redirectBase}/login/success?token=${token}&user=${userB64}`,
-    );
-  })(req, res, next);
-});
-
-/**
-* @swagger
-* /auth/twitter:
-*   get:
-*     summary: Redirige a Twitter para autenticación
-*     tags: [Auth]
-*     parameters:
-*       - in: query
-*         name: origin
-*         schema:
-*           type: string
-*         description: URL de origen para redireccionar después de la autenticación
-*     responses:
-*       302:
-*         description: Redirección a Twitter para autenticación y posteriormente a la url /auth/twitter/callback
-*       500:
-*         description: Error interno del servidor
-*/
-router.get('/twitter', (req, res, next) => {
-  const redirect = req.query.origin || env.FRONTEND_URL;
-  const state = Buffer.from(redirect).toString('base64url');
-
-  passport.authenticate('twitter', {
-    state,
-  })(req, res, next);
-});
-
-/**
-* @swagger
-* /auth/twitter/callback:
-*   get:
-*     summary: Callback para procesar respuesta de autenticación de Twitter
-*     tags: [Auth]
-*     parameters:
-*       - in: query
-*         name: code
-*         schema:
-*           type: string
-*         description: Código de autorización proporcionado por Twitter
-*       - in: query
-*         name: state
-*         schema:
-*           type: string
-*         description: Estado codificado en base64url con la URL de origen
-*     responses:
-*       302:
-*         description: Redirección al frontend con parámetros de autenticación. Ejemplo url_front/login/success?token=<token>&user=<user>
-*       401:
-*         description: Autenticación fallida
-*       409:
-*         description: Email ya registrado con otro método de acceso
-*       500:
-*         description: Error interno del servidor
-*/
-router.get('/twitter/callback', (req, res, next) => {
-  passport.authenticate('twitter', { session: false }, (err, user) => {
-
-    const redirectBase = (() => {
-      try {
-        return Buffer.from(req.query.state, 'base64url').toString();
-      } catch {
-        return env.FRONTEND_URL;
-      }
-    })();
-
-    if (err && err.status === 409) {
-      return res.redirect(`${redirectBase}/login`);
-    }
-
-    if (err) return next(err);
-
-    if (!user) {
-      return res.redirect(`${redirectBase}/login`);
-    }
-
-    const token = signJwt(user);
-    const userB64 = Buffer
-      .from(JSON.stringify(createUserDto(user)))
-      .toString('base64url');
-
-    return res.redirect(
-      `${redirectBase}/login/success?token=${token}&user=${userB64}`,
-    );
   })(req, res, next);
 });
 
