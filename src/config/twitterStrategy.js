@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserTwitter, UserPassword } = require('../models/userModel.js');
+const { UserTwitter, UserPassword, User } = require('../models/userModel.js');
 const TwitterStrategy = require('@superfaceai/passport-twitter-oauth2').Strategy;
 const logger = require('../logger/logger.js');
 
@@ -33,7 +33,7 @@ passport.use(new TwitterStrategy(options, async (accessToken, refreshToken, prof
             console.log(profile)
             return done(null, user);
         } else {
-            const existingUser = await UserPassword.findOne({ email: email });
+            const existingUser = await User.findOne({ email: email });
             if (existingUser) {
                 return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
             }

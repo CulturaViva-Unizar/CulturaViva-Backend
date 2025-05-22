@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserGoogle, UserPassword } = require('../models/userModel.js');
+const { UserGoogle, UserPassword, User } = require('../models/userModel.js');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const logger = require('../logger/logger.js');
 

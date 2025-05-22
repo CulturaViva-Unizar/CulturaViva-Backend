@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserFacebook, UserPassword } = require('../models/userModel.js');
+const { UserFacebook, UserPassword, User } = require('../models/userModel.js');
 const FacebookStrategy = require('passport-facebook').Strategy;
 const logger = require('../logger/logger.js');
 
@@ -28,7 +28,7 @@ passport.use(new FacebookStrategy(options, async (accessToken, refreshToken, pro
         if (user) {
             return done(null, user);
         } else {
-            const existingUser = await UserPassword.findOne({ email: email });
+            const existingUser = await User.findOne({ email: email });
             if (existingUser) {
                 return done(Object.assign(new Error('Email conflict'), { status: 409 }), null);
             }
