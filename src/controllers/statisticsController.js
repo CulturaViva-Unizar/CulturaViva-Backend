@@ -43,15 +43,15 @@ class StatisticsController {
     let count = 0;
 
     switch (req.query.type) {
-      case "activos":
-        count = await User.countDocuments({ active: true });
-        break;
-      case "inactivos":
-        count = await User.countDocuments({ active: false });
-        break;
-      default:
-        count = await User.countDocuments();
-        break;
+    case "activos":
+      count = await User.countDocuments({ active: true });
+      break;
+    case "inactivos":
+      count = await User.countDocuments({ active: false });
+      break;
+    default:
+      count = await User.countDocuments();
+      break;
     }
 
     createOkResponse(res, "Conteo de usuarios obtenido exitosamente", {
@@ -89,33 +89,33 @@ class StatisticsController {
    * Inicializa las estadisticas temporales
    */
   async initializeVisits(req, res) {
-      const today = new Date();
-      const startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-      const dailyVisits = [];
+    const today = new Date();
+    const startDate = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+    const dailyVisits = [];
 
-      for (let date = new Date(startDate); date <= today; date.setDate(date.getDate() + 1)) {
-        const formattedDate = date.toISOString().split('T')[0];
-        dailyVisits.push({
-          date: formattedDate,
-          count: 0
-        });
-      }
-
-      const operations = dailyVisits.map(visit => ({
-        updateOne: {
-          filter: { date: visit.date },
-          update: { $setOnInsert: { count: 0 } },
-          upsert: true
-        }
-      }));
-
-      //await DisableUsers.bulkWrite(operations);
-      //await Visit.bulkWrite(operations);
-      //await SavedItemsStats.bulkWrite(operations);
-
-      return createOkResponse(res, "Visitas inicializadas exitosamente", {
-        daysInitialized: dailyVisits.length
+    for (let date = new Date(startDate); date <= today; date.setDate(date.getDate() + 1)) {
+      const formattedDate = date.toISOString().split('T')[0];
+      dailyVisits.push({
+        date: formattedDate,
+        count: 0
       });
+    }
+
+    const operations = dailyVisits.map(visit => ({
+      updateOne: {
+        filter: { date: visit.date },
+        update: { $setOnInsert: { count: 0 } },
+        upsert: true
+      }
+    }));
+
+    //await DisableUsers.bulkWrite(operations);
+    //await Visit.bulkWrite(operations);
+    //await SavedItemsStats.bulkWrite(operations);
+
+    return createOkResponse(res, "Visitas inicializadas exitosamente", {
+      daysInitialized: dailyVisits.length
+    });
   }
 
   async assistedEventsByCategory(req, res) {
@@ -188,59 +188,59 @@ class StatisticsController {
     const today = new Date();
 
     switch (range) {
-      case '1w':
-        startDate.setDate(today.getDate() - 7);
-         break;
-      case '1m':
-        startDate.setMonth(today.getMonth() - 1);
-        break;
-      case '3m':
-        startDate.setMonth(today.getMonth() - 3);
-        break;
-      case '6m':
-        startDate.setMonth(today.getMonth() - 6);
-        break;
-      case '9m':
-        startDate.setMonth(today.getMonth() - 9);
-        break;
-      case '12m':
-        startDate.setFullYear(today.getFullYear() - 1);
-        break;
-      default:
-        startDate.setFullYear(today.getFullYear() - 1);
+    case '1w':
+      startDate.setDate(today.getDate() - 7);
+      break;
+    case '1m':
+      startDate.setMonth(today.getMonth() - 1);
+      break;
+    case '3m':
+      startDate.setMonth(today.getMonth() - 3);
+      break;
+    case '6m':
+      startDate.setMonth(today.getMonth() - 6);
+      break;
+    case '9m':
+      startDate.setMonth(today.getMonth() - 9);
+      break;
+    case '12m':
+      startDate.setFullYear(today.getFullYear() - 1);
+      break;
+    default:
+      startDate.setFullYear(today.getFullYear() - 1);
     } 
 
-      const pipeline = [
-        {
-          $match: {
-            $or: [
-              { date:     { $gte: startDate } },
-              { deleteAt: { $gte: startDate } }
-            ]
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalEliminated: {
-              $sum: { $cond: [{ $eq: [ "$deleted", true ] }, 1, 0 ] }
-            },
-            totalAdded: {
-              $sum: { $cond: [{ $eq: [ "$deleted", false ] }, 1, 0 ] }
-            }
-          }
-        },
-        {
-          $project: { _id: 0, totalEliminated: 1, totalAdded: 1 }
+    const pipeline = [
+      {
+        $match: {
+          $or: [
+            { date:     { $gte: startDate } },
+            { deleteAt: { $gte: startDate } }
+          ]
         }
-      ];
+      },
+      {
+        $group: {
+          _id: null,
+          totalEliminated: {
+            $sum: { $cond: [{ $eq: [ "$deleted", true ] }, 1, 0 ] }
+          },
+          totalAdded: {
+            $sum: { $cond: [{ $eq: [ "$deleted", false ] }, 1, 0 ] }
+          }
+        }
+      },
+      {
+        $project: { _id: 0, totalEliminated: 1, totalAdded: 1 }
+      }
+    ];
 
 
-      const result = await Comment.aggregate(pipeline);
+    const result = await Comment.aggregate(pipeline);
 
-      console.log(result)
+    console.log(result)
 
-      return createOkResponse(res, "Estadísticas de comentarios obtenidas exitosamente", result);
+    return createOkResponse(res, "Estadísticas de comentarios obtenidas exitosamente", result);
   }
 }
 

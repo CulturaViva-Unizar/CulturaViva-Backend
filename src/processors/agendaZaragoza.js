@@ -67,15 +67,15 @@ async function getEventosCulturales() {
             ...evento,
             price: Array.isArray(evento.price)
               ? evento.price.map((p) => ({
-                  grupo: p.fareGroup || "",
-                  precio: p.hasCurrencyValue || "",
-                }))
+                grupo: p.fareGroup || "",
+                precio: p.hasCurrencyValue || "",
+              }))
               : [],
             coordinates: evento.geometry
               ? {
-                  latitude: evento.geometry.coordinates[1],
-                  longitude: evento.geometry.coordinates[0],
-                }
+                latitude: evento.geometry.coordinates[1],
+                longitude: evento.geometry.coordinates[0],
+              }
               : await getCoordinates(evento),
             startDate: evento.startDate ? new Date(evento.startDate) : null,
             endDate: evento.endDate ? new Date(evento.endDate) : null,

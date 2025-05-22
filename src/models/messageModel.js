@@ -21,15 +21,15 @@ const messageSchema = new Schema({
     required: true
   }
 }, {
-    toJSON: { 
-      transform: function(doc, ret) {
-        ret.id = ret._id;
-        delete ret._id;
-        return ret;
-      },
-      versionKey: false
+  toJSON: { 
+    transform: function(doc, ret) {
+      ret.id = ret._id;
+      delete ret._id;
+      return ret;
     },
-  }
+    versionKey: false
+  },
+}
 );
 
 const Message = mongoose.model('Message', messageSchema);

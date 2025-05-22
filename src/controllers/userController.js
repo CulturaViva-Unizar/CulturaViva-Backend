@@ -14,7 +14,7 @@ const {
   createOkResponse, 
   createNotFoundResponse,
   handlePagination
- } = require("../utils/utils");
+} = require("../utils/utils");
 const { create } = require("../models/chatModel");
 
 class UserController {
@@ -22,24 +22,24 @@ class UserController {
    * Comprueba si el usuario es admin
    */
   async checkAdmin(req, res, next) {
-      const user = await User.findById(toObjectId(req.userId));
-      if (!user.admin) {
-        return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
-      }
-      next();
+    const user = await User.findById(toObjectId(req.userId));
+    if (!user.admin) {
+      return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
+    }
+    next();
   }
 
   /**
    * Comprueba si el usuario es admin o dueño del perfil
    */
   async checkAdminOrUser(req, res, next) {
-      if(req.userId.toString() === req.params.id) return next();
-      const user = await User.findById(toObjectId(req.userId));
-      if(!user) {
-        return createInternalServerErrorResponse(res, "Error interno del servidor.");
-      }
-      if(user.admin) return next();
-      return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
+    if(req.userId.toString() === req.params.id) return next();
+    const user = await User.findById(toObjectId(req.userId));
+    if(!user) {
+      return createInternalServerErrorResponse(res, "Error interno del servidor.");
+    }
+    if(user.admin) return next();
+    return createForbiddenResponse(res, "Acceso no autorizado al recurso.");
   }
 
   /**
@@ -92,7 +92,7 @@ class UserController {
     const userId = req.params.id;
     const user = await User.findById(toObjectId(userId)).select("-password");
     if (!user) {
-        return createNotFoundResponse(res, "Usuario no encontrado");
+      return createNotFoundResponse(res, "Usuario no encontrado");
     }
     return createOkResponse(res, "Usuario obtenido exitosamente", user);
   }
@@ -101,83 +101,83 @@ class UserController {
    * Actualiza todo el perfil del usuario
    */
   async updateProfile(req, res) {
-      const { name, email, phone, active, password } = req.body;
-      const userId = req.params.id;
-      let motivo = req.query.motivo;
-      if (!motivo) motivo = "No se ha especificado un motivo"; 
+    const { name, email, phone, active, password } = req.body;
+    const userId = req.params.id;
+    let motivo = req.query.motivo;
+    if (!motivo) motivo = "No se ha especificado un motivo"; 
   
-      // Construir solo los campos que vienen en el body
-      const updateFields = {};
-      if (name !== undefined) updateFields.name = name;
-      if (email !== undefined) updateFields.email = email;
-      if (phone !== undefined) updateFields.phone = phone;
-      if (active !== undefined) updateFields.active = active;
-      if (password !== undefined) updateFields.password = password;
+    // Construir solo los campos que vienen en el body
+    const updateFields = {};
+    if (name !== undefined) updateFields.name = name;
+    if (email !== undefined) updateFields.email = email;
+    if (phone !== undefined) updateFields.phone = phone;
+    if (active !== undefined) updateFields.active = active;
+    if (password !== undefined) updateFields.password = password;
   
-      const updatedUser = await User.findByIdAndUpdate(
-          toObjectId(userId),
-          updateFields,
-          { new: true, runValidators: true }
+    const updatedUser = await User.findByIdAndUpdate(
+      toObjectId(userId),
+      updateFields,
+      { new: true, runValidators: true }
+    );
+  
+    if (!updatedUser) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
+
+    // Se actualizan estadisticas de usuarios deshabilitados
+    const today = new Date().toISOString().split('T')[0];
+    if (active === false) {
+      await DisableUsers.findOneAndUpdate(
+        { date: today },
+        { 
+          $inc: { count: 1 },
+          $addToSet: { users: toObjectId(userId) }
+        },
+        { 
+          upsert: true,
+          new: true 
+        }
       );
-  
-      if (!updatedUser) {
-          return createNotFoundResponse(res, "Usuario no encontrado");
-      }
+    }
+    else if (active === true) {
+      await DisableUsers.findOneAndUpdate(
+        { users: toObjectId(userId) },
+        { 
+          $inc: { count: -1 },
+          $pull: { users: toObjectId(userId) }
+        },
+        {
+          new: true 
+        }
+      );
+    }
 
-      // Se actualizan estadisticas de usuarios deshabilitados
-      const today = new Date().toISOString().split('T')[0];
-      if (active === false) {
-        await DisableUsers.findOneAndUpdate(
-          { date: today },
-          { 
-            $inc: { count: 1 },
-            $addToSet: { users: toObjectId(userId) }
-          },
-          { 
-            upsert: true,
-            new: true 
-          }
-        );
-      }
-      else if (active === true) {
-        await DisableUsers.findOneAndUpdate(
-          { users: toObjectId(userId) },
-          { 
-            $inc: { count: -1 },
-            $pull: { users: toObjectId(userId) }
-          },
-          {
-            new: true 
-          }
-        );
-      }
-
-      // Si se ha deshabilitado el usuario, le enviamos un email
-      if(active === false) {
-        await sendNotification({
-          to: updatedUser.email,
-          subject: "Desactivación de cuenta",
-          text: `Hola ${updatedUser.name},\n\nTu cuenta ha sido desactivada.
+    // Si se ha deshabilitado el usuario, le enviamos un email
+    if(active === false) {
+      await sendNotification({
+        to: updatedUser.email,
+        subject: "Desactivación de cuenta",
+        text: `Hola ${updatedUser.name},\n\nTu cuenta ha sido desactivada.
                 \nSi crees que esto es un error, por favor contacta con el soporte.
                 \n\nMotivo: ${motivo}
                 \n\nGracias,
                 \nEl equipo de CulturaViva`
-        });
-      }
-      if(active === true) {
-        await sendNotification({
-          to: updatedUser.email,
-          subject: "Activación de cuenta",
-          text: `Hola ${updatedUser.name},\n\nTu cuenta ha sido activada.
+      });
+    }
+    if(active === true) {
+      await sendNotification({
+        to: updatedUser.email,
+        subject: "Activación de cuenta",
+        text: `Hola ${updatedUser.name},\n\nTu cuenta ha sido activada.
                 \nSi crees que esto es un error, por favor contacta con el soporte.
                 \n\nMotivo: ${motivo}
                 \n\nGracias,
                 \nEl equipo de CulturaViva`
-        });
-      }
+      });
+    }
 
       
-      return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
+    return createOkResponse(res, "Perfil actualizado exitosamente", updatedUser);
   }
 
 
@@ -255,16 +255,16 @@ class UserController {
   async getUserComments(req, res) {
     const userId = req.params.id;
 
-      const user = await User.findById(toObjectId(userId));
-      if (!user) {
-          return createNotFoundResponse(res, "Usuario no encontrado"); 
-      }
+    const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado"); 
+    }
 
-      const comments = await Comment.find({ user: toObjectId(userId) })
-        .populate('user', 'name -userType')
-        .populate('event', 'title itemType')
-        .sort({ date: -1 });
-      return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
+    const comments = await Comment.find({ user: toObjectId(userId) })
+      .populate('user', 'name -userType')
+      .populate('event', 'title itemType')
+      .sort({ date: -1 });
+    return createOkResponse(res, "Comentarios obtenidos exitosamente", comments);
   }
   /**
    * Guarda un evento en el perfil del usuario
@@ -283,15 +283,15 @@ class UserController {
     const today = new Date().toISOString().split('T')[0];
     Promise.all([
       SavedItemsStats.findOneAndUpdate(
-          { date: today },
-          { 
-            $inc: { count: 1 },
-            $addToSet: { users: toObjectId(userId), items: toObjectId(eventId) }
-          },
-          { 
-            upsert: true,
-            new: true 
-          }
+        { date: today },
+        { 
+          $inc: { count: 1 },
+          $addToSet: { users: toObjectId(userId), items: toObjectId(eventId) }
+        },
+        { 
+          upsert: true,
+          new: true 
+        }
       ),
       user.save()
     ])
@@ -401,15 +401,15 @@ class UserController {
     const today = new Date().toISOString().split('T')[0];
     Promise.all([
       SavedItemsStats.findOneAndUpdate(
-          { users: toObjectId(userId), items: toObjectId(eventId)
-           },
-          { 
-            $inc: { count: -1 },
-            $pull: { users: toObjectId(userId), items: toObjectId(eventId) }
-          },
-          { 
-            new: true 
-          }
+        { users: toObjectId(userId), items: toObjectId(eventId)
+        },
+        { 
+          $inc: { count: -1 },
+          $pull: { users: toObjectId(userId), items: toObjectId(eventId) }
+        },
+        { 
+          new: true 
+        }
       ),
       user.save()
     ])
@@ -539,13 +539,13 @@ class UserController {
     const userId = req.params.id;
     
     const updatedUser = await User.findByIdAndUpdate(
-        toObjectId(userId),
-        { admin: true },
-        { new: true, runValidators: true }
+      toObjectId(userId),
+      { admin: true },
+      { new: true, runValidators: true }
     ).select('-password');
 
     if (!updatedUser) {
-        return createNotFoundResponse(res, "Usuario no encontrado");
+      return createNotFoundResponse(res, "Usuario no encontrado");
     }
 
     return createOkResponse(res, "Usuario promovido a administrador exitosamente", updatedUser);
@@ -556,73 +556,73 @@ class UserController {
    * Recomienda items a un usuario basado en los eventos a los que ha asistido
    */
   async getRecommendedItems(req, res) {
-      // Recomienda en base a las 3 categorías a las que más asiste el usuario
-      // y los eventos solo si son en el próximo mes
-      // se podría hacer todo lo complejo que queramos, incluso meter IA o sistemas de recomendación
-      // pero lo veo demasiado para un proyecto de unizar 
-      const userId = req.params.id;
-      const type = req.query.type || 'Event';
-      const page = parseInt(req.query.page) || 1;
-      const limit = parseInt(req.query.limit) || 16;
+    // Recomienda en base a las 3 categorías a las que más asiste el usuario
+    // y los eventos solo si son en el próximo mes
+    // se podría hacer todo lo complejo que queramos, incluso meter IA o sistemas de recomendación
+    // pero lo veo demasiado para un proyecto de unizar 
+    const userId = req.params.id;
+    const type = req.query.type || 'Event';
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 16;
 
-      const user = await User.findById(toObjectId(userId));
-      if (!user) {
-        return createNotFoundResponse(res, "Usuario no encontrado");
+    const user = await User.findById(toObjectId(userId));
+    if (!user) {
+      return createNotFoundResponse(res, "Usuario no encontrado");
+    }
+  
+    // 1. Obtener los eventos a los que ha asistido el usuario
+    const attendedEvents = await Event.find({ _id: { $in: user.asistsTo } }, 'category');
+  
+    // 2. Contar ocurrencias por categoría
+    const categoryCount = {};
+    attendedEvents.forEach(event => {
+      if (event.category) {
+        categoryCount[event.category] = (categoryCount[event.category] || 0) + 1;
       }
+    });
   
-      // 1. Obtener los eventos a los que ha asistido el usuario
-      const attendedEvents = await Event.find({ _id: { $in: user.asistsTo } }, 'category');
+    // 3. Ordenar y tomar las 3 categorías más frecuentes
+    const topCategories = Object.entries(categoryCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([category]) => category);
   
-      // 2. Contar ocurrencias por categoría
-      const categoryCount = {};
-      attendedEvents.forEach(event => {
-        if (event.category) {
-          categoryCount[event.category] = (categoryCount[event.category] || 0) + 1;
-        }
-      });
+    // 4. Filtros
+    const now = new Date();
+    const nextMonth = new Date();
+    nextMonth.setMonth(now.getMonth() + 1);
   
-      // 3. Ordenar y tomar las 3 categorías más frecuentes
-      const topCategories = Object.entries(categoryCount)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([category]) => category);
+    const filters = {
+      category: { $in: topCategories },
+      _id: { $nin: user.asistsTo },
+    };
   
-      // 4. Filtros
-      const now = new Date();
-      const nextMonth = new Date();
-      nextMonth.setMonth(now.getMonth() + 1);
+    if (type === 'Event') {
+      filters.startDate = { $gte: now };
+      filters.endDate = { $lt: nextMonth };
+    }
   
-      const filters = {
-        category: { $in: topCategories },
-        _id: { $nin: user.asistsTo },
-      };
+    const options = {
+      sort: req.query.sort || 'startDate',
+      order: req.query.order || 'asc',
+      page: page,
+      limit: limit,
+    };
   
-      if (type === 'Event') {
-        filters.startDate = { $gte: now };
-        filters.endDate = { $lt: nextMonth };
-      }
-  
-      const options = {
-        sort: req.query.sort || 'startDate',
-        order: req.query.order || 'asc',
-        page: page,
-        limit: limit,
-      };
-  
-      const pipeline = buildAggregationPipeline(filters, options);
-      const [items, totalItems] = await Promise.all([
-        (type === 'Event' ? Event : Place).aggregate(pipeline),
-        (type === 'Event' ? Event : Place).countDocuments(filters)
-      ]);
+    const pipeline = buildAggregationPipeline(filters, options);
+    const [items, totalItems] = await Promise.all([
+      (type === 'Event' ? Event : Place).aggregate(pipeline),
+      (type === 'Event' ? Event : Place).countDocuments(filters)
+    ]);
 
-      const totalPages = Math.ceil(totalItems / limit);
+    const totalPages = Math.ceil(totalItems / limit);
   
-      return createOkResponse(res, "Recomendaciones obtenidas exitosamente", {
-        items: items,
-        currentPage: parseInt(page, 10),
-        totalPages,
-        totalItems
-      });
+    return createOkResponse(res, "Recomendaciones obtenidas exitosamente", {
+      items: items,
+      currentPage: parseInt(page, 10),
+      totalPages,
+      totalItems
+    });
   }
 }
 

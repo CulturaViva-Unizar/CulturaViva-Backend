@@ -50,9 +50,9 @@ const logger = require('../logger/logger');
  *         description: Error interno del servidor
  */
 router.post('/register',
-    validate(registerSchema),
-    authController.register,
-    authController.generateToken
+  validate(registerSchema),
+  authController.register,
+  authController.generateToken
 );
 
 /**
@@ -80,9 +80,9 @@ router.post('/register',
  *         description: Error interno del servidor
  */
 router.post('/login',
-    validate(loginSchema),
-    authController.login,
-    authController.generateToken
+  validate(loginSchema),
+  authController.login,
+  authController.generateToken
 );
 
 /**
@@ -128,9 +128,9 @@ router.post('/login',
  *         description: Error interno del servidor
  */
 router.post('/change-password',
-    validate(changePasswordSchema),
-    passport.authenticate('jwt', { session: false }),
-    authController.changePassword
+  validate(changePasswordSchema),
+  passport.authenticate('jwt', { session: false }),
+  authController.changePassword
 );
 
 /**
@@ -152,14 +152,14 @@ router.post('/change-password',
 *         description: Error interno del servidor
 */
 router.get('/google', (req, res, next) => {
-    const redirect = req.query.origin || env.FRONTEND_URL;
-    const state = Buffer.from(redirect).toString('base64url');
+  const redirect = req.query.origin || env.FRONTEND_URL;
+  const state = Buffer.from(redirect).toString('base64url');
 
-    passport.authenticate('google', {
-        scope: ['profile', 'email'],
-        prompt: 'select_account',
-        state,
-    })(req, res, next);
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+    state,
+  })(req, res, next);
 });
 
 /**
@@ -190,35 +190,35 @@ router.get('/google', (req, res, next) => {
 *         description: Error interno del servidor
 */
 router.get('/google/callback', (req, res, next) => {
-    passport.authenticate('google', { session: false }, (err, user) => {
+  passport.authenticate('google', { session: false }, (err, user) => {
 
-        const redirectBase = (() => {
-            try {
-                return Buffer.from(req.query.state, 'base64url').toString();
-            } catch {
-                return env.FRONTEND_URL;
-            }
-        })();
-
-        if (err && err.status === 409) {
-          return res.redirect(`${redirectBase}/login`);
-        }
-
-      if (err) return next(err);
-
-      if (!user) {
-        return res.redirect(`${redirectBase}/login`);
+    const redirectBase = (() => {
+      try {
+        return Buffer.from(req.query.state, 'base64url').toString();
+      } catch {
+        return env.FRONTEND_URL;
       }
+    })();
+
+    if (err && err.status === 409) {
+      return res.redirect(`${redirectBase}/login`);
+    }
+
+    if (err) return next(err);
+
+    if (!user) {
+      return res.redirect(`${redirectBase}/login`);
+    }
 
     const token = signJwt(user);
     const userB64 = Buffer
-        .from(JSON.stringify(createUserDto(user)))
-        .toString('base64url');
+      .from(JSON.stringify(createUserDto(user)))
+      .toString('base64url');
 
-        return res.redirect(
-            `${redirectBase}/login/success?token=${token}&user=${userB64}`,
-        );
-    })(req, res, next);
+    return res.redirect(
+      `${redirectBase}/login/success?token=${token}&user=${userB64}`,
+    );
+  })(req, res, next);
 });
 
 /**

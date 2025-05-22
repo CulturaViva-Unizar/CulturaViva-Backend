@@ -53,7 +53,7 @@ const disableUsersSchema = new mongoose.Schema({
 const DisableUsers = mongoose.model('DisableUsers', disableUsersSchema);
 
 const savedItemsStatsSchema = new mongoose.Schema({
-    date: {
+  date: {
     type: String,
     unique: true,
     required: true

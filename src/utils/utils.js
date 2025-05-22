@@ -102,8 +102,8 @@ function handlePagination(_page, _limit, finalQuery = {}, orderCondition = {}, s
 
   aggregationPipeline.push(
     { $project: {
-        _id: 0,
-      } });
+      _id: 0,
+    } });
     
   if (selectCondition) {
     aggregationPipeline.push(

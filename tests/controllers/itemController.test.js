@@ -215,7 +215,7 @@ describe('ItemController', () => {
       
       Event.updateOne.mockResolvedValue({});
       generateOID.mockImplementationOnce(() => 'generatedId_123')
-                 .mockImplementationOnce(() => 'generatedId_456');
+        .mockImplementationOnce(() => 'generatedId_456');
 
       await ItemController.guardarEventos(eventos);
 
@@ -243,7 +243,7 @@ describe('ItemController', () => {
       
       Place.updateOne.mockResolvedValue({});
       generateOID.mockImplementationOnce(() => 'generatedId_789')
-                 .mockImplementationOnce(() => 'generatedId_101');
+        .mockImplementationOnce(() => 'generatedId_101');
 
       await ItemController.guardarLugares(lugares);
 

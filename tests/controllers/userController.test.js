@@ -45,25 +45,25 @@ describe('UserController', () => {
       expect(next).toHaveBeenCalled();
     });
 
-  it('returns 403 if user not admin and ids don’t match', async () => {
-    req.userId = '789';
-    req.params.id = '123';
-    res.status = jest.fn().mockReturnThis();
-    res.json = jest.fn();
-    next = jest.fn();
+    it('returns 403 if user not admin and ids don’t match', async () => {
+      req.userId = '789';
+      req.params.id = '123';
+      res.status = jest.fn().mockReturnThis();
+      res.json = jest.fn();
+      next = jest.fn();
 
-    User.findById.mockResolvedValue({ admin: false, _id: '789' });
+      User.findById.mockResolvedValue({ admin: false, _id: '789' });
 
-    // Simula createForbiddenResponse devolviendo una respuesta 403
-    createForbiddenResponse.mockImplementation((res, msg) => res.status(403).json({ msg }));
+      // Simula createForbiddenResponse devolviendo una respuesta 403
+      createForbiddenResponse.mockImplementation((res, msg) => res.status(403).json({ msg }));
 
-    await UserController.checkAdminOrUser(req, res, next);
+      await UserController.checkAdminOrUser(req, res, next);
 
-    expect(createForbiddenResponse).toHaveBeenCalledWith(res, "Acceso no autorizado al recurso.");
-    expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ msg: "Acceso no autorizado al recurso." });
-    expect(next).not.toHaveBeenCalled();
-  });
+      expect(createForbiddenResponse).toHaveBeenCalledWith(res, "Acceso no autorizado al recurso.");
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(res.json).toHaveBeenCalledWith({ msg: "Acceso no autorizado al recurso." });
+      expect(next).not.toHaveBeenCalled();
+    });
 
   });
 
@@ -214,7 +214,7 @@ describe('UserController', () => {
   });
 
   describe('updateProfile', () => {
-  it('updates user and updates statistics', async () => {
+    it('updates user and updates statistics', async () => {
       req.params.id = 'user123';
       req.body = { active: false };
 

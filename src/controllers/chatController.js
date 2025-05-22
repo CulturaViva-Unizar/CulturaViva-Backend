@@ -3,31 +3,31 @@ const Message = require("../models/messageModel");
 const { User } = require("../models/userModel");
 const { isUserInChat, createChatDTO } = require("../utils/chatUtils");
 const { 
-        createNotFoundResponse, 
-        createForbiddenResponse, 
-        createConflictResponse,
-        createBadRequestResponse, 
-        createCreatedResponse,
-        createOkResponse
-    } = require("../utils/utils");
+  createNotFoundResponse, 
+  createForbiddenResponse, 
+  createConflictResponse,
+  createBadRequestResponse, 
+  createCreatedResponse,
+  createOkResponse
+} = require("../utils/utils");
 
 class ChatController {
 
   async checkUserInChat(req, res, next) { //TODO: poner en las rutas dwespues del middleware de passport
-        const userId = req.userId; // el user id se obtiene del JWT, middleware anterior
+    const userId = req.userId; // el user id se obtiene del JWT, middleware anterior
 
-        const chatId = req.params.chatId;
-        const chat = await Chat.findById(chatId);
+    const chatId = req.params.chatId;
+    const chat = await Chat.findById(chatId);
 
-        if (!chat) {
-            return createNotFoundResponse(res, "Chat no encontrado");
-        }
+    if (!chat) {
+      return createNotFoundResponse(res, "Chat no encontrado");
+    }
 
-        if(isUserInChat(userId, chatId)){
-        return next();
-        } else {
-            return createForbiddenResponse(res, "No tienes permiso para acceder a este chat");
-        }
+    if(isUserInChat(userId, chatId)){
+      return next();
+    } else {
+      return createForbiddenResponse(res, "No tienes permiso para acceder a este chat");
+    }
   }
 
   async createChat(req, res) {
@@ -35,18 +35,18 @@ class ChatController {
     const user2 = req.body.user;
 
     if (user1.toString() === user2.toString()) {
-        return createBadRequestResponse(res, "No puedes crear un chat contigo mismo");
+      return createBadRequestResponse(res, "No puedes crear un chat contigo mismo");
     }
 
     const existingChat = await Chat.findOne({
-        $or: [
+      $or: [
         { user1, user2 },
         { user1: user2, user2: user1 }
-        ]
+      ]
     });
 
     if (existingChat) {
-        return createConflictResponse(res, "Ya existe un chat entre estos usuarios");
+      return createConflictResponse(res, "Ya existe un chat entre estos usuarios");
     }
 
     const newChat = new Chat({ user1, user2 });
@@ -66,7 +66,7 @@ class ChatController {
     const chat = await Chat.findById(chatId).populate('mensajes');
 
     if (!chat) {
-        return createNotFoundResponse(res, "Chat no encontrado");
+      return createNotFoundResponse(res, "Chat no encontrado");
     }
 
     return createOkResponse(res, "Mensajes del chat encontrados", chat.mensajes);

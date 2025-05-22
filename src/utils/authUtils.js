@@ -2,13 +2,13 @@ const env = require("../config/env");
 const jwt = require("jsonwebtoken");
 
 function createUserDto(user) {
-    return {
-        id: user._id,
-        email: user.email,
-        name: user.name,
-        admin: user.admin,
-        type: user.userType,
-    };
+  return {
+    id: user._id,
+    email: user.email,
+    name: user.name,
+    admin: user.admin,
+    type: user.userType,
+  };
 }
 
 
@@ -18,9 +18,9 @@ function createUserDto(user) {
  * @returns {String} token JWT
  */
 function signJwt(user) {
-    return jwt.sign(createUserDto(user), env.JWT_SECRET, {
-        expiresIn: env.JWT_EXPIRES,
-    });
+  return jwt.sign(createUserDto(user), env.JWT_SECRET, {
+    expiresIn: env.JWT_EXPIRES,
+  });
 }
 
 module.exports = { createUserDto, signJwt };

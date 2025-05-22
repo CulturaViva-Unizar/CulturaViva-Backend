@@ -120,42 +120,42 @@ describe('ChatUtils', () => {
     });
   });
 
-    it('debe manejar ObjectID de mongoose', async () => {
+  it('debe manejar ObjectID de mongoose', async () => {
       
-      const userId = new mongoose.Types.ObjectId('6457b8f83717916d86337c72');
-      const otherUserId = new mongoose.Types.ObjectId('6457b8f83717916d86337c73');
+    const userId = new mongoose.Types.ObjectId('6457b8f83717916d86337c72');
+    const otherUserId = new mongoose.Types.ObjectId('6457b8f83717916d86337c73');
       
-      const mockChat = {
-        _id: 'chat789',
-        user1: otherUserId,
-        user2: userId,
-        mensajes: ['mensaje1', 'mensaje2'],
-        createdAt: '2023-01-01T00:00:00.000Z',
-        updatedAt: '2023-01-02T00:00:00.000Z'
-      };
+    const mockChat = {
+      _id: 'chat789',
+      user1: otherUserId,
+      user2: userId,
+      mensajes: ['mensaje1', 'mensaje2'],
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-02T00:00:00.000Z'
+    };
       
-      const mockOtherUser = {
-        _id: otherUserId.toString(),
-        name: 'Other User'
-      };
+    const mockOtherUser = {
+      _id: otherUserId.toString(),
+      name: 'Other User'
+    };
       
-      const mockSelect = jest.fn().mockResolvedValue(mockOtherUser);
-      User.findById.mockReturnValue({
-        select: mockSelect
-      });
-
-      
-      const result = await createChatDTO(mockChat, userId);
-
-      
-      expect(result).toEqual({
-        mensajes: ['mensaje1', 'mensaje2'],
-        id: 'chat789',
-        createdAt: '2023-01-01T00:00:00.000Z',
-        updatedAt: '2023-01-02T00:00:00.000Z',
-        user: mockOtherUser
-      });
-      expect(User.findById).toHaveBeenCalledWith(otherUserId);
-      expect(mockSelect).toHaveBeenCalledWith('name -userType');
+    const mockSelect = jest.fn().mockResolvedValue(mockOtherUser);
+    User.findById.mockReturnValue({
+      select: mockSelect
     });
+
+      
+    const result = await createChatDTO(mockChat, userId);
+
+      
+    expect(result).toEqual({
+      mensajes: ['mensaje1', 'mensaje2'],
+      id: 'chat789',
+      createdAt: '2023-01-01T00:00:00.000Z',
+      updatedAt: '2023-01-02T00:00:00.000Z',
+      user: mockOtherUser
+    });
+    expect(User.findById).toHaveBeenCalledWith(otherUserId);
+    expect(mockSelect).toHaveBeenCalledWith('name -userType');
+  });
 });

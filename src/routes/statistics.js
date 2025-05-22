@@ -7,10 +7,10 @@ const passport = require('passport');
 const validate = require('../middlewares/validateSchema');
 
 const { 
-    getSchema, 
-    getUsersSchema, 
-    getEventsCategorySchema, 
-    getVisitsSchema 
+  getSchema, 
+  getUsersSchema, 
+  getEventsCategorySchema, 
+  getVisitsSchema 
 } = require('../schemas/statisticsSchema');
 
 /**
@@ -44,10 +44,10 @@ const {
  *         description: Error interno del servidor
  */
 router.get('/users',
-    validate(getUsersSchema),
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.userCount
+  validate(getUsersSchema),
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.userCount
 );
 
 /**
@@ -95,11 +95,11 @@ router.get('/users',
  *         description: Error interno del servidor
  */
 router.get(
-    '/users/:id/attended-by-category',
-    validate(getSchema),
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdminOrUser,
-    statisticsController.assistedEventsByCategory
+  '/users/:id/attended-by-category',
+  validate(getSchema),
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdminOrUser,
+  statisticsController.assistedEventsByCategory
 );
 
 /**
@@ -143,8 +143,8 @@ router.get(
  *         description: Error interno del servidor
  */
 router.get(
-    '/popular-by-category',
-    statisticsController.popularByCategory
+  '/popular-by-category',
+  statisticsController.popularByCategory
 );
 
 /** @swagger
@@ -191,11 +191,11 @@ router.get(
  *         description: Error interno del servidor
  */
 router.get(
-    '/users/:id/upcoming-by-category',
-    validate(getSchema),
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdminOrUser,
-    statisticsController.upcomingByCategory
+  '/users/:id/upcoming-by-category',
+  validate(getSchema),
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdminOrUser,
+  statisticsController.upcomingByCategory
 );
 
 /**
@@ -229,10 +229,10 @@ router.get(
  *         description: Error interno del servidor
  */
 router.get('/events',
-    validate(getEventsCategorySchema),
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.eventCount
+  validate(getEventsCategorySchema),
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.eventCount
 );
 
 /**
@@ -288,10 +288,10 @@ router.get('/events',
  *         description: Error interno del servidor
  */
 router.get('/visits',
-    validate(getVisitsSchema),
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.getVisits
+  validate(getVisitsSchema),
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.getVisits
 );
 
 /**
@@ -354,10 +354,10 @@ router.get('/visits',
  *         description: Error interno del servidor
  */
 router.get('/disable-users',
-    validate(getVisitsSchema),
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.getDisableUsersCount
+  validate(getVisitsSchema),
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.getDisableUsersCount
 );
 
 /**
@@ -409,9 +409,9 @@ router.get('/disable-users',
  *         description: Error interno del servidor
  */
 router.get('/comments',
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.getCommentsStatistics
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.getCommentsStatistics
 );
 
 /**
@@ -501,15 +501,15 @@ router.get('/comments',
  *         number: 18
  */
 router.get('/saved-events',
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.getSavedEventCount
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.getSavedEventCount
 );
 
 router.get('/initialize', 
-    passport.authenticate('jwt', { session: false }),
-    userController.checkAdmin,
-    statisticsController.initializeVisits
+  passport.authenticate('jwt', { session: false }),
+  userController.checkAdmin,
+  statisticsController.initializeVisits
 );
 
 module.exports = router;
