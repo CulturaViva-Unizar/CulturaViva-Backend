@@ -41,7 +41,7 @@ const router = express.Router();
  *      - in: query
  *        name: page
  *        schema:
- *           ype: integer
+ *           type: integer
  *        description: Número de página
  *      - in: query
  *        name: limit
@@ -59,9 +59,15 @@ const router = express.Router();
  *          type: string
  *        description: Nombre del usuario
  *      - in: query
+ *        name: sort
+ *        schema: 
+ *          type: string
+ *        description: Campo por el que ordenar (por defecto 'comments')
+ *      - in: query
  *        name: order
  *        schema: 
  *          type: string
+ *          enum: [asc, desc]
  *        description: Ordenar por comentarios "asc" o "desc"
  *    responses:
  *     200:

@@ -107,9 +107,21 @@ const itemController = require('../controllers/itemController');
  *                 message:
  *                   type: string
  *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Event'
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Event'
+ *                     currentPage:
+ *                       type: integer
+ *                       example: 1
+ *                     totalPages:
+ *                       type: integer
+ *                       example: 5
+ *                     totalItems:
+ *                       type: integer
+ *                       example: 80
  *       500:
  *         description: Error interno del servidor
  */
@@ -276,12 +288,14 @@ router.get('/events/:id/comments',
  *             properties:
  *               text:
  *                 type: string
- *                 description: Contenido del comentario
+ *                 description: Contenido del comentario (requerido)
  *                 example: "Este evento fue increíble"
  *               value:
  *                 type: number
- *                 description: Valoración opcional del evento
+ *                 description: Valoración opcional del evento (para crear una valoración)
  *                 example: 5
+ *             required:
+ *               - text
  *     responses:
  *       201:
  *         description: Comentario creado exitosamente
@@ -299,7 +313,7 @@ router.get('/events/:id/comments',
  *                 data:
  *                   $ref: '#/components/schemas/Comment'
  *       400:
- *         description: Datos inválidos
+ *         description: Datos inválidos o intentando crear comentario y valoración simultáneamente
  *       401: 
  *         description: No autorizado
  *       404:
@@ -744,12 +758,14 @@ router.get('/places/:id/comments',
  *             properties:
  *               text:
  *                 type: string
- *                 description: Contenido del comentario
+ *                 description: Contenido del comentario (requerido)
  *                 example: "Este lugar fue increíble"
  *               value:
  *                 type: number
- *                 description: Valoración opcional del lugar
+ *                 description: Valoración opcional del lugar (para crear una valoración)
  *                 example: 5
+ *             required:
+ *               - text
  *     responses:
  *       201:
  *         description: Comentario creado exitosamente
@@ -767,7 +783,7 @@ router.get('/places/:id/comments',
  *                 data:
  *                   $ref: '#/components/schemas/Comment'
  *       400:
- *         description: Datos inválidos
+ *         description: Datos inválidos o intentando crear comentario y valoración simultáneamente
  *       401: 
  *         description: No autorizado
  *       404:

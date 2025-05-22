@@ -32,19 +32,28 @@ const router = express.Router();
  *               user:
  *                 type: string
  *                 description: ID del usuario con el que se desea chatear
+ *             required:
+ *               - user
  *     responses:
  *       201:
  *         description: Chat creado exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Chat'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Chat creado exitosamente"
+ *                 data:
+ *                   $ref: '#/components/schemas/Chat'
  *       400:
  *         description: Error en la validación o usuarios iguales
  *       401:
  *         description: No autorizado
- *       403:
- *         description: No tienes acceso a este chat
  *       409: 
  *         description: Chat ya existe entre los usuarios
  *       500:
@@ -85,6 +94,9 @@ router.post(
  *                 success:
  *                   type: boolean
  *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Mensajes del chat encontrados"
  *                 data:
  *                   type: array
  *                   items:

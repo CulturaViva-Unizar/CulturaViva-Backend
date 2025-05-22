@@ -91,6 +91,8 @@ router.get('/users',
  *                         description: Número de eventos asistidos en esa categoría
  *       403:
  *         description: Acceso denegado
+ *       404:
+ *         description: Usuario no encontrado
  *       500:
  *         description: Error interno del servidor
  */
@@ -221,8 +223,18 @@ router.get(
  *             schema:
  *               type: object
  *               properties:
- *                 count:
- *                   type: integer
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Conteo de eventos obtenido exitosamente"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     count:
+ *                       type: integer
+ *                       example: 25
  *       403:
  *         description: Acceso denegado
  *       500:
