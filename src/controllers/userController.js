@@ -586,6 +586,14 @@ class UserController {
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3)
       .map(([category]) => category);
+
+    // Si no ha asistido a nada, se recomienda por defecto
+    if (topCategories.length === 0) {
+      topCategories.push('Cursos y talleres');
+      topCategories.push('Exhibición, proyección, competición');
+      topCategories.push('Cultural');
+      topCategories.push('salas-de-musica');
+    }
   
     // 4. Filtros
     const now = new Date();
