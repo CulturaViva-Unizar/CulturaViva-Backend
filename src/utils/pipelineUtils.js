@@ -77,13 +77,9 @@ function buildAggregationPipeline(filters, options) {
     }
   }
 
+  // Ordenamiento
   if (sort) {
-    const sortObj = { [sort === 'comments' ? 'commentCount' : sort]: sortOrder };
-    // Añadir desempate por id para asegurar orden consistente
-    if (!('_id' in sortObj)) {
-      sortObj._id = 1; 
-    }
-    aggregationPipeline.push({ $sort: sortObj });
+    aggregationPipeline.push({ $sort: { [sort === 'comments' ? 'commentCount' : sort]: sortOrder } });
   }
 
   // Paginación
