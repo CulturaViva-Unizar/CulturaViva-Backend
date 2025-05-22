@@ -191,14 +191,6 @@ router.get('/google', (req, res, next) => {
 */
 router.get('/google/callback', (req, res, next) => {
     passport.authenticate('google', { session: false }, (err, user) => {
-        if (err && err.status === 409) {
-            return res.status(409).json({
-                success: false,
-                message: 'Este email ya está registrado con otro método de acceso.',
-            });
-        }
-
-        if (err) return next(err);
 
         const redirectBase = (() => {
             try {
@@ -208,15 +200,20 @@ router.get('/google/callback', (req, res, next) => {
             }
         })();
 
-
-        if (!user) {
-            return res.redirect(`${redirectBase}/login`);
+        if (err && err.status === 409) {
+          return res.redirect(`${redirectBase}/login`);
         }
 
-        const token = signJwt(user);
-        const userB64 = Buffer
-            .from(JSON.stringify(createUserDto(user)))
-            .toString('base64url');
+      if (err) return next(err);
+
+      if (!user) {
+        return res.redirect(`${redirectBase}/login`);
+      }
+
+    const token = signJwt(user);
+    const userB64 = Buffer
+        .from(JSON.stringify(createUserDto(user)))
+        .toString('base64url');
 
         return res.redirect(
             `${redirectBase}/login/success?token=${token}&user=${userB64}`,
@@ -284,15 +281,7 @@ router.get('/github/callback', (req, res, next) => {
   console.log('🔍 Query recibida:', req.query);
 
   passport.authenticate('github', { session: false }, (err, user, info) => {
-    if (err && err.status === 409) {
-      return res.status(409).json({
-        success: false,
-        message: 'Este email ya está registrado con otro método de acceso.',
-      });
-    }
     
-    if (err) return next(err);
-
     const redirectBase = (() => {
       try {
         return Buffer.from(req.query.state, 'base64url').toString();
@@ -300,6 +289,12 @@ router.get('/github/callback', (req, res, next) => {
         return env.FRONTEND_URL;
       }
     })();
+
+    if (err && err.status === 409) {
+      return res.redirect(`${redirectBase}/login`);
+    }
+
+    if (err) return next(err);
 
     if (!user) {
       return res.redirect(`${redirectBase}/login`);
@@ -369,14 +364,6 @@ router.get('/facebook', (req, res, next) => {
 */
 router.get('/facebook/callback', (req, res, next) => {
   passport.authenticate('facebook', { session: false }, (err, user) => {
-    if (err && err.status === 409) {
-      return res.status(409).json({
-        success: false,
-        message: 'Este email ya está registrado con otro método de acceso.',
-      });
-    }
-
-    if (err) return next(err);
 
     const redirectBase = (() => {
       try {
@@ -385,6 +372,12 @@ router.get('/facebook/callback', (req, res, next) => {
         return env.FRONTEND_URL;
       }
     })();
+
+    if (err && err.status === 409) {
+      return res.redirect(`${redirectBase}/login`);
+    }
+
+    if (err) return next(err);
 
     if (!user) {
       return res.redirect(`${redirectBase}/login`);
@@ -457,14 +450,6 @@ router.get('/twitter', (req, res, next) => {
 */
 router.get('/twitter/callback', (req, res, next) => {
   passport.authenticate('twitter', { session: false }, (err, user) => {
-    if (err && err.status === 409) {
-      return res.status(409).json({
-        success: false,
-        message: 'Este email ya está registrado con otro método de acceso.',
-      });
-    }
-
-    if (err) return next(err);
 
     const redirectBase = (() => {
       try {
@@ -473,6 +458,12 @@ router.get('/twitter/callback', (req, res, next) => {
         return env.FRONTEND_URL;
       }
     })();
+
+    if (err && err.status === 409) {
+      return res.redirect(`${redirectBase}/login`);
+    }
+
+    if (err) return next(err);
 
     if (!user) {
       return res.redirect(`${redirectBase}/login`);
