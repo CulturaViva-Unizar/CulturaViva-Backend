@@ -57,7 +57,7 @@ class UserController {
   
     const filters = {};
     if (userType) {
-      filters.active = userType.toLowerCase() === 'habilitados';
+      filters.active = userType.toLowerCase() === 'activos';
     }
     if (name) {
       filters.name = { $regex: escapeRegExp(name.trim()), $options: 'i' };
