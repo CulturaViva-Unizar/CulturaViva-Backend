@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserTwitter, UserPassword, User } = require('../models/userModel.js');
+const { UserTwitter, User } = require('../models/userModel.js');
 const TwitterStrategy = require('@superfaceai/passport-twitter-oauth2').Strategy;
 const logger = require('../logger/logger.js');
 

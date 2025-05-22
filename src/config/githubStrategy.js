@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserGithub, UserPassword, User } = require('../models/userModel.js');
+const { UserGithub, User } = require('../models/userModel.js');
 const GitHubStrategy = require('passport-github2').Strategy;
 const axios = require('axios');
 

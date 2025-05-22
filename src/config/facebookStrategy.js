@@ -1,6 +1,6 @@
 const passport = require('passport');
 const env = require('./env.js');
-const { UserFacebook, UserPassword, User } = require('../models/userModel.js');
+const { UserFacebook, User } = require('../models/userModel.js');
 const FacebookStrategy = require('passport-facebook').Strategy;
 const logger = require('../logger/logger.js');
 
