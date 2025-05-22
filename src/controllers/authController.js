@@ -1,4 +1,4 @@
-const { UserPassword } = require("../models/userModel.js");
+const { UserPassword, User } = require("../models/userModel.js");
 const bcrypt = require("bcrypt");
 
 const {
@@ -25,7 +25,8 @@ class AuthController {
       );
     }
 
-    const existingUser = await UserPassword.findOne({
+    // Comprobar si existe un usuario con este email en cualquier modelo de usuario
+    const existingUser = await User.findOne({
       email: email.toLowerCase(),
     });
     if (existingUser) {
